@@ -1,0 +1,445 @@
+/* Outfit (Google Fonts) — loaded for the whole default theme. Must stay at the
+ * very top: CSS requires @import before any style rule. Wired to the font tokens
+ * in :root below (docs/tokens.md §11.1, Approach B). */
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap");
+
+/* ============================================================================
+ * Default theme — storefront overrides
+ *
+ * Loaded AFTER the platform's prebuilt `base.css` (Tailwind v4 + the full
+ * design-token system). This file's sole job is to redeclare any of the
+ * documented `--brand-*` tokens (and the two `--font-*` aliases) to re-skin
+ * the storefront. NO custom class library lives here anymore — every blade
+ * in this theme styles itself with Tailwind utilities and design tokens.
+ *
+ * Full reference: see `themes/default/docs/tokens.md` §11.
+ * ============================================================================ */
+
+/* ----------------------------------------------------------------------------
+ * Custom fonts (Google Fonts & self-hosted)
+ *
+ * Two steps to use any custom font: (1) LOAD it, (2) point --font-primary /
+ * --font-secondary at it (always keep a system fallback at the end of the
+ * stack). --font-primary drives every h1–h6 + the `font-primary` utility;
+ * --font-secondary drives body copy + the `font-secondary` utility.
+ *
+ * The default theme ships NO active font override (it inherits the platform
+ * "Roboto", sans-serif default), so the snippets below are commented out.
+ * Uncomment ONE approach and edit the family name. Full guide: docs/tokens.md §11.1.
+ *
+ * --- Approach A — Google Fonts, hosted (fastest): add to a layout <head> ----
+ *   @push('head')
+ *       <link rel="preconnect" href="https://fonts.googleapis.com">
+ *       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+ *       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap">
+ *   @endpush
+ *   …then set the variable in the :root block below.
+ *
+ * --- Approach B — Google Fonts, hosted via CSS @import (single file) --------
+ *   Must be the VERY FIRST rule in this file (CSS requires @import first):
+ *   @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap");
+ *
+ * --- Approach C — self-hosted (recommended; GDPR-safe, no Google request) ---
+ *   Drop the .woff2 files in assets/fonts/ then declare the faces here:
+ *   @font-face {
+ *       font-family: "Inter";
+ *       font-style: normal;
+ *       font-weight: 400;
+ *       font-display: swap;
+ *       src: url("../fonts/inter-400.woff2") format("woff2");
+ *   }
+ *   @font-face {
+ *       font-family: "Inter";
+ *       font-style: normal;
+ *       font-weight: 700;
+ *       font-display: swap;
+ *       src: url("../fonts/inter-700.woff2") format("woff2");
+ *   }
+ * -------------------------------------------------------------------------- */
+
+/* ----------------------------------------------------------------------------
+ * Theme token DEFAULTS — deliberately inside a cascade layer.
+ *
+ * This stylesheet is served AFTER the tenant's Appearance <style> block, so an
+ * unlayered `:root` here would outrank the Store setup → Appearance palette and
+ * font pickers and make them dead for every tenant on this theme. A layered
+ * declaration always loses to an unlayered one regardless of document order, so
+ * wrapping the defaults keeps the contract the default theme is meant to have:
+ * these values apply until the tenant configures Appearance, then Appearance
+ * wins — exactly as before the theme stylesheet moved.
+ *
+ * A CUSTOM theme that wants to OWN its colors does the opposite: it declares
+ * `:root` unlayered, which beats Appearance because this file loads later.
+ * See docs/tokens.md §11 — Design tokens reference.
+ * -------------------------------------------------------------------------- */
+@layer theme-defaults {
+    :root {
+        /* Outfit (loaded via the @import at the top of this file) drives the WHOLE
+         * theme: --font-primary is every h1–h6 + the `font-primary` utility;
+         * --font-secondary is the base `body` font + the `font-secondary` utility.
+         * A system fallback stays last so text renders before the web font arrives. */
+        --font-primary: "Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        --font-secondary: "Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+        /* ── Brand colors ──────────────────────────────────────────────────────
+         * Re-skin the platform `--color-*` tokens by redeclaring the `--brand-*`
+         * layer they fall back to. Setting these here recolors the WHOLE theme —
+         * buttons, links, focus rings, badges, the dark header/footer surfaces and
+         * the login brand panel — without rebuilding base.css.
+         *
+         * Primary: royal blue ramp anchored on #3260e7 (hue ~225°). The `50` tint
+         * (#eef2fe) is the soft badge / subtle-surface background. */
+        --brand-color-primary-50:  #eef2fe;
+        --brand-color-primary-100: #dce5fd;
+        --brand-color-primary-200: #bfcefb;
+        --brand-color-primary-300: #93a9f6;
+        --brand-color-primary-400: #6483f0;
+        --brand-color-primary-500: #3260e7;
+        --brand-color-primary-600: #2a4fc9;
+        --brand-color-primary-700: #243fa0;
+        --brand-color-primary-800: #1d3279;
+
+        /* Secondary: cool slate-navy ramp (Tailwind Slate). The `800` shade
+         * (#0f172a) is the darkest navy used for the header/footer chrome and the
+         * login brand panel base; the mid shades drive muted text / borders. */
+        --brand-color-secondary-50:  #f1f5f9;
+        --brand-color-secondary-100: #e2e8f0;
+        --brand-color-secondary-200: #cbd5e1;
+        --brand-color-secondary-300: #94a3b8;
+        --brand-color-secondary-400: #475569;
+        --brand-color-secondary-500: #334155;
+        --brand-color-secondary-600: #1e293b;
+        --brand-color-secondary-700: #172033;
+        --brand-color-secondary-800: #0f172a;
+    }
+}
+
+:root.dark {
+    /* The platform base.css ships a complete dark palette (page + card
+     * surfaces, text, borders, inputs, status subtles) under `.dark`, so the
+     * whole storefront re-skins straight from the design tokens with no
+     * per-element overrides. Hint native form controls / scrollbars for dark,
+     * and redeclare any `--brand-*` token here to tune individual values. */
+    color-scheme: dark;
+}
+
+/* ----------------------------------------------------------------------------
+ * Light/dark asset swaps
+ *
+ * The logo (header, footer, login) and the header theme-toggle each ship a
+ * light and a dark variant in the markup; CSS shows the one matching the
+ * active `.dark` root class. Done in plain CSS (not `dark:` utilities) so it
+ * is served live with NO base.css rebuild and flips the instant the root
+ * class changes (server render, no-FOUC script, or live JS toggle).
+ *
+ * A logo without a dark variant ships no `--light` class, so it stays visible
+ * in both schemes.
+ * -------------------------------------------------------------------------- */
+.storefront-logo--dark { display: none; }
+:root.dark .storefront-logo--light { display: none; }
+:root.dark .storefront-logo--dark { display: block; }
+
+.theme-toggle__to-light { display: none; }
+:root.dark .theme-toggle__to-dark { display: none; }
+:root.dark .theme-toggle__to-light { display: inline-flex; }
+
+/* ----------------------------------------------------------------------------
+ * Form controls — checkboxes
+ *
+ * The platform base.css ships native, browser-default checkboxes which read
+ * small and inconsistent across the storefront. Re-skin every storefront
+ * checkbox to match the B2B template (Figma): a larger rounded box with a
+ * subtle border + shadow that fills with the brand primary and shows a white
+ * check when selected. Colors reference the design tokens, so per-customer
+ * branding (which overrides `--color-primary`) recolors the checked state too.
+ *
+ * `:not(.sr-only)` leaves visually-hidden checkboxes untouched — those may
+ * drive custom visually-hidden patterns and must keep their native clipped box.
+ * -------------------------------------------------------------------------- */
+.storefront input[type="checkbox"]:not(.sr-only) {
+    appearance: none;
+    -webkit-appearance: none;
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--color-border-subtle, #e5e8ee);
+    border-radius: 0.375rem;
+    background-color: var(--color-surface-card, #ffffff);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.storefront input[type="checkbox"]:not(.sr-only):checked {
+    border-color: var(--color-primary);
+    background-color: var(--color-primary);
+}
+
+/* The check is masked rather than baked into the data URI so its colour comes
+ * from --color-primary-content: a hardcoded white glyph disappears on a light
+ * brand colour (a gold primary scores 1.65:1 against white). */
+.storefront input[type="checkbox"]:not(.sr-only):checked::after {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 100%;
+    background-color: var(--color-primary-content);
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M3.5 8.5l3 3 6-6'/%3E%3C/svg%3E") center / 1rem no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M3.5 8.5l3 3 6-6'/%3E%3C/svg%3E") center / 1rem no-repeat;
+}
+
+.storefront input[type="checkbox"]:not(.sr-only):focus-visible {
+    outline: 2px solid var(--color-primary, #3260e7);
+    outline-offset: 2px;
+}
+
+.storefront input[type="checkbox"]:not(.sr-only):disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* ----------------------------------------------------------------------------
+ * Form controls — radio buttons
+ *
+ * Mirror the checkbox skin so every storefront radio is the same 24px control:
+ * a circle that fills with the brand primary and shows a white center dot when
+ * selected. Colors reference the design tokens, so per-customer branding
+ * recolors the checked state too. `:not(.sr-only)` leaves visually-hidden radios
+ * untouched. Native browser radios can't be resized reliably, so the size unification
+ * requested for the storefront requires this `appearance: none` re-skin.
+ * -------------------------------------------------------------------------- */
+.storefront input[type="radio"]:not(.sr-only) {
+    appearance: none;
+    -webkit-appearance: none;
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--color-border-subtle, #e5e8ee);
+    border-radius: 9999px;
+    background-color: var(--color-surface-card, #ffffff);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.storefront input[type="radio"]:not(.sr-only):checked {
+    border-color: var(--color-primary);
+    background-color: var(--color-primary);
+}
+
+/* Masked for the same contrast reason as the checkbox check above. */
+.storefront input[type="radio"]:not(.sr-only):checked::after {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 100%;
+    background-color: var(--color-primary-content);
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='4.5' fill='black'/%3E%3C/svg%3E") center / 1rem no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='4.5' fill='black'/%3E%3C/svg%3E") center / 1rem no-repeat;
+}
+
+.storefront input[type="radio"]:not(.sr-only):focus-visible {
+    outline: 2px solid var(--color-primary, #3260e7);
+    outline-offset: 2px;
+}
+
+.storefront input[type="radio"]:not(.sr-only):disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* ----------------------------------------------------------------------------
+ * Form controls — select / dropdown
+ *
+ * Replace the browser's native dropdown arrow (tiny, unpositioned, and
+ * inconsistent across OS/browser) with a custom chevron that is:
+ *   - a consistent 1.125 rem (≈18 px), slightly larger than the default 16 px
+ *     indicator most browsers render;
+ *   - positioned 0.75 rem from the right border (not flush against the edge).
+ *
+ * `padding-right: 2.5rem` reserves space so option text never overlaps the
+ * arrow (icon right-edge at 0.75 rem + icon width 1.125 rem = 1.875 rem,
+ * plus ~0.625 rem breathing room). The rule's specificity (0,1,1) outranks
+ * Tailwind's `px-*` utilities (0,1,0) so the reserved space is always applied
+ * even when individual selects carry `px-2` or `px-3` utility classes.
+ *
+ * Dark-mode variant swaps the arrow to a lighter stroke so it stays legible
+ * against dark `surface-input` backgrounds.
+ * -------------------------------------------------------------------------- */
+.storefront select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234b5563' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1.125rem;
+    padding-right: 2.5rem;
+    cursor: pointer;
+}
+
+:root.dark .storefront select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+}
+
+/* ----------------------------------------------------------------------------
+ * Form controls — toggle switch (.sf-switch)
+ *
+ * A pill switch built from a visually-hidden (.sr-only) native checkbox plus a
+ * track whose ::after knob slides on :checked. The input stays .sr-only so it
+ * escapes the global checkbox re-skin above while remaining a real, focusable,
+ * form-submitting control (progressive enhancement: works with JS off). Colors
+ * reference the design tokens, so per-customer branding recolors the on-state.
+ * Used by the catalog-export column picker (switch + drag-to-reorder rows).
+ * -------------------------------------------------------------------------- */
+.sf-switch {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.sf-switch__track {
+    position: relative;
+    flex-shrink: 0;
+    width: 2.25rem;
+    height: 1.25rem;
+    border-radius: 9999px;
+    background-color: var(--color-border-subtle, #e5e8ee);
+    transition: background-color 0.15s ease;
+}
+
+.sf-switch__track::after {
+    content: "";
+    position: absolute;
+    top: 0.125rem;
+    left: 0.125rem;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 9999px;
+    background-color: var(--color-neutral-white, #ffffff);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.15);
+    transition: transform 0.15s ease;
+}
+
+.sf-switch input:checked + .sf-switch__track {
+    background-color: var(--color-primary);
+}
+
+/* The knob rides ON the primary track once checked, so it takes the paired
+ * foreground — a fixed white knob vanishes on a light brand colour. */
+.sf-switch input:checked + .sf-switch__track::after {
+    background-color: var(--color-primary-content);
+    transform: translateX(1rem);
+}
+
+.sf-switch input:focus-visible + .sf-switch__track {
+    outline: 2px solid var(--color-primary, #3260e7);
+    outline-offset: 2px;
+}
+
+.sf-switch input:disabled + .sf-switch__track {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ----------------------------------------------------------------------------
+ * Catalog-export preview table
+ *
+ * Styles the live preview table on the account catalog-export page. Kept as a
+ * component (rather than Tailwind utilities) because the platform base.css is
+ * prebuilt and does not ship the per-cell utilities this needs (vertical-align,
+ * last-row border reset). This file loads after base.css, so these rules win.
+ * -------------------------------------------------------------------------- */
+.sf-preview-table {
+    border-collapse: collapse;
+}
+
+.sf-preview-table th,
+.sf-preview-table td {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--color-border-subtle, #e5e8ee);
+    text-align: left;
+    vertical-align: top;
+}
+
+.sf-preview-table thead th {
+    font-weight: 600;
+    color: var(--color-headings, #1a2233);
+    white-space: nowrap;
+}
+
+.sf-preview-table tbody td {
+    color: var(--color-body, #3b4252);
+}
+
+.sf-preview-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+
+/* ----------------------------------------------------------------------------
+ * Native <dialog> centering
+ *
+ * The platform base.css ships Tailwind's Preflight, whose universal
+ * `*, ::before, ::after { margin: 0 }` reset overrides the user-agent
+ * `dialog { margin: auto }` rule that centers an open modal dialog. Without
+ * this, every `showModal()` dialog (the canonical modal component plus the
+ * inlined checkout / account dialogs) renders pinned to the top-left corner.
+ * Re-assert the native centering here; an element selector outranks the `*`
+ * reset, and this file loads after base.css.
+ *
+ * NOTE FOR CUSTOM THEMES: this rule is NOT in the platform base.css, so every
+ * theme that uses `<dialog>` modals MUST re-declare it in its own stylesheet
+ * (see docs/blade-api.md §9 "Modals" and docs/styling.md §10.4).
+ * -------------------------------------------------------------------------- */
+dialog {
+    margin: auto;
+}
+
+/* ----------------------------------------------------------------------------
+ * Checkout "deliver to my billing address" toggle
+ *
+ * The same-as-billing checkbox lives inside its <label> so it picks up the
+ * shared checkbox skin above (it is a real native checkbox, not a visually
+ * hidden peer). Because it is therefore not a previous sibling of the delivery
+ * fields, neither Tailwind's `peer-*` nor `has-*` variants can reach them; a
+ * panel-scoped `:has()` rule collapses the delivery fields when it is checked,
+ * with no JavaScript. `:has()` is part of the supported browser baseline and is
+ * already used elsewhere in the theme (the `has-[:checked]:` address cards).
+ * -------------------------------------------------------------------------- */
+.checkout__panel:has(.checkout__same-cb:checked) .checkout__delivery-body {
+    display: none;
+}
+
+/* ----------------------------------------------------------------------------
+ * Hidden scrollbar — horizontally-scrollable rows with their own arrow controls
+ *
+ * Tailwind ships no core utility for suppressing a native scrollbar, so this is
+ * a targeted custom rule (docs/styling.md §10.4). Used by the header category row
+ * (partials/nav.blade.php) — scrolling itself still works (touch, trackpad,
+ * keyboard via the row's `tabindex`), only the native scrollbar chrome is
+ * hidden in favor of the row's own prev/next arrow buttons.
+ * -------------------------------------------------------------------------- */
+.storefront-nav__links {
+    scrollbar-width: none;
+}
+
+.storefront-nav__links::-webkit-scrollbar {
+    display: none;
+}
+
+/* Same technique, for the product gallery's thumbnail rail — its own scroll
+ * arrows replace the scrollbar on both axes (up/down in the tablet+ vertical
+ * column, left/right in the horizontal strip on phones). */
+.product-gallery__thumbs {
+    scrollbar-width: none;
+}
+
+.product-gallery__thumbs::-webkit-scrollbar {
+    display: none;
+}
+

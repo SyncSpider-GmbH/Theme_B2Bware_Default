@@ -1,0 +1,29 @@
+---
+description: Storefront theme authoring — where docs live and how to stay current
+alwaysApply: true
+---
+
+# Theme authoring
+
+Cursor is **recommended** for this repo (not required). This repo is the **full
+default theme**: every layout, partial, component and page is present.
+
+## Docs
+
+- **Live (authoritative):** https://b2bware.documentationai.com/advanced/storefront-themes
+- **Changelog:** https://b2bware.documentationai.com/changelog
+- **Bundled (offline / AI context):** start at `theme/docs/README.md` (load matrix).
+  Always also load `theme/docs/hard-rules.md`. Usually load `theme/docs/view-data.md`.
+
+## Stale forks
+
+Before trusting bundled docs on an old clone: open the live changelog, or run
+`./scripts/update-theme-docs.sh` (pulls topic pages from the public wiki — never
+overwrites your Blade/CSS/`theme.json`).
+
+## Hard rules
+
+- Do not invent Blade directives, `@storefrontForm` types, `$store` keys, or design
+  tokens that are not listed in `theme/docs/` or the live wiki.
+- Do not add files outside the canonical surface in `theme/docs/hard-rules.md` —
+  the upload validator rejects them.
