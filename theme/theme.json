@@ -2,7 +2,7 @@
     "name": "B2Bware Default",
     "slug": "default",
     "author": "B2Bware",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Reference storefront theme bundled with every B2Bware store. Use it as the starting point for your own theme.",
     "license": "Proprietary",
     "_slots_note": "Informational only — slots are discovered by scanning @storefrontSlot('key'[, config]) in the Blade files, and that scan is the source of truth. Optional second-argument config objects declare slot context for the Theme Editor (e.g. ['context' => ['product' => 'product']]). 'content-top' / 'content-bottom' are the standard owner-editable regions on every page; 'hero' renders full-width above the breadcrumbs via the layout's @yield('hero').",
