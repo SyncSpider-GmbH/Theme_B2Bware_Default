@@ -1,0 +1,83 @@
+name: Build theme zip
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Semver bump for the new release
+        type: choice
+        default: patch
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    if: >-
+      github.event_name == 'pull_request' ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip ci]'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Bump version
+        if: github.event_name != 'pull_request'
+        id: bump
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BUMP: ${{ github.event.inputs.bump || 'patch' }}
+        run: ./scripts/release-version.sh
+
+      - name: Build zip
+        run: ./scripts/build-zip.sh
+
+      - name: Resolve zip path
+        id: zip
+        run: |
+          slug=$(sed -n 's/.*"slug"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' theme/theme.json | head -n1)
+          version=$(sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' theme/theme.json | head -n1)
+          slug=${slug:-theme}
+          version=${version:-0.0.0}
+          echo "path=dist/${slug}-${version}.zip" >> "$GITHUB_OUTPUT"
+          echo "name=${slug}-${version}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.zip.outputs.name }}
+          path: ${{ steps.zip.outputs.path }}
+          retention-days: 90
+          if-no-files-found: error
+
+      - name: Create GitHub Release
+        if: github.event_name != 'pull_request'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.bump.outputs.tag }}
+          name: Release ${{ steps.bump.outputs.tag }}
+          files: ${{ steps.zip.outputs.path }}
+          generate_release_notes: true
+
+      - name: Commit version bump
+        if: github.event_name == 'push'
+        env:
+          VERSION: ${{ steps.bump.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add theme/theme.json
+          git diff --staged --quiet && exit 0
+          git commit -m "chore: bump theme version to ${VERSION} [skip ci]"
+          git push

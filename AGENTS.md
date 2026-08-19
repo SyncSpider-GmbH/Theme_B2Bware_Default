@@ -10,4 +10,5 @@ yours to restyle. Cursor is recommended but not required.
 4. Never invent directives, form types, `$store` keys, or tokens not in the docs.
 5. Keep edits inside the canonical file surface — the upload validator rejects new
    file paths that are not part of it.
-6. Build an upload zip with `./scripts/build-zip.sh` → upload `dist/*.zip` in admin.
+6. Build an upload zip with `./scripts/build-zip.sh` → upload in admin, or download the
+   latest artifact from the repo's **Build theme zip** GitHub Action (see root `README.md`).
