@@ -9,87 +9,21 @@
 @endsection
 
 @section('content')
-    <div class="page page--category mx-auto flex w-full max-w-desktop flex-col gap-6 px-4 py-6" data-category-slug="{{ $categorySlug }}">
+    <div class="page page--category mx-auto flex w-full max-w-desktop flex-col gap-6 px-4 py-6" data-category-slug="{{ $categorySlug }}" data-branch-display-mode="{{ $branchDisplayMode ?? ($isLeaf ? 'products' : 'children') }}">
         @storefrontSlot('content-top')
-        @if(!$isLeaf)
-            <header class="page__head flex flex-col gap-2">
+
+        <header @class([
+            'page__head flex flex-col gap-2',
+            'sm:flex-row sm:items-end sm:justify-between gap-4' => $showProducts ?? false,
+        ])>
+            <div class="flex flex-col gap-2">
                 <h1 class="font-primary text-2xl font-semibold text-headings m-0">{{ $category->name ?? t('Category') }}</h1>
                 @if(data_get($category, 'description'))
                     <div class="text-body text-sm storefront-richtext">{!! data_get($category, 'description') !!}</div>
                 @endif
-            </header>
-
-            {{-- Branch category: sibling nav + subcategory grid. --}}
-            <div class="catalog flex flex-col gap-6 desktop:flex-row desktop:items-start">
-                @if(($categoryFacet ?? collect())->isNotEmpty())
-                    <aside class="catalog__filters w-full shrink-0 desktop:w-64">
-                        <div class="flex flex-col gap-2 rounded-xl border border-border-subtle bg-surface-card p-5">
-                            <h2 class="text-sm font-semibold text-headings m-0">@t('Categories')</h2>
-                            <ul class="flex flex-col gap-1 list-none m-0 p-0">
-                                @foreach($categoryFacet as $cat)
-                                    <li>
-                                        <a
-                                            href="@routeUrl('store.category', ['slug' => $cat['url']])"
-                                            @class([
-                                                'block rounded-lg px-2 py-1.5 text-sm hover:no-underline',
-                                                'bg-primary-subtle text-primary font-semibold' => $cat['active'],
-                                                'text-body hover:bg-surface-hover' => !$cat['active'],
-                                            ])
-                                        >
-                                            <span class="truncate">{{ $cat['name'] }}</span>
-                                            <span @class(['shrink-0 text-xs', 'text-primary' => $cat['active'], 'text-body' => !$cat['active']])>{{ $cat['count'] }}</span>
-                                        </a>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    </aside>
-                @endif
-
-                <div class="catalog__main flex min-w-0 flex-1 flex-col gap-4">
-                    @if($children->isEmpty())
-                        @include('components.empty-state', ['title' => t('No categories yet')])
-                    @else
-                        <ul class="categories grid grid-cols-2 gap-4 list-none m-0 p-0 lg:grid-cols-3 desktop:grid-cols-4">
-                            @foreach($children as $child)
-                                <li>
-                                    <a
-                                        href="@routeUrl('store.category', ['slug' => $categorySlug . '/' . (data_get($child, 'seo.slug') ?: data_get($child, 'slug', ''))])"
-                                        class="category-card flex h-full flex-col overflow-hidden rounded-xl border border-border-subtle bg-surface-card transition-colors hover:border-primary hover:no-underline"
-                                    >
-                                        <span class="category-card__image flex aspect-square w-full items-center justify-center overflow-hidden bg-surface">
-                                            @if(data_get($child, 'resolved_main_media.media_url') ?? data_get($child, 'media.0.media_url') ?? data_get($child, 'seo.image.public_url') ?? data_get($child, 'seo.seo_image.public_url'))
-                                                <img
-                                                    src="@storefrontImage(data_get($child, 'resolved_main_media.media_url') ?? data_get($child, 'media.0.media_url') ?? data_get($child, 'seo.image.public_url') ?? data_get($child, 'seo.seo_image.public_url'), 320, 320, 85)"
-                                                    alt="{{ data_get($child, 'name', '') }}"
-                                                    class="h-full w-full object-contain"
-                                                    loading="lazy"
-                                                >
-                                            @else
-                                                @include('partials.__image-placeholder', ['size' => 'h-12 w-12'])
-                                            @endif
-                                        </span>
-                                        <span class="category-card__name block px-3 py-4 text-center font-medium text-headings break-words">{{ data_get($child, 'name', '') }}</span>
-                                    </a>
-                                </li>
-                            @endforeach
-                        </ul>
-                    @endif
-                </div>
             </div>
-        @else
-            {{-- Leaf category: same B2B catalog layout as the products index.
-                 The product count + sort + view toolbar sits inline with the
-                 title / description (mirrors pages/products.blade.php), so the
-                 catalog grid below top-aligns with the filter card. --}}
-            <header class="page__head flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                <div class="flex flex-col gap-2">
-                    <h1 class="font-primary text-2xl font-semibold text-headings m-0">{{ $category->name ?? t('Category') }}</h1>
-                    @if(data_get($category, 'description'))
-                        <div class="text-body text-sm storefront-richtext">{!! data_get($category, 'description') !!}</div>
-                    @endif
-                </div>
 
+            @if($showProducts ?? false)
                 <form method="get" action="@routeUrl('store.category', ['slug' => $categorySlug])" class="catalog-toolbar flex flex-wrap items-center gap-3 sm:justify-end">
                     @if($filters['q'] ?? '')
                         <input type="hidden" name="q" value="{{ $filters['q'] }}">
@@ -176,12 +110,75 @@
                         </div>
                     </div>
                 </form>
-            </header>
+            @endif
+        </header>
 
-            <div class="catalog flex flex-col gap-6 desktop:flex-row desktop:items-start">
+        @if($showChildren ?? false)
+            {{-- Branch: sibling nav + subcategory grid. --}}
+            <div class="catalog catalog--children flex flex-col gap-6 desktop:flex-row desktop:items-start">
+                @if(($categoryFacet ?? collect())->isNotEmpty() && !($showProducts ?? false))
+                    <aside class="catalog__filters w-full shrink-0 desktop:w-64">
+                        <div class="flex flex-col gap-2 rounded-xl border border-border-subtle bg-surface-card p-5">
+                            <h2 class="text-sm font-semibold text-headings m-0">@t('Categories')</h2>
+                            <ul class="flex flex-col gap-1 list-none m-0 p-0">
+                                @foreach($categoryFacet as $cat)
+                                    <li>
+                                        <a
+                                            href="@routeUrl('store.category', ['slug' => $cat['url']])"
+                                            @class([
+                                                'block rounded-lg px-2 py-1.5 text-sm hover:no-underline',
+                                                'bg-primary-subtle text-primary font-semibold' => $cat['active'],
+                                                'text-body hover:bg-surface-hover' => !$cat['active'],
+                                            ])
+                                        >
+                                            <span class="truncate">{{ $cat['name'] }}</span>
+                                            <span @class(['shrink-0 text-xs', 'text-primary' => $cat['active'], 'text-body' => !$cat['active']])>{{ $cat['count'] }}</span>
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </aside>
+                @endif
+
+                <div class="catalog__main flex min-w-0 flex-1 flex-col gap-4">
+                    @if($children->isEmpty())
+                        @include('components.empty-state', ['title' => t('No categories yet')])
+                    @else
+                        <ul class="categories grid grid-cols-2 gap-4 list-none m-0 p-0 lg:grid-cols-3 desktop:grid-cols-4">
+                            @foreach($children as $child)
+                                <li>
+                                    <a
+                                        href="@routeUrl('store.category', ['slug' => $categorySlug . '/' . (data_get($child, 'seo.slug') ?: data_get($child, 'slug', ''))])"
+                                        class="category-card flex h-full flex-col overflow-hidden rounded-xl border border-border-subtle bg-surface-card transition-colors hover:border-primary hover:no-underline"
+                                    >
+                                        <span class="category-card__image flex aspect-square w-full items-center justify-center overflow-hidden bg-surface">
+                                            @if(data_get($child, 'resolved_main_media.media_url') ?? data_get($child, 'media.0.media_url') ?? data_get($child, 'seo.image.public_url') ?? data_get($child, 'seo.seo_image.public_url'))
+                                                <img
+                                                    src="@storefrontImage(data_get($child, 'resolved_main_media.media_url') ?? data_get($child, 'media.0.media_url') ?? data_get($child, 'seo.image.public_url') ?? data_get($child, 'seo.seo_image.public_url'), 320, 320, 85)"
+                                                    alt="{{ data_get($child, 'name', '') }}"
+                                                    class="h-full w-full object-contain"
+                                                    loading="lazy"
+                                                >
+                                            @else
+                                                @include('partials.__image-placeholder', ['size' => 'h-12 w-12'])
+                                            @endif
+                                        </span>
+                                        <span class="category-card__name block px-3 py-4 text-center font-medium text-headings break-words">{{ data_get($child, 'name', '') }}</span>
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
+                </div>
+            </div>
+        @endif
+
+        @if($showProducts ?? false)
+            {{-- Product listing (leaf always; branch when mode is products/both). --}}
+            <div class="catalog catalog--products flex flex-col gap-6 desktop:flex-row desktop:items-start">
                 <aside class="catalog__filters w-full shrink-0 desktop:w-64">
                     <div class="catalog__filters-card flex flex-col gap-6 rounded-xl border border-border-subtle bg-surface-card p-5">
-                        {{-- Categories — this category and its siblings (with counts). --}}
                         @if(($categoryFacet ?? collect())->isNotEmpty())
                             <section class="catalog-filter flex flex-col gap-2">
                                 <h2 class="text-sm font-semibold text-headings m-0">@t('Categories')</h2>
@@ -348,8 +345,8 @@
                 }
             </script>
         @endif
+
         {{-- Owner-editable content region (bottom of page). --}}
         @storefrontSlot('content-bottom')
     </div>
 @endsection
-
