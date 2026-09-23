@@ -4,8 +4,8 @@
     One progress bar per eligible active cart price rule toward its threshold,
     mirroring the Nexus storefront cart rewards. Data comes from
     StorefrontController@cart -> StorefrontCart::ruleProgress() (RuleHub
-    getProgress). Visibility is decided per rule by its own `show_progress_bar`
-    config (skipped below), so an empty/absent $cartProgress renders nothing.
+    getProgress). Visibility and unlocked state are precomputed by
+    ThemeSections::cartRewardsData(), so this template stays declarative.
 
     Free-shipping rules are intentionally NOT rendered here — the sidebar's
     "X away from free delivery" banner ($freeDelivery) already surfaces the
@@ -16,15 +16,13 @@
     Each $reward entry carries: rule_name, action_type, action_amount,
     free_shipping, met (bool), blocked (bool), show_progress_bar (bool) and a
     `thresholds` list (each with current_value/target_value/remaining/
-    percentage/met and the cart `attribute` being tracked).
+    percentage/met and the cart `attribute` being tracked), plus `unlocked`.
 --}}
-@if(count($cartProgress ?? []) && collect($cartProgress)->contains(fn ($r) => ($r['free_shipping'] ?? 'no') === 'no' && !($r['blocked'] ?? false) && ($r['show_progress_bar'] ?? true) !== false && !empty($r['thresholds'])))
+@if(!empty($cartRewards))
     <section class="cart__rewards flex flex-col gap-3 p-5 bg-surface-card border border-border-subtle rounded-lg" aria-label="{{ t('Rewards') }}">
         <h2 class="cart__rewards-title font-primary text-lg font-semibold text-headings m-0">@t('Rewards')</h2>
 
-        @foreach($cartProgress as $reward)
-            @continue(($reward['free_shipping'] ?? 'no') !== 'no' || ($reward['blocked'] ?? false) || ($reward['show_progress_bar'] ?? true) === false || empty($reward['thresholds']))
-
+        @foreach($cartRewards as $reward)
             @foreach($reward['thresholds'] as $threshold)
                 <div class="cart__reward flex flex-col gap-2 p-3 rounded-lg border border-border-subtle">
                     <div class="cart__reward-head flex items-center justify-between gap-2">
@@ -38,20 +36,20 @@
                             @endif
                         </span>
 
-                        @if($reward['met'] ?? false)
+                        @if($reward['unlocked'] ?? false)
                             <span class="cart__reward-status text-sm font-medium text-success">@t('Unlocked')</span>
                         @endif
                     </div>
 
                     <div class="cart__reward-track h-2 w-full rounded-full bg-surface-page overflow-hidden">
                         <div
-                            class="cart__reward-fill h-full rounded-full {{ ($reward['met'] ?? false) ? 'bg-success' : 'bg-primary' }} transition-all duration-300"
+                            class="cart__reward-fill h-full rounded-full {{ ($reward['unlocked'] ?? false) ? 'bg-success' : 'bg-primary' }} transition-all duration-300"
                             style="width: {{ max(0, min(100, (float) ($threshold['percentage'] ?? 0))) }}%"
                         ></div>
                     </div>
 
                     <div class="cart__reward-meta flex items-center justify-between gap-2 text-xs text-body">
-                        @if($reward['met'] ?? false)
+                        @if($reward['unlocked'] ?? false)
                             <span class="cart__reward-message">@t('You have unlocked this reward.')</span>
                         @else
                             <span class="cart__reward-message">
@@ -78,4 +76,3 @@
         @endforeach
     </section>
 @endif
-
