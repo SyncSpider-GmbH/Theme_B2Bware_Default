@@ -58,22 +58,13 @@
  * -------------------------------------------------------------------------- */
 
 /* ----------------------------------------------------------------------------
- * Theme token DEFAULTS — deliberately inside a cascade layer.
+ * Theme tokens.
  *
- * This stylesheet is served AFTER the tenant's Appearance <style> block, so an
- * unlayered `:root` here would outrank the Store setup → Appearance palette and
- * font pickers and make them dead for every tenant on this theme. A layered
- * declaration always loses to an unlayered one regardless of document order, so
- * wrapping the defaults keeps the contract the default theme is meant to have:
- * these values apply until the tenant configures Appearance, then Appearance
- * wins — exactly as before the theme stylesheet moved.
- *
- * A CUSTOM theme that wants to OWN its colors does the opposite: it declares
- * `:root` unlayered, which beats Appearance because this file loads later.
- * See docs/tokens.md §11 — Design tokens reference.
+ * This custom theme owns its brand tokens, so the light palette is declared in
+ * `:root` and the dark palette is declared in `:root.dark`. The platform maps
+ * these `--brand-*` values into the storefront `--color-*` design tokens.
  * -------------------------------------------------------------------------- */
-@layer theme-defaults {
-    :root {
+:root {
         /* Outfit (loaded via the @import at the top of this file) drives the WHOLE
          * theme: --font-primary is every h1–h6 + the `font-primary` utility;
          * --font-secondary is the base `body` font + the `font-secondary` utility.
@@ -111,7 +102,8 @@
         --brand-color-secondary-600: #1e293b;
         --brand-color-secondary-700: #172033;
         --brand-color-secondary-800: #0f172a;
-    }
+
+        --select-arrow-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234b5563' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
 }
 
 :root.dark {
@@ -121,6 +113,28 @@
      * per-element overrides. Hint native form controls / scrollbars for dark,
      * and redeclare any `--brand-*` token here to tune individual values. */
     color-scheme: dark;
+
+    --brand-color-primary-50:  #eef2fe;
+    --brand-color-primary-100: #dce5fd;
+    --brand-color-primary-200: #bfcefb;
+    --brand-color-primary-300: #93a9f6;
+    --brand-color-primary-400: #6483f0;
+    --brand-color-primary-500: #3260e7;
+    --brand-color-primary-600: #7090ff;
+    --brand-color-primary-700: #9fb5ff;
+    --brand-color-primary-800: #c8d5ff;
+
+    --brand-color-secondary-50:  #f8fafc;
+    --brand-color-secondary-100: #f1f5f9;
+    --brand-color-secondary-200: #e2e8f0;
+    --brand-color-secondary-300: #cbd5e1;
+    --brand-color-secondary-400: #94a3b8;
+    --brand-color-secondary-500: #64748b;
+    --brand-color-secondary-600: #475569;
+    --brand-color-secondary-700: #334155;
+    --brand-color-secondary-800: #1e293b;
+
+    --select-arrow-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
 }
 
 /* ----------------------------------------------------------------------------
@@ -273,16 +287,12 @@
 .storefront select {
     appearance: none;
     -webkit-appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234b5563' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-image: var(--select-arrow-icon);
     background-repeat: no-repeat;
     background-position: right 0.75rem center;
     background-size: 1.125rem;
     padding-right: 2.5rem;
     cursor: pointer;
-}
-
-:root.dark .storefront select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
 }
 
 /* ----------------------------------------------------------------------------

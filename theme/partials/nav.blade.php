@@ -18,13 +18,13 @@
                     <ul class="m-0 flex list-none flex-col gap-1 p-0">
                         @foreach($rootCategories as $category)
                             <li>
-                                <a href="@routeUrl('store.category', ['slug' => data_get($category, 'seo.slug') ?: data_get($category, 'slug', '')])"
+                                <a href="@routeUrl('store.category', ['slug' => data_get($category, 'url') ?: data_get($category, 'seo.slug') ?: data_get($category, 'slug', '')])"
                                     class="block rounded px-2 py-1 font-medium text-headings hover:bg-surface-hover hover:no-underline">{{ $category->name }}</a>
                                 @if(count($category->children ?? []) > 0)
                                     <ul class="m-0 mb-2 mt-1 flex list-none flex-col gap-1 border-l border-border-subtle p-0 pl-3">
                                         @foreach($category->children as $child)
                                             <li>
-                                                <a href="@routeUrl('store.category', ['slug' => data_get($child, 'seo.slug') ?: data_get($child, 'slug', '')])"
+                                                <a href="@routeUrl('store.category', ['slug' => data_get($child, 'url') ?: (str_contains(data_get($child, 'seo.slug') ?: data_get($child, 'slug', ''), '/') ? (data_get($child, 'seo.slug') ?: data_get($child, 'slug', '')) : trim((data_get($category, 'url') ?: data_get($category, 'seo.slug') ?: data_get($category, 'slug', '')) . '/' . (data_get($child, 'seo.slug') ?: data_get($child, 'slug', '')), '/'))])"
                                                     class="block rounded px-2 py-1 text-sm text-body hover:bg-surface-hover hover:no-underline">{{ $child->name }}</a>
                                             </li>
                                         @endforeach
@@ -54,7 +54,7 @@
                 <ul class="storefront-nav__links m-0 flex list-none items-center gap-1 overflow-x-auto p-0" data-nav-scroll-track tabindex="0">
                     @foreach($rootCategories as $category)
                         <li class="shrink-0">
-                            <a href="@routeUrl('store.category', ['slug' => data_get($category, 'seo.slug') ?: data_get($category, 'slug', '')])"
+                            <a href="@routeUrl('store.category', ['slug' => data_get($category, 'url') ?: data_get($category, 'seo.slug') ?: data_get($category, 'slug', '')])"
                                 class="block whitespace-nowrap rounded px-3 py-2 font-medium text-body hover:text-primary hover:no-underline">{{ $category->name }}</a>
                         </li>
                     @endforeach

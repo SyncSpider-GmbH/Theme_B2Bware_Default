@@ -124,9 +124,9 @@
                                 @foreach($categoryFacet as $cat)
                                     <li>
                                         <a
-                                            href="@routeUrl('store.category', ['slug' => $cat['url']])"
+                                            href="@routeUrl('store.category', ['slug' => data_get($cat, 'url') ?: data_get($cat, 'seo.slug') ?: data_get($cat, 'slug', '')])"
                                             @class([
-                                                'block rounded-lg px-2 py-1.5 text-sm hover:no-underline',
+                                                'flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-sm hover:no-underline',
                                                 'bg-primary-subtle text-primary font-semibold' => $cat['active'],
                                                 'text-body hover:bg-surface-hover' => !$cat['active'],
                                             ])
@@ -149,7 +149,7 @@
                             @foreach($children as $child)
                                 <li>
                                     <a
-                                        href="@routeUrl('store.category', ['slug' => $categorySlug . '/' . (data_get($child, 'seo.slug') ?: data_get($child, 'slug', ''))])"
+                                        href="@routeUrl('store.category', ['slug' => data_get($child, 'url') ?: (str_contains(data_get($child, 'seo.slug') ?: data_get($child, 'slug', ''), '/') ? (data_get($child, 'seo.slug') ?: data_get($child, 'slug', '')) : trim($categorySlug . '/' . (data_get($child, 'seo.slug') ?: data_get($child, 'slug', '')), '/'))])"
                                         class="category-card flex h-full flex-col overflow-hidden rounded-xl border border-border-subtle bg-surface-card transition-colors hover:border-primary hover:no-underline"
                                     >
                                         <span class="category-card__image flex aspect-square w-full items-center justify-center overflow-hidden bg-surface">
@@ -186,7 +186,7 @@
                                     @foreach($categoryFacet as $cat)
                                         <li>
                                             <a
-                                                href="@routeUrl('store.category', ['slug' => $cat['url']])"
+                                                href="@routeUrl('store.category', ['slug' => data_get($cat, 'url') ?: data_get($cat, 'seo.slug') ?: data_get($cat, 'slug', '')])"
                                                 @class([
                                                     'flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-sm hover:no-underline',
                                                     'bg-primary-subtle text-primary font-semibold' => $cat['active'],
