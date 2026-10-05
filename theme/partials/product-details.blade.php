@@ -176,7 +176,7 @@
                 @section('contract-price')
                 @if(!empty($contractPrice))
                 <div class="product__contract-price flex flex-wrap items-baseline gap-2 self-start rounded border border-primary bg-primary-subtle px-3 py-2">
-                    <span class="text-sm font-semibold text-primary">@t('Your contracted price')</span>
+                    <span class="text-sm font-semibold text-primary">@t('Your discounted price')</span>
                     <span class="text-lg font-semibold text-headings">{{ formatCurrency($contractPrice['price']) }}</span>
                     @if($contractPrice['has_saving'])
                     <span class="text-sm text-body line-through">{{ formatCurrency($contractPrice['regular']) }}</span>
