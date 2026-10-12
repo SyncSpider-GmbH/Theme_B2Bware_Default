@@ -25,6 +25,7 @@
         @include('components.banner', ['type' => 'success', 'message' => $messages['success'] ?? null])
         @include('components.banner', ['type' => 'info', 'message' => $messages['info'] ?? null])
 
+        @section('customer-selection.search')
         @if($agent)
             <form method="get" action="@routeUrl('store.customer-selection')" class="flex items-center gap-2" role="search">
                 @if($redirectTo)
@@ -38,7 +39,9 @@
                 </button>
             </form>
         @endif
+        @show
 
+        @section('customer-selection.list')
         @if($customers->isEmpty())
             @include('components.empty-state', [
                 'title' => ($search ?? '') !== ''
@@ -78,6 +81,7 @@
 
             @include('components.pagination', ['paginator' => $customers])
         @endif
+        @show
 
         @if($agent)
             <a href="@routeUrl('store.home')" class="text-center text-sm text-body underline hover:text-primary">

@@ -6,7 +6,8 @@
           - grid ("CARD VIEW"): image on top, details below.
           - list ("LIST VIEW"): a B2B quick-order row — image · title/SKU/price ·
             Quantity stepper · Stock · live Total Price · Add to cart.
-        Derived values are computed inline (no @php) per theme rules. Prices
+        Derived values are computed inline without executable Blade directives.
+        Prices
         defer to the canonical `price` component, which honors $canSeePrices.
         The list row's add-to-cart is inlined (not the shared button) so the
         quantity stepper feeds the same cart-add form. Stock shows only when the
@@ -20,9 +21,14 @@
             data-analytics-item-id="{{ ($product->sku ?? '') ?: ($product->id ?? '') }}"
             data-analytics-item-name="{{ $product->name ?? '' }}"
             data-analytics-item-category="{{ data_get($product, 'categories.0.category.name') ?? data_get($product, 'category.name') ?? '' }}"
-            @if($canSeePrices) data-analytics-item-price="{{ data_get($product, 'finalPrice.price') ?? data_get($product, 'specialPrice.price') ?? data_get($product, 'price.price') ?? '' }}"@endif
             data-line-row
-            data-line-unit="{{ data_get($product, 'finalPrice.price') ?? data_get($product, 'specialPrice.price') ?? data_get($product, 'price.price') ?? 0 }}"
+            @include('components.product-price-data-attributes', [
+                'product' => $product,
+                'source'  => $product,
+                'priceView' => $priceView ?? data_get($priceViews ?? [], (string) ($product->id ?? '')),
+                'hideWhenConfigurableParentWithoutPrice' => true,
+                'includeLineUnit' => true,
+            ])
         >
             <a
                 href="@routeUrl('store.product', ['identifier' => data_get($product, 'seo.slug') ?: $product->id])"
@@ -65,15 +71,11 @@
 
                 <div class="mt-1">
                     @if($canSeePrices)
-                        @include('components.price', [
+                        @include('components.product-price', [
+                            'product' => $product,
+                            'source'  => $product,
                             'priceView' => $priceView ?? data_get($priceViews ?? [], (string) ($product->id ?? '')),
-                            'amount'    => data_get($product, 'finalPrice.price')
-                                ?? data_get($product, 'specialPrice.price')
-                                ?? data_get($product, 'price.price')
-                                ?? 0,
-                            'compareAt' => data_get($product, 'specialPrice.price') !== null
-                                ? data_get($product, 'price.price')
-                                : null,
+                            'hideWhenConfigurableParentWithoutPrice' => true,
                         ])
                     @else
                         <span class="product-card__price-hint inline-flex items-center gap-1.5 text-sm text-body">
@@ -144,7 +146,30 @@
 
                         <label class="flex flex-col gap-1">
                             <span class="text-xs font-medium text-body">@t('Quantity')</span>
-                            @include('components.quantity-selector', ['value' => 1, 'min' => 1, 'name' => 'quantity'])
+                            @include('components.quantity-selector', [
+                                'value' => max(
+                                    max(1, (int) data_get($product, 'quantity_step', 1)),
+                                    (int) ceil(
+                                        max(1, (int) data_get($product, 'stock.minimum_qty_allowed_in_shopping_cart', 1))
+                                        / max(1, (int) data_get($product, 'quantity_step', 1))
+                                    ) * max(1, (int) data_get($product, 'quantity_step', 1))
+                                ),
+                                'min' => max(
+                                    max(1, (int) data_get($product, 'quantity_step', 1)),
+                                    (int) ceil(
+                                        max(1, (int) data_get($product, 'stock.minimum_qty_allowed_in_shopping_cart', 1))
+                                        / max(1, (int) data_get($product, 'quantity_step', 1))
+                                    ) * max(1, (int) data_get($product, 'quantity_step', 1))
+                                ),
+                                'step' => max(1, (int) data_get($product, 'quantity_step', 1)),
+                                'max' => ((int) data_get($product, 'stock.maximum_qty_allowed_in_shopping_cart', 0)) > 0
+                                    ? (int) data_get($product, 'stock.maximum_qty_allowed_in_shopping_cart')
+                                    : null,
+                                'name' => 'quantity',
+                            ])
+                            @if(max(1, (int) data_get($product, 'quantity_step', 1)) > 1)
+                                <span class="text-xs text-body">@t('This item must be ordered in multiples of %d.', max(1, (int) data_get($product, 'quantity_step', 1)))</span>
+                            @endif
                         </label>
 
                         @if($showStock && data_get($product, 'stock') && filter_var($product->manage_stock ?? false, FILTER_VALIDATE_BOOLEAN))
@@ -160,14 +185,17 @@
                                         'bg-success' => data_get($product, 'stock.stock_availability'),
                                         'bg-error' => !data_get($product, 'stock.stock_availability'),
                                     ])></span>
-                                    {{ (int) data_get($product, 'stock.stock_quantity', 0) }}
+                                    {{ (int) (data_get($product, 'stock.buyable_qty') ?? data_get($product, 'stock.stock_quantity', 0)) }}
                                 </span>
                             </div>
                         @endif
 
                         <div class="flex flex-col gap-1">
                             <span class="text-xs font-medium text-body">@t('Total Price')</span>
-                            <span class="inline-flex h-9 items-center text-sm font-semibold text-headings" data-line-total>{{ formatCurrency(data_get($product, 'finalPrice.price') ?? data_get($product, 'specialPrice.price') ?? data_get($product, 'price.price') ?? 0) }}</span>
+                            <span class="inline-flex h-9 flex-col items-start justify-center">
+                                <span class="product-card__total-was text-xs text-body line-through" data-line-original hidden></span>
+                                <span class="text-sm font-semibold text-headings" data-line-total>{{ formatCurrency(data_get($product, 'finalPrice.price') ?? data_get($product, 'specialPrice.price') ?? data_get($product, 'price.price') ?? 0) }}</span>
+                            </span>
                         </div>
 
                         <button
@@ -205,12 +233,17 @@
         </article>
     @else
         <article
-            class="product-card product-card--grid relative flex flex-col border border-border-subtle rounded-xl bg-surface-card overflow-hidden transition-colors hover:border-primary"
+            class="product-card product-card--grid relative flex h-full flex-col border border-border-subtle rounded-xl bg-surface-card overflow-hidden transition-colors hover:border-primary"
             data-product-id="{{ $product->id ?? '' }}"
             data-analytics-item-id="{{ ($product->sku ?? '') ?: ($product->id ?? '') }}"
             data-analytics-item-name="{{ $product->name ?? '' }}"
             data-analytics-item-category="{{ data_get($product, 'categories.0.category.name') ?? data_get($product, 'category.name') ?? '' }}"
-            @if($canSeePrices) data-analytics-item-price="{{ data_get($product, 'finalPrice.price') ?? data_get($product, 'specialPrice.price') ?? data_get($product, 'price.price') ?? '' }}"@endif
+            @include('components.product-price-data-attributes', [
+                'product' => $product,
+                'source'  => $product,
+                'priceView' => $priceView ?? data_get($priceViews ?? [], (string) ($product->id ?? '')),
+                'hideWhenConfigurableParentWithoutPrice' => true,
+            ])
         >
             <a
                 href="@routeUrl('store.product', ['identifier' => data_get($product, 'seo.slug') ?: $product->id])"
@@ -261,7 +294,7 @@
 
             <div class="product-card__body flex flex-1 flex-col gap-3 p-4">
                 <div class="flex flex-col gap-1">
-                    <h3 class="product-card__title font-primary text-base font-medium m-0 line-clamp-2">
+                    <h3 class="product-card__title min-h-12 font-primary text-base font-medium m-0 line-clamp-2">
                         <a
                             href="@routeUrl('store.product', ['identifier' => data_get($product, 'seo.slug') ?: $product->id])"
                             class="text-headings hover:text-primary hover:no-underline"
@@ -278,15 +311,11 @@
                 </div>
 
                 <div class="mt-auto flex flex-col gap-3 border-t border-border-subtle pt-3">
-                    @include('components.price', [
+                    @include('components.product-price', [
+                        'product' => $product,
+                        'source'  => $product,
                         'priceView' => $priceView ?? data_get($priceViews ?? [], (string) ($product->id ?? '')),
-                        'amount'    => data_get($product, 'finalPrice.price')
-                            ?? data_get($product, 'specialPrice.price')
-                            ?? data_get($product, 'price.price')
-                            ?? 0,
-                        'compareAt' => data_get($product, 'specialPrice.price') !== null
-                            ? data_get($product, 'price.price')
-                            : null,
+                        'hideWhenConfigurableParentWithoutPrice' => true,
                     ])
                     @if($canSeePrices)
                         @include('components.add-to-cart-button', [

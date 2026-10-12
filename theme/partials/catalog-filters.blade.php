@@ -1,5 +1,12 @@
 {{-- Shared by the desktop filters sidebar and the mobile filters dialog (pages/products.blade.php). --}}
 
+@if(!empty($selectedAttributes) || ($inStockSelected ?? false) || ($priceSelected['min'] ?? null) !== null || ($priceSelected['max'] ?? null) !== null || ($filters['q'] ?? ''))
+    <a
+        href="@routeUrl('store.products')@if(($view ?? 'grid') !== 'grid')?view={{ $view }}@endif"
+        class="self-start text-sm text-body underline hover:text-primary"
+    >@t('Clear filters')</a>
+@endif
+
 {{-- Categories — links into the catalog tree (with counts). --}}
 @if(($categoryFacet ?? collect())->isNotEmpty())
     <section class="catalog-filter flex flex-col gap-2">
@@ -101,14 +108,8 @@
             </section>
         @endif
 
-        <div class="flex items-center gap-3 border-t border-border-subtle pt-4">
-            <button type="submit" class="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-content transition-colors cursor-pointer hover:bg-primary-600">@t('Apply filters')</button>
-            @if(!empty($selectedAttributes) || ($inStockSelected ?? false) || ($priceSelected['min'] ?? null) !== null || ($priceSelected['max'] ?? null) !== null || ($filters['q'] ?? ''))
-                <a
-                    href="@routeUrl('store.products')@if(($view ?? 'grid') !== 'grid')?view={{ $view }}@endif"
-                    class="text-sm text-body underline hover:text-primary"
-                >@t('Clear')</a>
-            @endif
-        </div>
+        <noscript>
+            <button type="submit" class="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-content cursor-pointer">@t('Apply filters')</button>
+        </noscript>
     </form>
 @endif

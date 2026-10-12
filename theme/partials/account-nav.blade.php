@@ -9,6 +9,8 @@
     ($store['quick_order_enabled'], defaults off when the flag is absent).
     The Catalog export row is shown only when the tenant enables the
     catalog-export module ($store['catalog_export_enabled'] defaults to off).
+    The `account.nav` slot above the separator is where optional modules add
+    their own entries; it renders nothing when none are installed.
 --}}
 <nav class="account__nav md:w-64 flex-shrink-0" aria-label="@t('Account')">
     <div class="flex flex-col p-2 bg-surface-card border border-border-subtle rounded-lg">
@@ -142,6 +144,10 @@
                 @t('Catalog export')
             </a>
         @endif
+
+        {{-- Optional modules add their own account entries here. Renders to
+             nothing when no module contributes, so it can sit unconditionally. --}}
+        @storefrontSlot('account.nav')
 
         <div class="my-2 h-px bg-border-subtle" role="separator"></div>
 

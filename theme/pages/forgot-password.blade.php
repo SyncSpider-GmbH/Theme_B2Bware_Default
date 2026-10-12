@@ -49,6 +49,7 @@
     @storefrontSlot('content-top')
     <div class="auth-split flex min-h-dvh w-full">
         {{-- ── Left: brand / marketing panel (hidden below lg) ─────────────── --}}
+        @section('forgot-password.brand')
         <aside class="auth__brand auth__brand--gradient relative hidden flex-col overflow-hidden p-8 lg:flex lg:flex-1 lg:p-10">
             @if(!empty($store['login_background']))
                 <div class="auth__brand-bg absolute inset-0 z-0">
@@ -112,8 +113,10 @@
                 &copy; {{ now()->year }} {{ $store['name'] }}
             </p>
         </aside>
+        @show
 
         {{-- ── Right: form panel ────────────────────────────────────────────── --}}
+        @section('forgot-password.form')
         <section class="auth__panel flex flex-1 flex-col overflow-y-auto bg-surface-page p-6 lg:p-10">
             <div class="auth__form-wrap m-auto w-full max-w-420">
                 {{-- Logo on mobile (the brand panel that normally carries it is hidden) --}}
@@ -187,6 +190,7 @@
                 </a>
             </div>
         </section>
+        @show
     </div>
     {{-- Owner-editable content region (bottom of page). --}}
     @storefrontSlot('content-bottom')

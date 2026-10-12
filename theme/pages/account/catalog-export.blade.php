@@ -7,8 +7,11 @@
     @storefrontSlot('content-top')
     <div class="page page--account page--account-catalog-export flex flex-col gap-5">
         <div class="flex flex-col md:flex-row gap-6">
+            @section('account.nav')
             @include('partials.account-nav', ['active' => 'catalog-export'])
+            @show
 
+            @section('account.main')
             <div class="flex-1 flex flex-col gap-5 min-w-0">
                 <div class="bg-surface-card border border-border-subtle rounded-lg overflow-hidden" data-catalog-export>
                     <header class="px-5 py-4 border-b border-border-subtle">
@@ -18,6 +21,54 @@
 
                     <div class="flex flex-col gap-6 p-5">
                         @storefrontError('catalog_export')
+
+                        {{-- Processing indicator: shown while a queued export job
+                             is generating the file. Server-rendered so a reload
+                             mid-export keeps showing it; the inline module below
+                             polls the status endpoint and swaps to the download
+                             card when ready (or shows the failure inline). --}}
+                        @if (data_get($exportStatus, 'processing'))
+                            <div class="catalog-export-status flex flex-col gap-3 rounded-md border border-primary/30 bg-primary/5 px-4 py-3"
+                                data-catalog-export-status
+                                data-endpoint="@routeUrl('store.account.catalog-export.status')"
+                                role="status" aria-live="polite">
+                                <div class="flex items-center gap-3">
+                                    <span class="catalog-export-spinner flex items-center justify-center w-9 h-9 rounded-md bg-primary/10 text-primary shrink-0"
+                                        aria-hidden="true">
+                                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                                        </svg>
+                                    </span>
+                                    <div class="min-w-0">
+                                        <p class="text-sm font-semibold text-headings m-0" data-status-title>@t('Preparing your export…')</p>
+                                        <p class="text-xs text-body/70 m-0 mt-0.5" data-status-text>@t('Your catalog file is being generated. Large catalogs can take a moment — you can stay here or come back later; it will be ready to download when this finishes.')</p>
+                                    </div>
+                                </div>
+                                <div class="catalog-export-progress" data-status-bar aria-hidden="true">
+                                    <div class="catalog-export-progress__bar"></div>
+                                </div>
+                            </div>
+                        @elseif (data_get($exportStatus, 'failed'))
+                            {{-- Failure state: the last export job did not complete.
+                                 Clearly distinct from "processing" so the shopper can
+                                 tell an export that failed from one still running. --}}
+                            <div class="flex items-start gap-3 rounded-md border border-error/40 bg-error/5 px-4 py-3"
+                                data-catalog-export-failed role="alert">
+                                <span class="flex items-center justify-center w-9 h-9 rounded-md bg-error/10 text-error shrink-0"
+                                    aria-hidden="true">
+                                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 9v4M12 17h.01" />
+                                        <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                                    </svg>
+                                </span>
+                                <div class="min-w-0">
+                                    <p class="text-sm font-semibold text-error m-0">@t('Export failed')</p>
+                                    <p class="text-xs text-body/70 m-0 mt-0.5">@t('We could not generate your catalog file. Please adjust your selection below and try again.')</p>
+                                </div>
+                            </div>
+                        @endif
 
                         {{-- Stored export: shown once the customer has generated a file.
                              It is a frozen snapshot they can download or share by link.
@@ -163,6 +214,7 @@
                     </div>
                 </div>
             </div>
+            @show
         </div>
     </div>
 
@@ -223,13 +275,19 @@
 
         const exportRoot = document.querySelector('[data-catalog-export]');
 
-        // Download anchor: apply spinner on click and clear after 3 s — the page
-        // does not navigate so the spinner would otherwise stick indefinitely.
+        // Download anchor: show a busy spinner on click. The page does not
+        // navigate, so clear it when the browser starts the download (the
+        // window blurs) with a timeout fallback for same-tab streamed files.
         const downloadBtn = exportRoot?.querySelector('[data-download-btn]');
         downloadBtn?.addEventListener('click', () => {
             if (downloadBtn.classList.contains('storefront-busy')) return;
             markBusy(downloadBtn, true);
-            window.setTimeout(() => markBusy(downloadBtn, false), 3000);
+            const clear = () => {
+                markBusy(downloadBtn, false);
+                window.clearTimeout(fallback);
+            };
+            const fallback = window.setTimeout(clear, 8000);
+            window.addEventListener('blur', clear, { once: true });
         });
 
         // Generate / Regenerate export: the form uses data-storefront-loading="off"
@@ -239,6 +297,79 @@
             markBusy(generateBtn, true);
             window.setTimeout(() => { generateBtn.disabled = true; }, 0);
         });
+    </script>
+
+    <script type="module">
+        // Progress polling: while a queued export job runs, the server renders
+        // the [data-catalog-export-status] panel. Poll the status endpoint until
+        // the export is ready (reload to reveal the download card + share link)
+        // or failed (flip this panel to an error and re-enable the form) — so the
+        // indicator is always removed/updated when the export resolves.
+        const statusEl = document.querySelector('[data-catalog-export-status]');
+        if (statusEl) {
+            const endpoint = statusEl.dataset.endpoint || '';
+            let delay = 2000;
+            const maxDelay = 8000;
+            let stopped = false;
+
+            const showFailed = (message) => {
+                stopped = true;
+                statusEl.classList.remove('border-primary/30', 'bg-primary/5');
+                statusEl.classList.add('border-error/40', 'bg-error/5');
+                statusEl.setAttribute('role', 'alert');
+                const spinner = statusEl.querySelector('.catalog-export-spinner');
+                spinner?.classList.remove('bg-primary/10', 'text-primary');
+                spinner?.classList.add('bg-error/10', 'text-error');
+                const title = statusEl.querySelector('[data-status-title]');
+                const text = statusEl.querySelector('[data-status-text]');
+                const bar = statusEl.querySelector('[data-status-bar]');
+                if (title) {
+                    title.textContent = '@t('Export failed')';
+                    title.classList.remove('text-headings');
+                    title.classList.add('text-error');
+                }
+                if (text) {
+                    text.textContent = message || '@t('We could not generate your catalog file. Please try again.')';
+                }
+                bar?.remove();
+                const gen = document.querySelector('[data-generate-btn]');
+                if (gen) {
+                    gen.disabled = false;
+                    gen.classList.remove('storefront-busy');
+                }
+            };
+
+            const poll = async () => {
+                if (stopped || !endpoint) {
+                    return;
+                }
+                try {
+                    const response = await window.fetch(endpoint, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        },
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data && data.ready) {
+                            window.location.reload();
+                            return;
+                        }
+                        if (data && data.failed) {
+                            showFailed(data.error);
+                            return;
+                        }
+                    }
+                } catch {
+                    // Network hiccup — keep polling with backoff.
+                }
+                delay = Math.min(delay + 1000, maxDelay);
+                window.setTimeout(poll, delay);
+            };
+
+            window.setTimeout(poll, delay);
+        }
     </script>
 
     <script type="module">

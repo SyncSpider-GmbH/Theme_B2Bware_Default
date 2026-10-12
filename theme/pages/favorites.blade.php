@@ -7,18 +7,30 @@
     @storefrontSlot('content-top')
     <div class="page page--account page--favorites flex flex-col gap-5">
         <div class="flex flex-col md:flex-row gap-6">
+            @section('account.nav')
             @include('partials.account-nav', ['active' => 'favorites'])
+            @show
 
+            @section('account.main')
             <div class="flex-1 min-w-0 flex flex-col gap-4">
                 @include('components.banner', ['type' => 'success', 'message' => $messages['success'] ?? null])
 
+                @section('favorites.header')
                 <div class="flex flex-col gap-0.5">
                     <h1 class="font-primary text-xl font-semibold text-headings m-0">@t('Favorites')</h1>
-                    <p class="text-sm text-body/70 m-0">
+                    <p
+                        class="text-sm text-body/70 m-0"
+                        data-favorites-count
+                        data-count="{{ $favoriteItems->count() }}"
+                        data-label-singular="@t('saved product')"
+                        data-label-plural="@t('saved products')"
+                    >
                         {{ $favoriteItems->count() }} @t('saved products')
                     </p>
                 </div>
+                @show
 
+                @section('favorites.lists')
                 @if($lists->isNotEmpty())
                     <div class="favorites__lists flex flex-col gap-3 p-4 bg-surface-card border border-border-subtle rounded-lg">
                         {{-- List switcher --}}
@@ -27,7 +39,7 @@
                                 @if($list['id'] === $activeListId)
                                     <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-primary text-primary-content text-sm font-medium">
                                         {{ $list['name'] }}
-                                        <span class="opacity-80">({{ $list['count'] }})</span>
+                                        <span class="opacity-80" data-favorites-active-list-count>({{ $list['count'] }})</span>
                                     </span>
                                 @else
                                     @storefrontForm('favorite-list-select', ['class' => 'inline'])
@@ -79,31 +91,48 @@
                         @storefrontError('list_name')
                     </div>
                 @endif
+                @show
 
-                @if($favoriteItems->isEmpty())
-                    @include('components.empty-state', [
-                        'title'   => t('No favorites yet'),
-                        'message' => t('Heart products to save them here.'),
-                    ])
-                @else
-                    <ul class="catalog__grid grid grid-cols-2 md:grid-cols-3 gap-4 list-none m-0 p-0">
-                        @foreach($favoriteItems as $item)
-                            @if($products->get((int) data_get($item, 'id', 0)))
-                                <li class="flex flex-col gap-2">
-                                    @include('components.product-card', ['product' => $products->get((int) data_get($item, 'id', 0))])
-                                    @storefrontForm('favorite-toggle', ['class' => 'self-stretch'])
-                                        <input type="hidden" name="product_id" value="{{ data_get($item, 'id') }}">
-                                        <button type="submit" class="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md border border-border-subtle bg-transparent text-body cursor-pointer hover:bg-surface-hover hover:text-error text-sm transition-colors">
-                                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18" /><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2" /><path d="M19 6l-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6" /></svg>
-                                            @t('Remove')
-                                        </button>
-                                    @endstorefrontForm
-                                </li>
-                            @endif
-                        @endforeach
-                    </ul>
-                @endif
+                @section('favorites.grid')
+                <div data-favorites-results>
+                    @if($favoriteItems->isEmpty())
+                        <div data-favorites-empty-state>
+                            @include('components.empty-state', [
+                                'title'   => t('No favorites yet'),
+                                'message' => t('Heart products to save them here.'),
+                            ])
+                        </div>
+                    @else
+                        <ul class="catalog__grid grid grid-cols-2 md:grid-cols-3 gap-4 list-none m-0 p-0" data-favorites-list>
+                            @foreach($favoriteItems as $item)
+                                @if($products->get((int) data_get($item, 'id', 0)))
+                                    <li class="flex flex-col gap-2">
+                                        @include('components.product-card', ['product' => $products->get((int) data_get($item, 'id', 0))])
+                                        @storefrontForm('favorite-toggle', ['class' => 'self-stretch'])
+                                            <input type="hidden" name="product_id" value="{{ data_get($item, 'id') }}">
+                                            <button type="submit" class="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md border border-border-subtle bg-transparent text-body cursor-pointer hover:bg-surface-hover hover:text-error text-sm transition-colors">
+                                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18" /><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2" /><path d="M19 6l-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6" /></svg>
+                                                @t('Remove')
+                                            </button>
+                                        @endstorefrontForm
+                                    </li>
+                                @endif
+                            @endforeach
+                        </ul>
+                    @endif
+                </div>
+                @show
+
+                <template data-favorites-empty-template>
+                    <div data-favorites-empty-state>
+                        @include('components.empty-state', [
+                            'title'   => t('No favorites yet'),
+                            'message' => t('Heart products to save them here.'),
+                        ])
+                    </div>
+                </template>
             </div>
+            @show
         </div>
     </div>
     {{-- Owner-editable content region (bottom of page). --}}

@@ -21,7 +21,9 @@ can load only what a task needs.
 3. If your download might be old, open the **Live** link in the matrix below (or run
    `./scripts/update-theme-docs.sh` in your theme repo — pulls from the public wiki) before
    trusting a detail.
-4. **Never invent** directives, form types, `$store` keys, or tokens that aren't listed here or
+4. **Always write or update the theme's root `README.md`** (and add a `CHANGELOG.md` entry) per
+   [`theme-readme.md`](theme-readme.md) — uploads without a complete README are rejected.
+5. **Never invent** directives, form types, `$store` keys, or tokens that aren't listed here or
    on the live wiki.
 
 ## Load matrix
@@ -33,13 +35,15 @@ can load only what a task needs.
 | [`i18n-and-formatting.md`](i18n-and-formatting.md) | Translations, locale/currency, dates, numbers | On demand | [/i18n-and-formatting](https://b2bware.documentationai.com/advanced/storefront-themes/i18n-and-formatting) |
 | [`forms.md`](forms.md) | Full `@storefrontForm` registry | Building any form | [/forms](https://b2bware.documentationai.com/advanced/storefront-themes/forms) |
 | [`view-data.md`](view-data.md) | Globals, `$store`, feature flags, pricing, variants, rewards | **Usually yes** | [/view-data](https://b2bware.documentationai.com/advanced/storefront-themes/view-data) |
+| [`pricing.md`](pricing.md) | The pricing rendering contract — resolution + per-surface matrix | Anything that shows a price | [/pricing](https://b2bware.documentationai.com/advanced/storefront-themes/pricing) |
 | [`ajax-and-runtime.md`](ajax-and-runtime.md) | Sections, hooks, events, `window.Storefront` | AJAX / interactivity | [/ajax-and-runtime](https://b2bware.documentationai.com/advanced/storefront-themes/ajax-and-runtime) |
 | [`catalog.md`](catalog.md) | Facets, sort, price, in-stock, view, pagination | Catalog / listing pages | [/catalog](https://b2bware.documentationai.com/advanced/storefront-themes/catalog) |
-| [`seo-and-images.md`](seo-and-images.md) | `@storefrontSeo` + `@storefrontImage` | SEO / media work | [/seo-and-images](https://b2bware.documentationai.com/advanced/storefront-themes/seo-and-images) |
+| [`seo-and-images.md`](seo-and-images.md) | `@storefrontSeo` + `@storefrontImage` (hard rule for every `media_url`; Bunny Dynamic Images API) | **Any `<img>` with catalog / customer media** | [/seo-and-images](https://b2bware.documentationai.com/advanced/storefront-themes/seo-and-images) |
 | [`fetch-and-auth.md`](fetch-and-auth.md) | `@fetch`, `@storefrontAuthToken`, API reference | Server data / auth (security) | [/fetch-and-auth](https://b2bware.documentationai.com/advanced/storefront-themes/fetch-and-auth) |
 | [`analytics-and-slots.md`](analytics-and-slots.md) | Analytics + consent + slots | Analytics / module slots | [/analytics-and-slots](https://b2bware.documentationai.com/advanced/storefront-themes/analytics-and-slots) |
 | [`page-recipes.md`](page-recipes.md) | Per-page contracts: checkout, proposal-preview, account, auth, customer-selection | Building a specific page | [/page-recipes](https://b2bware.documentationai.com/advanced/storefront-themes/page-recipes) |
 | [`styling.md`](styling.md) | Tailwind-first + the head cascade | Any visual work | [/styling](https://b2bware.documentationai.com/advanced/storefront-themes/styling) |
 | [`tokens.md`](tokens.md) | Full token / dark-mode reference | Any visual work | [/tokens](https://b2bware.documentationai.com/advanced/storefront-themes/tokens) |
+| [`theme-readme.md`](theme-readme.md) | Required `README.md` + optional `CHANGELOG.md`, shown to the shop owner | **Always — every theme ships a README** | [/theme-readme](https://b2bware.documentationai.com/advanced/storefront-themes/theme-readme) |
 | [`checklist.md`](checklist.md) | Override strategy + pre-upload checklist | Before you upload | [/checklist](https://b2bware.documentationai.com/advanced/storefront-themes/checklist) |
 | [`CHANGELOG.md`](CHANGELOG.md) | What changed in the theme contract | Checking what's new | [/changelog](https://b2bware.documentationai.com/changelog) |

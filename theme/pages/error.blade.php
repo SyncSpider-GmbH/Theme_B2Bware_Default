@@ -8,10 +8,12 @@
             {{ $errorStatus ?? 500 }}
         </p>
 
+        @section('error.message')
         <div class="flex flex-col gap-2 max-w-640">
             <h1 class="font-primary text-2xl text-headings m-0">@t('Something went wrong')</h1>
             <p class="text-body m-0">@t('An unexpected error occurred while processing your request. Our team has been notified.')</p>
         </div>
+        @show
 
         @isset($errorReference)
             <div class="flex flex-col items-center gap-2 bg-surface-card border border-surface-input-stroke rounded-lg p-4 max-w-640 w-full">
@@ -32,6 +34,7 @@
             </div>
         @endisset
 
+        @section('error.actions')
         <div class="flex flex-wrap items-center justify-center gap-3">
             <a href="@routeUrl('store.home')"
                class="bg-primary text-primary-content hover:bg-primary-600 rounded px-4 py-2 transition-colors no-underline">
@@ -42,6 +45,7 @@
                 @t('Try again')
             </a>
         </div>
+        @show
 
         @isset($errorDebug)
             <details class="bg-surface-warning-subtle text-surface-warning-subtle-content border border-surface-warning-subtle-stroke rounded-lg p-4 max-w-1024 w-full text-left">

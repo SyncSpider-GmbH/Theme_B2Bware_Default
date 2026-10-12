@@ -11,8 +11,11 @@
 --}}
 <div class="page page--account page--account-addresses flex flex-col gap-5">
     <div class="flex flex-col md:flex-row gap-6">
+        @section('account.nav')
         @include('partials.account-nav', ['active' => 'addresses'])
+        @show
 
+        @section('account.main')
         <div class="flex-1 min-w-0 flex flex-col gap-4">
             @include('components.banner', ['type' => 'success', 'message' => $messages['success'] ?? null])
             @storefrontError('address')
@@ -53,6 +56,7 @@
             </div>
 
             {{-- My addresses --}}
+            @section('addresses.list')
             @if($addresses->isEmpty())
                 @include('components.empty-state', [
                     'title' => t('No saved addresses yet'),
@@ -98,19 +102,20 @@
                                         </button>
                                     @endstorefrontForm
                                 @endif
-                                @storefrontForm($deleteForm, ['_params' => ['id' => $address->id], 'class' => 'inline'])
-                                    <button type="submit" class="text-sm font-medium text-error hover:text-error/80 bg-transparent border-0 px-2 py-1 cursor-pointer"
-                                            data-confirm="{{ t('Delete this address?') }}">
-                                        @t('Delete')
-                                    </button>
-                                @endstorefrontForm
+                                <button type="button"
+                                        data-storefront-modal-open="address-delete-{{ $address->id }}"
+                                        class="text-sm font-medium text-error hover:text-error/80 bg-transparent border-0 px-2 py-1 cursor-pointer">
+                                    @t('Delete')
+                                </button>
                             </div>
                         </li>
                     @endforeach
                 </ul>
             @endif
+            @show
 
             {{-- Company addresses (read-only) --}}
+            @section('addresses.company')
             @if(!$companyAddresses->isEmpty())
                 <div class="flex flex-col gap-3 mt-3">
                     <div class="flex flex-col gap-0.5">
@@ -138,7 +143,9 @@
                     </ul>
                 </div>
             @endif
+            @show
         </div>
+        @show
     </div>
 </div>
 
@@ -176,17 +183,23 @@
             @endstorefrontForm
         </div>
     </dialog>
+
+    <dialog id="address-delete-{{ $address->id }}" class="modal bg-surface-card text-body rounded-lg shadow-xl p-0 border-0 backdrop:bg-backdrop/40">
+        <div class="flex flex-col gap-3 p-6 min-w-80 max-w-md">
+            <header class="flex items-center justify-between gap-3 pb-3 border-b border-border-subtle">
+                <h2 class="font-primary text-lg text-headings m-0">@t('Delete address')</h2>
+                <button type="button" class="inline-flex h-8 w-8 items-center justify-center text-2xl leading-none text-body hover:text-headings cursor-pointer bg-transparent border-0" data-modal-close aria-label="@t('Close')">&times;</button>
+            </header>
+            <p class="text-sm text-body m-0">@t('Are you sure you want to delete this address? This action cannot be undone.')</p>
+            @storefrontForm($deleteForm, ['_params' => ['id' => $address->id], 'class' => 'flex justify-end gap-2 pt-1'])
+                <button type="button" data-modal-close class="inline-flex items-center justify-center rounded-md border border-border-subtle bg-transparent text-headings px-4 py-2 cursor-pointer hover:bg-surface-hover text-sm">@t('Cancel')</button>
+                <button type="submit" class="inline-flex items-center justify-center rounded-md bg-error text-neutral-white font-medium px-4 py-2 cursor-pointer hover:bg-error/90 text-sm">@t('Delete')</button>
+            @endstorefrontForm
+        </div>
+    </dialog>
 @endforeach
 
 <script type="module">
-    // Confirm before destructive submits.
-    for (const el of document.querySelectorAll('[data-confirm]')) {
-        el.addEventListener('click', (event) => {
-            if (!window.confirm(el.dataset.confirm)) {
-                event.preventDefault();
-            }
-        });
-    }
     // Re-open a modal whose form failed server-side validation so the
     // visitor sees the inline errors after the redirect.
     for (const dialog of document.querySelectorAll('dialog')) {

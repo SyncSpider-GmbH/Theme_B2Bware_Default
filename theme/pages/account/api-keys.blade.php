@@ -7,8 +7,11 @@
     @storefrontSlot('content-top')
     <div class="page page--account page--account-api-keys flex flex-col gap-5">
         <div class="flex flex-col md:flex-row gap-6">
+            @section('account.nav')
             @include('partials.account-nav', ['active' => 'api-keys'])
+            @show
 
+            @section('account.main')
             <div class="flex-1 flex flex-col gap-5 min-w-0">
                 @include('components.banner', ['type' => 'success', 'message' => $messages['success'] ?? null])
 
@@ -126,6 +129,7 @@
                     @endif
                 </div>
             </div>
+            @show
         </div>
     </div>
 

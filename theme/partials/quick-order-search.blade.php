@@ -15,7 +15,7 @@
 
     Communication with the host page:
       Dispatches a `qo:product-selected` CustomEvent (bubbles: true) with
-        detail: { sku: string, name: string, qty: number }
+        detail: { sku: string, name: string, qty: number|string, min: number, max: number|null, step: number }
       when the user picks a product. The host page's module listens for this
       event and merges the row into the shared review table — no coupling
       to this partial's internals required.
@@ -147,6 +147,11 @@
         let isOpen        = false;
         let items         = [];   // current result set (for keyboard nav)
         let activeIndex   = -1;
+        let quantityWasEdited = false;
+
+        qtyInput?.addEventListener('input', () => {
+            quantityWasEdited = true;
+        });
 
         // ── Translated strings (baked in server-side) ───────────────────────────
         const i18n = {
@@ -229,10 +234,18 @@
 
         // ── Dispatch: selected product → host page ──────────────────────────────
         const dispatchSelected = (item) => {
-            const qty = Math.max(1, Number.parseInt(qtyInput?.value ?? '1', 10) || 1);
+            const firstAllowedQuantity = item.first_allowed_quantity ?? item.quantity_step ?? 1;
+            const qty = quantityWasEdited ? qtyInput?.value ?? '' : firstAllowedQuantity;
             section.dispatchEvent(new CustomEvent('qo:product-selected', {
                 bubbles: true,
-                detail: { sku: item.sku, name: item.name ?? item.sku, qty },
+                detail: {
+                    sku: item.sku,
+                    name: item.name ?? item.sku,
+                    qty,
+                    min: firstAllowedQuantity,
+                    max: item.maximum_quantity ?? null,
+                    step: item.quantity_step ?? 1,
+                },
             }));
             closeDropdown();
             input.value = '';

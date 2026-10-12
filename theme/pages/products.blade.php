@@ -190,9 +190,25 @@
             el.addEventListener('change', () => el.form?.requestSubmit());
         }
 
+        for (const form of document.querySelectorAll('.catalog-filter-form')) {
+            let priceInputTimer;
+            form.querySelectorAll('input[type="checkbox"]').forEach((input) => {
+                input.addEventListener('change', () => form.requestSubmit());
+            });
+            form.querySelectorAll('input[type="number"]').forEach((input) => {
+                input.addEventListener('input', () => {
+                    window.clearTimeout(priceInputTimer);
+                    priceInputTimer = window.setTimeout(() => form.requestSubmit(), 400);
+                });
+            });
+        }
+
         // List-view live Total Price = unit price × quantity, formatted with the
-        // storefront locale/currency. Progressive enhancement; the cart computes
-        // the authoritative total server-side on add.
+        // storefront locale/currency. The unit is tier-aware: the highest
+        // matched quantity tier wins when cheaper (mirroring the cart charge),
+        // and the struck original total (list price × qty) shows whenever the
+        // effective unit is discounted. Progressive enhancement; the cart
+        // computes the authoritative total server-side on add.
         const storefrontConfig = window.__STOREFRONT__ ?? {};
         let moneyFormatter = null;
         try {
@@ -206,12 +222,36 @@
         for (const row of document.querySelectorAll('[data-line-row]')) {
             const quantityInput = row.querySelector('input[name="quantity"]');
             const totalEl = row.querySelector('[data-line-total]');
-            const unitPrice = parseFloat(row.getAttribute('data-line-unit') || '');
-            if (!quantityInput || !totalEl || !Number.isFinite(unitPrice)) continue;
+            const originalEl = row.querySelector('[data-line-original]');
+            const baseUnit = parseFloat(row.getAttribute('data-line-unit') || '');
+            if (!quantityInput || !totalEl || !Number.isFinite(baseUnit)) continue;
+            const originalUnit = parseFloat(row.getAttribute('data-line-original-unit') || '');
+            let tiers = [];
+            try {
+                tiers = JSON.parse(row.getAttribute('data-tier-prices') || '[]');
+            } catch (e) {
+                tiers = [];
+            }
+            const format = (n) => moneyFormatter ? moneyFormatter.format(n) : n.toFixed(2);
             const updateTotal = () => {
                 const qty = Math.max(1, parseInt(quantityInput.value, 10) || 1);
-                const total = unitPrice * qty;
-                totalEl.textContent = moneyFormatter ? moneyFormatter.format(total) : total.toFixed(2);
+                const mode = storefrontConfig.tier_quantity_comparison || 'gte';
+                let matched = null;
+                for (const tier of tiers) {
+                    const min = Number(tier?.min ?? 0);
+                    const matches = mode === 'gt' ? qty > min : qty >= min;
+                    if (min > 1 && matches && (!matched || min > Number(matched.min))) matched = tier;
+                }
+                let unit = baseUnit;
+                const tierPrice = matched ? Number(matched.price) : NaN;
+                if (Number.isFinite(tierPrice) && tierPrice < baseUnit) unit = tierPrice;
+                totalEl.textContent = format(unit * qty);
+                if (originalEl) {
+                    const original = Number.isFinite(originalUnit) ? originalUnit : baseUnit;
+                    const discounted = original > unit + 0.00001;
+                    originalEl.hidden = !discounted;
+                    if (discounted) originalEl.textContent = format(original * qty);
+                }
             };
             quantityInput.addEventListener('change', updateTotal);
             quantityInput.addEventListener('input', updateTotal);

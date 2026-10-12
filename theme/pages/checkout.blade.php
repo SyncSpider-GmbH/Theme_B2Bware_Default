@@ -22,6 +22,7 @@
     {{-- Owner-editable content region (top of page). --}}
     @storefrontSlot('content-top')
     <div class="checkout flex flex-col gap-5" data-mode="{{ $checkoutMode }}">
+        @section('checkout.header')
         <div class="checkout__head flex flex-wrap items-end justify-between gap-3">
             <div class="flex flex-col gap-1">
                 <h1 class="font-primary text-2xl font-semibold text-headings m-0">@t('Checkout')</h1>
@@ -32,6 +33,7 @@
                 @t('Back to cart')
             </a>
         </div>
+        @show
 
         @include('components.banner', ['type' => 'success', 'message' => $messages['success'] ?? null])
 
@@ -44,6 +46,7 @@
             @storefrontForm('checkout', ['class' => 'checkout__grid flex flex-col gap-5 desktop:flex-row desktop:items-start'])
                 <input type="hidden" name="is_guest" value="{{ $isAuthenticated ? '0' : '1' }}">
 
+                @section('checkout.main')
                 <div class="checkout__main flex flex-col gap-5 min-w-0 desktop:flex-1">
 
                     {{-- Contact details --}}
@@ -146,7 +149,14 @@
                                 </label>
                                 <label class="flex flex-col gap-1 text-sm text-body">
                                     @t('Country')
-                                    <input type="text" name="billing_address[country]" value="{{ old('billing_address.country') }}" required class="px-3 py-2 border border-surface-input-stroke rounded-lg bg-surface-input text-body focus:border-primary outline-none">
+                                    @foreach ([storefront_country_name(old('billing_address.country'))] as $selectedCountry)
+                                        <select name="billing_address[country]" required autocomplete="billing country-name" class="px-3 py-2 border border-surface-input-stroke rounded-lg bg-surface-input text-body focus:border-primary outline-none">
+                                            <option value="">@t('Select country')</option>
+                                            @foreach (storefront_countries() as $country)
+                                                <option value="{{ $country['name'] }}" @selected($selectedCountry === $country['name'])>{{ $country['name'] }}</option>
+                                            @endforeach
+                                        </select>
+                                    @endforeach
                                     @storefrontError('billing_address.country')
                                 </label>
                             </div>
@@ -222,7 +232,14 @@
                                     </label>
                                     <label class="flex flex-col gap-1 text-sm text-body">
                                         @t('Country')
-                                        <input type="text" name="shipping_address[country]" value="{{ old('shipping_address.country') }}" class="px-3 py-2 border border-surface-input-stroke rounded-lg bg-surface-input text-body focus:border-primary outline-none">
+                                        @foreach ([storefront_country_name(old('shipping_address.country'))] as $selectedCountry)
+                                            <select name="shipping_address[country]" autocomplete="shipping country-name" class="px-3 py-2 border border-surface-input-stroke rounded-lg bg-surface-input text-body focus:border-primary outline-none">
+                                                <option value="">@t('Select country')</option>
+                                                @foreach (storefront_countries() as $country)
+                                                    <option value="{{ $country['name'] }}" @selected($selectedCountry === $country['name'])>{{ $country['name'] }}</option>
+                                                @endforeach
+                                            </select>
+                                        @endforeach
                                         @storefrontError('shipping_address.country')
                                     </label>
                                 </div>
@@ -408,7 +425,9 @@
                     </section>
 
                 </div>
+                @show
 
+                @section('checkout.summary')
                 <aside class="checkout__sidebar flex flex-col gap-4 w-full desktop:w-96 p-5 bg-surface-card border border-border-subtle rounded-lg desktop:sticky desktop:top-6 desktop:self-start">
                     {{-- AJAX-refreshable order summary (coupon + totals). Swapped in
                          place after an AJAX coupon apply/remove; the terms +
@@ -447,6 +466,7 @@
                         @t('Secure encrypted checkout')
                     </p>
                 </aside>
+                @show
             @endstorefrontForm
 
             @if($isAuthenticated)

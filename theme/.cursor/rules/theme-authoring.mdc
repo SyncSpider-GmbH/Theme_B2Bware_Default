@@ -1,0 +1,36 @@
+---
+description: Storefront theme authoring — where docs live and how to stay current
+alwaysApply: true
+---
+
+# Theme authoring
+
+Cursor is **recommended** for this repo (not required). This repo ships the
+**complete default theme** — override or restyle; do not invent a parallel contract.
+
+## Docs
+
+- **Live (authoritative):** https://b2bware.documentationai.com/advanced/storefront-themes
+- **Changelog:** https://b2bware.documentationai.com/changelog
+- **Bundled (offline / AI context):** start at `theme/docs/README.md` (load matrix).
+  Always also load `theme/docs/hard-rules.md`. Usually load `theme/docs/view-data.md`.
+  For any `<img>` that shows catalog / customer media, also load
+  `theme/docs/seo-and-images.md` (§9.11).
+
+## Stale forks
+
+Before trusting bundled docs on an old clone: open the live changelog, or run
+`./scripts/update-theme-docs.sh` (pulls topic pages from the public wiki — never
+overwrites your Blade/CSS/`theme.json`).
+
+## Hard rules
+
+- Do not invent Blade directives, `@storefrontForm` types, `$store` keys, or design
+  tokens that are not listed in `theme/docs/` or the live wiki.
+- Do not add files outside the canonical surface in `theme/docs/hard-rules.md` —
+  the upload validator rejects them.
+- **Images:** every catalog / customer `media_url` in an `<img src>` **must** use
+  `@storefrontImage($url, $width?, $height?, $quality?, $aspectRatio?)`. Never put a
+  raw Bunny (`*.b-cdn.net`) or SpiderDesk (`/media/...`) URL in `src`. Placeholders and
+  `@themeAsset(...)` stay unwrapped. See `theme/docs/hard-rules.md` §9 and
+  `theme/docs/seo-and-images.md` §9.11 (platform params + Bunny Dynamic Images API).

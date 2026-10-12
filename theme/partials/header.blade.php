@@ -99,6 +99,7 @@
                     </button>
                 </div>
             </form>
+            @storefrontSlot('storefront.header.search')
         @show
 
         @section('header.actions')
@@ -176,7 +177,7 @@
         </form>
     @show
 
-    {{-- Row 2 — category bar: All Categories menu + top-level category links --}}
+    {{-- Row 2 — category nav: list link or mega menu, from category_ui_type --}}
     @section('header.nav')
         @include('partials.nav')
     @show

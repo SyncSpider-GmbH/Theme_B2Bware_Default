@@ -12,6 +12,7 @@
     <div class="page page--category mx-auto flex w-full max-w-desktop flex-col gap-6 px-4 py-6" data-category-slug="{{ $categorySlug }}" data-branch-display-mode="{{ $branchDisplayMode ?? ($isLeaf ? 'products' : 'children') }}">
         @storefrontSlot('content-top')
 
+        @section('category.header')
         <header @class([
             'page__head flex flex-col gap-2',
             'sm:flex-row sm:items-end sm:justify-between gap-4' => $showProducts ?? false,
@@ -112,9 +113,11 @@
                 </form>
             @endif
         </header>
+        @show
 
         @if($showChildren ?? false)
             {{-- Branch: sibling nav + subcategory grid. --}}
+            @section('category.children')
             <div class="catalog catalog--children flex flex-col gap-6 desktop:flex-row desktop:items-start">
                 @if(($categoryFacet ?? collect())->isNotEmpty() && !($showProducts ?? false))
                     <aside class="catalog__filters w-full shrink-0 desktop:w-64">
@@ -126,7 +129,7 @@
                                         <a
                                             href="@routeUrl('store.category', ['slug' => $cat['url']])"
                                             @class([
-                                                'block rounded-lg px-2 py-1.5 text-sm hover:no-underline',
+                                                'flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-sm hover:no-underline',
                                                 'bg-primary-subtle text-primary font-semibold' => $cat['active'],
                                                 'text-body hover:bg-surface-hover' => !$cat['active'],
                                             ])
@@ -172,13 +175,21 @@
                     @endif
                 </div>
             </div>
+            @show
         @endif
 
         @if($showProducts ?? false)
             {{-- Product listing (leaf always; branch when mode is products/both). --}}
+            @section('category.products')
             <div class="catalog catalog--products flex flex-col gap-6 desktop:flex-row desktop:items-start">
                 <aside class="catalog__filters w-full shrink-0 desktop:w-64">
                     <div class="catalog__filters-card flex flex-col gap-6 rounded-xl border border-border-subtle bg-surface-card p-5">
+                        @if(!empty($selectedAttributes) || ($inStockSelected ?? false) || ($priceSelected['min'] ?? null) !== null || ($priceSelected['max'] ?? null) !== null || ($filters['q'] ?? ''))
+                            <a
+                                href="@routeUrl('store.category', ['slug' => $categorySlug])@if(($view ?? 'grid') !== 'grid')?view={{ $view }}@endif"
+                                class="self-start text-sm text-body underline hover:text-primary"
+                            >@t('Clear filters')</a>
+                        @endif
                         @if(($categoryFacet ?? collect())->isNotEmpty())
                             <section class="catalog-filter flex flex-col gap-2">
                                 <h2 class="text-sm font-semibold text-headings m-0">@t('Categories')</h2>
@@ -277,15 +288,9 @@
                                     </section>
                                 @endif
 
-                                <div class="flex items-center gap-3 border-t border-border-subtle pt-4">
-                                    <button type="submit" class="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-content transition-colors cursor-pointer hover:bg-primary-600">@t('Apply filters')</button>
-                                    @if(!empty($selectedAttributes) || ($inStockSelected ?? false) || ($priceSelected['min'] ?? null) !== null || ($priceSelected['max'] ?? null) !== null || ($filters['q'] ?? ''))
-                                        <a
-                                            href="@routeUrl('store.category', ['slug' => $categorySlug])@if(($view ?? 'grid') !== 'grid')?view={{ $view }}@endif"
-                                            class="text-sm text-body underline hover:text-primary"
-                                        >@t('Clear')</a>
-                                    @endif
-                                </div>
+                                <noscript>
+                                    <button type="submit" class="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-content cursor-pointer">@t('Apply filters')</button>
+                                </noscript>
                             </form>
                         @endif
                     </div>
@@ -314,10 +319,24 @@
                     @include('components.pagination', ['paginator' => $products])
                 </div>
             </div>
+            @show
 
             <script type="module">
                 for (const el of document.querySelectorAll('[data-autosubmit]')) {
                     el.addEventListener('change', () => el.form?.requestSubmit());
+                }
+
+                for (const form of document.querySelectorAll('.catalog-filter-form')) {
+                    let priceInputTimer;
+                    form.querySelectorAll('input[type="checkbox"]').forEach((input) => {
+                        input.addEventListener('change', () => form.requestSubmit());
+                    });
+                    form.querySelectorAll('input[type="number"]').forEach((input) => {
+                        input.addEventListener('input', () => {
+                            window.clearTimeout(priceInputTimer);
+                            priceInputTimer = window.setTimeout(() => form.requestSubmit(), 400);
+                        });
+                    });
                 }
 
                 const storefrontConfig = window.__STOREFRONT__ ?? {};

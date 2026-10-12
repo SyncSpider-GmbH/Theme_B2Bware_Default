@@ -34,8 +34,11 @@
     @storefrontSlot('content-top')
     <div class="page page--account page--account-order flex flex-col gap-5">
         <div class="flex flex-col md:flex-row gap-6">
+            @section('account.nav')
             @include('partials.account-nav', ['active' => 'orders'])
+            @show
 
+            @section('account.main')
             <div class="flex-1 flex flex-col gap-4 min-w-0">
                 <a href="@routeUrl('store.account.orders')" class="order__back inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary-600 no-underline self-start">
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
@@ -206,6 +209,7 @@
                     @endif
                 @endif
             </div>
+            @show
         </div>
     </div>
     {{-- Owner-editable content region (bottom of page). --}}

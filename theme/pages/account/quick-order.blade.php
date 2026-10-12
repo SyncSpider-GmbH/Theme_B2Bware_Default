@@ -22,8 +22,11 @@
     --}}
     <div class="page page--account page--account-quick-order flex flex-col gap-5">
         <div class="flex flex-col md:flex-row gap-6">
+            @section('account.nav')
             @include('partials.account-nav', ['active' => 'quick-order'])
+            @show
 
+            @section('account.main')
             <div class="flex-1 flex flex-col gap-6 min-w-0">
                 @include('components.banner', ['type' => 'success', 'message' => $messages['success'] ?? null])
                 @include('components.banner', ['type' => 'info', 'message' => $messages['info'] ?? null])
@@ -46,20 +49,49 @@
                     <div class="flex flex-col gap-1">
                         <h2 class="font-primary text-base font-semibold text-headings m-0">@t('Upload a CSV file')</h2>
                         <p class="text-xs text-body/70 m-0">
-                            @t('Upload a comma-separated file with a SKU column and a Quantity column.')
+                            @t('Download the template — it already lists all your products with their SKUs — enter quantities against the ones you want, then upload it.')
                             @t('Up to %d rows per file.', $maxRows)
                         </p>
                     </div>
 
-                    <div>
-                        <a href="{{ $templateUrl }}"
-                            class="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary-600 no-underline">
-                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-                                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" />
-                            </svg>
-                            @t('Download CSV template')
-                        </a>
+                    <div class="flex flex-col gap-2">
+                        @if ($customerRefAvailable ?? false)
+                            {{-- Customer Reference is opt-in: a plain GET form so
+                                 it works with or without JS. The hidden field +
+                                 checkbox pair is the classic HTML checkbox trick —
+                                 an unchecked box still submits customer_reference=0,
+                                 a checked one submits 1 (which wins as the later
+                                 value), so the server always gets an explicit
+                                 choice. --}}
+                            <form method="GET" action="{{ $templateUrl }}" class="flex flex-col gap-2">
+                                <label class="inline-flex items-center gap-2 text-xs text-body/70 cursor-pointer select-none">
+                                    <input type="hidden" name="customer_reference" value="0">
+                                    <input type="checkbox" name="customer_reference" value="1" checked
+                                        class="rounded border-border-subtle text-primary focus:ring-primary">
+                                    <span>@t('Include my customer reference (my own SKU) as a column')</span>
+                                </label>
+                                <button type="submit"
+                                    class="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary-600 bg-transparent border-0 p-0 cursor-pointer">
+                                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" />
+                                    </svg>
+                                    @t('Download prepopulated CSV template')
+                                </button>
+                            </form>
+                        @else
+                            <a href="{{ $templateUrl }}"
+                                class="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary-600 no-underline">
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" />
+                                </svg>
+                                @t('Download prepopulated CSV template')
+                            </a>
+                        @endif
+                        <p class="text-xs text-body/60 m-0">
+                            @t('Rows left blank are ignored — enter a quantity only against the products you want. If you have more than %d products with quantities, upload in parts, keeping each file within the limit.', $maxRows)
+                        </p>
                     </div>
 
                     @storefrontForm('quick-order-upload', [
@@ -160,6 +192,10 @@
                                                             @t('Out of stock')
                                                         @break
 
+                                                        @case('invalid_quantity_step')
+                                                            {{ data_get($row, 'error_message') }}
+                                                        @break
+
                                                         @default
                                                             @t('Skipped')
                                                     @endswitch
@@ -218,9 +254,7 @@
                             <button type="submit"
                                 class="inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 font-medium bg-primary text-primary-content hover:bg-primary-600 cursor-pointer">
                                 <span data-qo-review-submit-label>
-                                    @isset($review)
-                                        @t('Add %d products to cart', (int) data_get($review, 'valid_count'))@else@t('Add to cart')
-                                    @endisset
+                                    @t('Add products to the cart')
                                 </span>
                             </button>
                         </div>
@@ -247,6 +281,7 @@
                     </section>
                 @endif
             </div>
+            @show
         </div>
     </div>
 
@@ -268,13 +303,14 @@
         const uploadIdleText    = @json(t('Upload CSV file'));
 
         // ── Translated strings (baked in server-side) ──────────────────────────
-        const addLabelTemplate  = @json(t('Add %d products to cart'));
+        const addLabel          = @json(t('Add products to the cart'));
         const removeLabel       = @json(t('Remove'));
         const statusLabels = {
             missing_sku:      @json(t('Missing SKU')),
             invalid_quantity: @json(t('Invalid quantity')),
             not_found:        @json(t('Not found')),
             out_of_stock:     @json(t('Out of stock')),
+            invalid_quantity_step: @json(t('Invalid quantity step')),
             skipped:          @json(t('Skipped')),
         };
         const invalidHeading    = @json(t('%d row(s) from your file could not be added:'));
@@ -294,14 +330,14 @@
             if (!reviewSection || !reviewBody) return;
             const count = reviewBody.querySelectorAll('[data-qo-review-row]').length;
             if (reviewSubmitLabel) {
-                reviewSubmitLabel.textContent = addLabelTemplate.replace('%d', String(count));
+                reviewSubmitLabel.textContent = addLabel;
             }
             if (reviewEmpty) reviewEmpty.hidden = count > 0;
             const hasNotices = !!(reviewNotices && reviewNotices.childElementCount > 0);
             reviewSection.hidden = count === 0 && !hasNotices;
         };
 
-        const buildReviewRow = (sku, name, qty) => {
+        const buildReviewRow = (sku, name, qty, min = 1, max = null, step = 1) => {
             const row = document.createElement('tr');
             row.dataset.qoReviewRow = '';
             row.dataset.sku = sku;
@@ -324,8 +360,9 @@
             const qtyField = document.createElement('input');
             qtyField.type = 'number';
             qtyField.name = 'quantity[]';
-            qtyField.min = '1';
-            qtyField.step = '1';
+            qtyField.min = String(min);
+            if (max !== null) qtyField.max = String(max);
+            qtyField.step = String(step);
             qtyField.inputMode = 'numeric';
             qtyField.value = String(qty);
             qtyField.dataset.qoRowQty = '';
@@ -350,16 +387,25 @@
 
         // Add a product row to the review table, merging by SKU: an existing
         // line has its quantity bumped; otherwise a new row is appended.
-        const mergeRow = (sku, name, qty) => {
+        const mergeRow = (sku, name, qty, min = 1, max = null, step = 1) => {
             if (!reviewBody || !sku) return;
-            const quantity = Math.max(1, Number.parseInt(qty, 10) || 1);
+            const quantity = Number(qty);
             const existing = findReviewRow(sku);
             if (existing) {
                 const field = existing.querySelector('[data-qo-row-qty]');
-                const current = Math.max(0, Number.parseInt(field?.value ?? '0', 10) || 0);
-                if (field) field.value = String(current + quantity);
+                const current = Number(field?.value ?? 0);
+                if (field) {
+                    field.min = String(min);
+                    if (max !== null) {
+                        field.max = String(max);
+                    } else {
+                        field.removeAttribute('max');
+                    }
+                    field.step = String(step);
+                    field.value = String(current + quantity);
+                }
             } else {
-                reviewBody.appendChild(buildReviewRow(sku, name, quantity));
+                reviewBody.appendChild(buildReviewRow(sku, name, quantity, min, max, step));
             }
         };
 
@@ -367,9 +413,9 @@
         // The quick-order-search partial dispatches `qo:product-selected`
         // (bubbles:true) so we can stay decoupled from its internals.
         document.addEventListener('qo:product-selected', (event) => {
-            const { sku, name, qty } = event.detail;
+            const { sku, name, qty, min, max, step } = event.detail;
             if (!sku) return;
-            mergeRow(sku, name ?? sku, qty ?? 1);
+            mergeRow(sku, name ?? sku, qty ?? 1, min ?? 1, max ?? null, step ?? 1);
             refreshReview();
         });
 
@@ -449,7 +495,7 @@
                 const li = document.createElement('li');
                 const parts = [lineLabel.replace('%d', String(row.line ?? 0))];
                 if (row.sku) parts.push(String(row.sku));
-                const reason = statusLabels[row.status] ?? statusLabels.skipped;
+                const reason = row.message || statusLabels[row.status] || statusLabels.skipped;
                 li.textContent = parts.join(' · ') + ' — ' + reason;
                 list.appendChild(li);
             });

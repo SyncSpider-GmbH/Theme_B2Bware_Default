@@ -29,6 +29,7 @@
             <li
                 class="cart__item flex flex-col desktop:flex-row desktop:items-center gap-4 desktop:gap-6 p-4 rounded-lg border border-border-subtle bg-surface-card"
                 data-cart-item-id="{{ $line['id'] }}"
+                data-product-id="{{ $line['product_id'] ?? '' }}"
             >
                 {{-- Product: image + name / SKU / unit / delivery date --}}
                 <div class="cart__item-product flex gap-4 items-start flex-1 min-w-0">
@@ -92,9 +93,13 @@
                                 'value' => (int) $line['quantity'],
                                 'min'   => $line['min_quantity'],
                                 'max'   => $line['max_quantity'],
+                                'step'  => $line['quantity_step'] ?? 1,
                             ])
                             <button type="submit" data-storefront-no-js class="cart__no-js text-xs font-medium text-primary hover:text-primary-600 cursor-pointer">@t('Update')</button>
                         @endstorefrontForm
+                        @if(($line['quantity_step'] ?? 1) > 1)
+                            <span class="text-xs text-body">@t('This item must be ordered in multiples of %d.', $line['quantity_step'])</span>
+                        @endif
                     </div>
 
                     @if(($line['manage_stock'] ?? false) && !is_null($line['stock_quantity']))
@@ -139,11 +144,13 @@
                                 <input type="hidden" name="redirect" value="/{{ $locale }}/cart">
                                 <button
                                     type="submit"
-                                    class="cart__item-favorite h-9 w-9 flex items-center justify-center rounded-lg text-body transition-colors hover:text-primary hover:bg-surface-hover cursor-pointer"
-                                    aria-label="{{ t('Move to favorites') }}"
-                                    title="{{ t('Move to favorites') }}"
+                                    data-favorite-button
+                                    data-favorited="{{ $line['is_favorite'] ? 'true' : 'false' }}"
+                                    class="cart__item-favorite h-9 w-9 flex items-center justify-center rounded-lg {{ $line['is_favorite'] ? 'text-primary' : 'text-body' }} transition-colors hover:text-primary hover:bg-surface-hover cursor-pointer"
+                                    aria-label="{{ $line['is_favorite'] ? t('Remove from favorites') : t('Add to favorites') }}"
+                                    title="{{ $line['is_favorite'] ? t('Remove from favorites') : t('Add to favorites') }}"
                                 >
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6" aria-hidden="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="{{ $line['is_favorite'] ? 'currentColor' : 'none' }}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6" aria-hidden="true">
                                         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                                     </svg>
                                 </button>
@@ -173,4 +180,3 @@
         @endforeach
     </ul>
 @endif
-

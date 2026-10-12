@@ -114,6 +114,7 @@
     @storefrontSlot('content-top')
     <div class="register flex min-h-dvh w-full">
         {{-- ── Left: brand / marketing panel (hidden below lg) ─────────────── --}}
+        @section('register.brand')
         <aside class="register__brand register__brand--gradient relative hidden flex-col overflow-hidden p-8 lg:flex lg:flex-1 lg:p-10">
             @if(!empty($store['login_background']))
                 <div class="register__brand-bg absolute inset-0 z-0">
@@ -181,8 +182,10 @@
                 &copy; {{ now()->year }} {{ $store['name'] }}
             </p>
         </aside>
+        @show
 
         {{-- ── Right: registration form panel ──────────────────────────────── --}}
+        @section('register.form')
         <section class="register__auth flex flex-1 flex-col overflow-y-auto bg-surface-page p-6 lg:p-10">
             <div class="register__form-wrap m-auto w-full max-w-420">
                 {{-- Logo on mobile (the brand panel that normally carries it is hidden) --}}
@@ -236,7 +239,9 @@
                     <div class="register__step flex flex-col gap-4" data-step="1">
                     {{-- Email --}}
                     <div class="register__field flex flex-col gap-1.5">
-                        <label for="register-email" class="register__label text-sm font-medium text-body">@t('Email address')</label>
+                        <label for="register-email" class="register__label text-sm font-medium text-body">
+                            @t('Email address')<span aria-hidden="true" class="text-error ml-0.5">*</span>
+                        </label>
                         <div class="register__input flex items-center gap-2 rounded-lg border border-surface-input-stroke bg-surface-input px-3 py-2 focus-within:border-primary">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="register__input-icon h-5 w-5 shrink-0 text-placeholder" aria-hidden="true">
                                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
@@ -259,7 +264,9 @@
                     @if($store['company_required'])
                         {{-- Salutation --}}
                         <div class="register__field flex flex-col gap-1.5">
-                            <label for="register-salutation" class="register__label text-sm font-medium text-body">@t('Salutation')</label>
+                            <label for="register-salutation" class="register__label text-sm font-medium text-body">
+                                @t('Salutation')<span aria-hidden="true" class="text-error ml-0.5">*</span>
+                            </label>
                             <select
                                 id="register-salutation"
                                 name="salutation"
@@ -277,7 +284,9 @@
                         {{-- First / last name --}}
                         <div class="register__row grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div class="register__field flex flex-col gap-1.5">
-                                <label for="register-first-name" class="register__label text-sm font-medium text-body">@t('First name')</label>
+                                <label for="register-first-name" class="register__label text-sm font-medium text-body">
+                                    @t('First name')<span aria-hidden="true" class="text-error ml-0.5">*</span>
+                                </label>
                                 <input
                                     id="register-first-name"
                                     type="text"
@@ -290,7 +299,9 @@
                                 >
                             </div>
                             <div class="register__field flex flex-col gap-1.5">
-                                <label for="register-last-name" class="register__label text-sm font-medium text-body">@t('Last name')</label>
+                                <label for="register-last-name" class="register__label text-sm font-medium text-body">
+                                    @t('Last name')<span aria-hidden="true" class="text-error ml-0.5">*</span>
+                                </label>
                                 <input
                                     id="register-last-name"
                                     type="text"
@@ -319,11 +330,14 @@
                             placeholder="@t('e.g. +1 555 123 4567')"
                             class="register__input rounded-lg border border-surface-input-stroke bg-surface-input px-3 py-2 text-body outline-none focus:border-primary placeholder:text-placeholder"
                         >
+                        @storefrontError('phone')
                     </div>
 
                     {{-- Password --}}
                     <div class="register__field flex flex-col gap-1.5">
-                        <label for="register-password" class="register__label text-sm font-medium text-body">@t('Password')</label>
+                        <label for="register-password" class="register__label text-sm font-medium text-body">
+                            @t('Password')<span aria-hidden="true" class="text-error ml-0.5">*</span>
+                        </label>
                         <div class="register__input flex items-center gap-2 rounded-lg border border-surface-input-stroke bg-surface-input px-3 py-2 focus-within:border-primary">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="register__input-icon h-5 w-5 shrink-0 text-placeholder" aria-hidden="true">
                                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
@@ -374,7 +388,9 @@
 
                     {{-- Confirm password --}}
                     <div class="register__field flex flex-col gap-1.5">
-                        <label for="register-password-confirm" class="register__label text-sm font-medium text-body">@t('Confirm password')</label>
+                        <label for="register-password-confirm" class="register__label text-sm font-medium text-body">
+                            @t('Confirm password')<span aria-hidden="true" class="text-error ml-0.5">*</span>
+                        </label>
                         <div class="register__input flex items-center gap-2 rounded-lg border border-surface-input-stroke bg-surface-input px-3 py-2 focus-within:border-primary">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="register__input-icon h-5 w-5 shrink-0 text-placeholder" aria-hidden="true">
                                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
@@ -547,16 +563,20 @@
                                     <label for="register-company-country" class="register__label text-sm font-medium text-body">
                                         @t('Country')@if($companyRequiredFields['address'] ?? false)<span aria-hidden="true" class="text-error ml-0.5">*</span>@endif
                                     </label>
-                                    <input
-                                        id="register-company-country"
-                                        type="text"
-                                        name="company[country]"
-                                        value="{{ old('company.country') }}"
-                                        {{ ($companyRequiredFields['address'] ?? false) ? 'required' : '' }}
-                                        autocomplete="country-name"
-                                        placeholder="@t('e.g. Germany')"
-                                        class="register__input rounded-lg border border-surface-input-stroke bg-surface-input px-3 py-2 text-body outline-none focus:border-primary placeholder:text-placeholder"
-                                    >
+                                    @foreach ([storefront_country_name(old('company.country'))] as $selectedCountry)
+                                        <select
+                                            id="register-company-country"
+                                            name="company[country]"
+                                            {{ ($companyRequiredFields['address'] ?? false) ? 'required' : '' }}
+                                            autocomplete="country-name"
+                                            class="register__input rounded-lg border border-surface-input-stroke bg-surface-input px-3 py-2 text-body outline-none focus:border-primary"
+                                        >
+                                            <option value="">@t('Select country')</option>
+                                            @foreach (storefront_countries() as $country)
+                                                <option value="{{ $country['name'] }}" @selected($selectedCountry === $country['name'])>{{ $country['name'] }}</option>
+                                            @endforeach
+                                        </select>
+                                    @endforeach
                                     @storefrontError('company.country')
                                 </div>
 
@@ -621,7 +641,9 @@
                             @checked(old('terms_and_conditions'))
                             class="register__checkbox mt-0.5 h-4 w-4 shrink-0"
                         >
-                        <span>@t('I accept the terms and conditions')</span>
+                        <span>
+                            @t('I accept the terms and conditions')<span aria-hidden="true" class="text-error ml-0.5">*</span>
+                        </span>
                     </label>
                     @storefrontError('terms_and_conditions')
 
@@ -661,6 +683,7 @@
                 </p>
             </div>
         </section>
+        @show
     </div>
 
     {{-- Password show/hide toggles (progressive enhancement; each field works
@@ -788,4 +811,3 @@
     {{-- Owner-editable content region (bottom of page). --}}
     @storefrontSlot('content-bottom')
 @endsection
-

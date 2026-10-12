@@ -1,4 +1,4 @@
-@props(['value' => 1, 'min' => 1, 'max' => null, 'name' => 'quantity'])
+@props(['value' => 1, 'min' => 1, 'max' => null, 'step' => 1, 'name' => 'quantity'])
 
 <div class="quantity-selector inline-flex items-stretch rounded-lg border border-border-subtle bg-surface-card overflow-hidden">
     <button
@@ -12,6 +12,7 @@
         name="{{ $name }}"
         value="{{ $value }}"
         min="{{ $min }}"
+        step="{{ $step }}"
         @if(!is_null($max)) max="{{ $max }}" @endif
         inputmode="numeric"
         class="quantity-selector__input w-12 text-center border-x border-border-subtle px-1 py-1.5 bg-surface-card text-headings text-sm font-semibold outline-none focus:bg-surface-page"

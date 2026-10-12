@@ -3,6 +3,21 @@
 @section('title', $proposalTitle ?? t('Proposal'))
 
 @section('content')
+    @push('head')
+        {{-- Shared proposals default to LIGHT for recipients who never visited
+             the store (no colour-scheme cookie set). The no-FOUC head script
+             otherwise follows the visitor's OS preference; force light here
+             unless the visitor made an explicit choice. The on-page switch
+             below lets them change it, persisting the cookie. --}}
+        <script>
+            try {
+                if (!/(?:^|;\s*)storefront_color_scheme=/.test(document.cookie)) {
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.style.colorScheme = 'light';
+                }
+            } catch (e) {}
+        </script>
+    @endpush
     @if(!empty($orderedId))
         {{-- Post-order thank-you state: the anonymous customer lands back on
              this public URL with ?ordered={id} (also the post-payment return
@@ -17,12 +32,69 @@
     {{-- Owner-editable content region (top of page). --}}
     @storefrontSlot('content-top')
     <div class="page page--proposal flex flex-col gap-6" data-proposal-id="{{ $proposalId }}">
-        @if(!empty($hideChrome) && !empty($store['logo']))
-            {{-- Standalone share document: no shop chrome, so surface the
-                 store identity at the top like a quote letterhead. --}}
-            <img src="{{ $store['logo'] }}" alt="{{ $store['name'] ?? '' }}" class="proposal__logo mx-auto h-16 w-auto">
+        @if(!empty($hideChrome))
+            {{-- Standalone share document: no shop chrome, so surface the store
+                 identity as a quote letterhead and expose a light/dark switch
+                 (the chrome toggle is absent here). Recipients may never have
+                 visited the store, so the page defaults to light (see the head
+                 script above) and this control lets them flip it. --}}
+            <div class="proposal__letterhead relative flex min-h-16 items-center justify-center">
+                @if(!empty($store['logo']))
+                    <img src="{{ $store['logo'] }}" alt="{{ $store['name'] ?? '' }}"
+                         class="proposal__logo storefront-logo {{ !empty($store['logo_dark']) ? 'storefront-logo--light' : '' }} h-16 w-auto">
+                    @if(!empty($store['logo_dark']))
+                        <img src="{{ $store['logo_dark'] }}" alt="{{ $store['name'] ?? '' }}"
+                             class="proposal__logo storefront-logo storefront-logo--dark h-16 w-auto">
+                    @endif
+                @endif
+
+                <div class="proposal__color-scheme absolute right-0 top-0">
+                    @storefrontForm('color-scheme', ['class' => 'theme-toggle inline-flex items-center', 'data-theme-toggle' => true])
+                        <input type="hidden" name="redirect" value="{{ $currentPath ?? '/' }}">
+                        <button type="submit" name="scheme" value="dark"
+                            class="theme-toggle__to-dark inline-flex h-8 w-8 items-center justify-center rounded text-body transition-colors hover:bg-surface-card hover:text-headings"
+                            aria-label="@t('Switch to dark mode')">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" aria-hidden="true">
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                            </svg>
+                        </button>
+                        <button type="submit" name="scheme" value="light"
+                            class="theme-toggle__to-light inline-flex h-8 w-8 items-center justify-center rounded text-body transition-colors hover:bg-surface-card hover:text-headings"
+                            aria-label="@t('Switch to light mode')">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" aria-hidden="true">
+                                <circle cx="12" cy="12" r="5"></circle>
+                                <line x1="12" y1="1" x2="12" y2="3"></line>
+                                <line x1="12" y1="21" x2="12" y2="23"></line>
+                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                <line x1="1" y1="12" x2="3" y2="12"></line>
+                                <line x1="21" y1="12" x2="23" y2="12"></line>
+                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                            </svg>
+                        </button>
+                    @endstorefrontForm
+                </div>
+            </div>
+
+            @push('scripts')
+                {{-- Live (no-reload) toggle when the JS runtime is present; the
+                     no-JS form POST still works and the server re-renders. --}}
+                <script type="module">
+                    for (const form of document.querySelectorAll('.page--proposal [data-theme-toggle]')) {
+                        form.addEventListener('submit', (event) => {
+                            const api = window.Storefront;
+                            if (api && typeof api.toggleColorScheme === 'function') {
+                                event.preventDefault();
+                                api.toggleColorScheme();
+                            }
+                        });
+                    }
+                </script>
+            @endpush
         @endif
 
+        @section('proposal.header')
         <header class="page__head flex flex-col gap-2 text-center">
             @if($proposal->description)
                 {{-- The admin composer preview shows the authored rich text as
@@ -32,6 +104,7 @@
                 <h1 class="font-primary text-2xl text-headings m-0">@t('Proposal')</h1>
             @endif
         </header>
+        @show
 
         @include('components.banner', ['type' => 'success', 'message' => $messages['success'] ?? null])
         @storefrontError('proposal')
@@ -50,6 +123,7 @@
                 @storefrontForm('proposal-public-order', ['_params' => ['token' => $proposalId], 'class' => 'flex flex-col gap-6'])
             @endif
 
+            @section('proposal.items')
             <div class="flex flex-col gap-6" data-proposal-items>
                 @foreach($groups as $group)
                     <section class="proposal-group flex flex-col gap-3">
@@ -106,11 +180,13 @@
                     </section>
                 @endforeach
             </div>
+            @show
 
             {{-- Products Preview — flat summary table of every kept line,
                  mirroring the "Products Preview" grid on the admin composer
                  preview. When editable, rows track the quantity inputs above
                  (a row hides once its quantity is set to 0). --}}
+            @section('proposal.products')
             <section class="proposal-products-preview flex flex-col gap-3">
                 <h2 class="font-primary text-xl font-bold text-primary-content m-0 text-center uppercase py-4 rounded bg-primary">@t('Products Preview')</h2>
                 <div class="overflow-x-auto">
@@ -119,6 +195,7 @@
                             <tr class="text-left text-body border-b border-border-subtle">
                                 <th class="py-2 pr-3 font-medium">@t('Product number')</th>
                                 <th class="py-2 pr-3 font-medium">@t('Product Name')</th>
+                                <th class="py-2 pr-3 font-medium">@t('Brand')</th>
                                 <th class="py-2 pr-3 font-medium text-right">@t('Quantity')</th>
                                 <th class="py-2 pr-3 font-medium text-right">@t('List Price')</th>
                                 <th class="py-2 font-medium text-right">@t('Total Price')</th>
@@ -131,6 +208,7 @@
                                         @if($editable) data-proposal-row="{{ data_get($item, 'line_index') }}" @endif>
                                         <td class="py-2 pr-3 text-body">{{ data_get($item, 'product.sku') ?: '—' }}</td>
                                         <td class="py-2 pr-3 text-headings font-medium">{{ data_get($item, 'product.name') ?: t('Product') }}</td>
+                                        <td class="py-2 pr-3 text-body">{{ data_get($item, 'brand') ?: '—' }}</td>
                                         <td class="py-2 pr-3 text-right text-body" @if($editable) data-proposal-row-qty @endif>{{ (int) ($item->quantity ?? 0) }}</td>
                                         <td class="py-2 pr-3 text-right text-body">{{ formatCurrency($item->price ?? 0) }}</td>
                                         <td class="py-2 text-right text-headings font-medium" @if($editable) data-proposal-row-total @endif>
@@ -143,7 +221,9 @@
                     </table>
                 </div>
             </section>
+            @show
 
+            @section('proposal.summary')
             <aside class="proposal-summary self-end w-full sm:w-80 p-4 bg-surface-card border border-border-subtle rounded-lg flex flex-col gap-3"
                    @if($editable) data-proposal-extra="{{ (float) ($totals['grand_total'] - $totals['subtotal']) }}" @endif>
                 <h2 class="font-primary text-lg text-headings m-0">@t('Summary')</h2>
@@ -158,10 +238,11 @@
                         <dt class="text-body">@t('Surcharge')</dt>
                         <dd class="text-headings m-0">{{ formatCurrency($totals['surcharge']) }}</dd>
                     @endif
-                    @if(!empty($totals['shipping']))
-                        <dt class="text-body">@t('Shipping')</dt>
-                        <dd class="text-headings m-0">{{ formatCurrency($totals['shipping']) }}</dd>
-                    @endif
+                    {{-- Shipping is always shown (even at 0) so the summary
+                         mirrors the admin composer preview; the customer sees
+                         the same line the agent designed. --}}
+                    <dt class="text-body">@t('Shipping')</dt>
+                    <dd class="text-headings m-0">{{ formatCurrency($totals['shipping'] ?? 0) }}</dd>
                     @if(!empty($totals['tax']))
                         <dt class="text-body">@t('Tax')</dt>
                         <dd class="text-headings m-0">{{ formatCurrency($totals['tax']) }}</dd>
@@ -207,6 +288,7 @@
                     @endstorefrontForm
                 @endif
             </aside>
+            @show
 
             @if($editable)
                 @endstorefrontForm

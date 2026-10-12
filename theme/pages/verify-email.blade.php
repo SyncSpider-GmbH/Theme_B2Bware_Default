@@ -70,6 +70,7 @@
     @storefrontSlot('content-top')
     <div class="verify flex min-h-dvh w-full">
         {{-- ── Left: brand / marketing panel (hidden below lg) ─────────────── --}}
+        @section('verify-email.brand')
         <aside class="verify__brand verify__brand--gradient relative hidden flex-col overflow-hidden p-8 lg:flex lg:flex-1 lg:p-10">
             {{-- Logo (top): store logo (if uploaded) + store name --}}
             <a href="/" class="verify__brand-logo inline-flex items-center gap-2 text-neutral-white">
@@ -130,8 +131,10 @@
                 &copy; {{ now()->year }} {{ $store['name'] }}
             </p>
         </aside>
+        @show
 
         {{-- ── Right: verification form panel ──────────────────────────────── --}}
+        @section('verify-email.form')
         <section class="verify__auth flex flex-1 flex-col overflow-y-auto bg-surface-page p-6 lg:p-10">
             <div class="verify__form-wrap m-auto w-full max-w-420">
                 {{-- Logo on mobile (the brand panel that normally carries it is hidden) --}}
@@ -273,6 +276,7 @@
                 </p>
             </div>
         </section>
+        @show
     </div>
 
     {{-- Six-box OTP progressive enhancement. Without JS the single `code`

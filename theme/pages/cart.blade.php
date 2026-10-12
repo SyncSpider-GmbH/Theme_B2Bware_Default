@@ -9,6 +9,7 @@
         {{-- Owner-editable cart promo (e.g. free-shipping threshold banner).
              Renders nothing until a widget is assigned to the slot. --}}
         @storefrontSlot('cart.promo')
+        @section('cart.header')
         <header class="cart__header flex flex-col gap-1">
             <h1 class="cart__title font-primary text-2xl desktop:text-3xl font-semibold text-headings m-0 tracking-tight">@t('Shopping cart')</h1>
             {{-- Live item count: the runtime keeps [data-storefront-cart-count]
@@ -19,6 +20,7 @@
                 <span data-storefront-cart-count="{{ $cartCount }}">{{ $cartCount }}</span> {{ $cartCount === 1 ? t('item') : t('items') }}
             </p>
         </header>
+        @show
 
         @include('components.banner', ['type' => 'success', 'message' => $messages['success'] ?? null])
         @include('components.banner', ['type' => 'info', 'message' => $messages['info'] ?? null])
@@ -36,6 +38,7 @@
         @else
             <div class="cart__layout flex flex-col gap-6 desktop:flex-row desktop:items-start">
                 {{-- Left: rewards + line items + actions --}}
+                @section('cart.main')
                 <div class="cart__main flex flex-col gap-4 min-w-0 desktop:flex-1">
                     {{-- Rewards progress is meaningless for an empty cart, so the
                          runtime hides it (with the sidebar below) when the cart
@@ -45,6 +48,7 @@
                     @storefrontSection('cart-line-items')
 
                     {{-- Hidden by the runtime when the cart becomes empty via AJAX. --}}
+                    @section('cart.actions')
                     <div class="cart__actions flex gap-3 flex-wrap items-center" data-storefront-cart-filled>
                         <a href="@routeUrl('store.products')" class="inline-flex items-center justify-center rounded-lg bg-transparent text-headings border border-border-subtle font-medium px-4 py-2 transition-colors hover:border-primary hover:text-primary hover:no-underline">@t('Continue shopping')</a>
 
@@ -54,16 +58,20 @@
                             </button>
                         @endstorefrontForm
                     </div>
+                    @show
                 </div>
+                @show
 
                 {{-- Right: sticky sidebar (coupon + order summary + free-delivery
                      banner). Hidden by the runtime when the cart empties via
                      AJAX so the left column expands to the full page width — the
                      same single-column empty state a full reload renders. --}}
+                @section('cart.sidebar')
                 <aside class="cart__sidebar flex flex-col gap-4 w-full desktop:w-96 desktop:sticky desktop:top-6" data-storefront-cart-filled>
                     @storefrontSection('cart-discounts')
                     @storefrontSection('cart-summary')
                 </aside>
+                @show
             </div>
         @endif
         {{-- Owner-editable content region (bottom of page). --}}

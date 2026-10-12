@@ -7,8 +7,11 @@
     @storefrontSlot('content-top')
     <div class="page page--account page--account-orders flex flex-col gap-5">
         <div class="flex flex-col md:flex-row gap-6">
+            @section('account.nav')
             @include('partials.account-nav', ['active' => 'orders'])
+            @show
 
+            @section('account.main')
             <div class="flex-1 flex flex-col gap-4 min-w-0">
                 @include('components.banner', ['type' => 'success', 'message' => $messages['success'] ?? null])
                 @include('components.banner', ['type' => 'info', 'message' => $messages['info'] ?? null])
@@ -47,7 +50,7 @@
                                                 <a href="@routeUrl('store.account.order', ['order' => $order->id])" class="font-semibold text-headings hover:text-primary no-underline">#{{ $order->order_number ?? $order->id }}</a>
                                             </td>
                                             <td class="px-3 py-3 text-body whitespace-nowrap">{{ formatDate($order->_created_at ?? null) }}</td>
-                                            <td class="px-3 py-3 text-body text-center">{{ (int) ($order->orderLineItems?->count() ?? 0) }}</td>
+                                            <td class="px-3 py-3 text-body text-center">{{ (int) ($order->orderLineItems?->sum('quantity') ?? 0) }}</td>
                                             <td class="px-3 py-3 text-body">{{ optional($order->shippingMethod)->name ?: '/' }}</td>
                                             <td class="px-3 py-3 text-body">{{ optional($order->billingMethod)->name ?: '/' }}</td>
                                             <td class="px-3 py-3">
@@ -98,7 +101,7 @@
                                             ])>{{ t(orderStatusLabel($order->status ?? null)) }}</span>
                                         </div>
                                         <div class="flex items-center justify-between gap-3 text-xs text-body/70">
-                                            <span>{{ formatDate($order->_created_at ?? null) }} · {{ (int) ($order->orderLineItems?->count() ?? 0) }} @t('items')</span>
+                                            <span>{{ formatDate($order->_created_at ?? null) }} · {{ (int) ($order->orderLineItems?->sum('quantity') ?? 0) }} @t('items')</span>
                                             <span class="font-semibold text-headings text-sm">{{ formatCurrency($order->total_price ?? 0) }}</span>
                                         </div>
                                         <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-body/70">
@@ -123,6 +126,7 @@
                     @include('components.pagination', ['paginator' => $orders])
                 @endif
             </div>
+            @show
         </div>
     </div>
     {{-- Owner-editable content region (bottom of page). --}}

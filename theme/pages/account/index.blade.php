@@ -7,8 +7,11 @@
     @storefrontSlot('content-top')
     <div class="page page--account flex flex-col gap-5">
         <div class="flex flex-col md:flex-row gap-6">
+            @section('account.nav')
             @include('partials.account-nav', ['active' => 'dashboard'])
+            @show
 
+            @section('account.main')
             <div class="flex-1 flex flex-col gap-5 min-w-0">
                 {{-- Stat cards --}}
                 <section class="account__stats grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -88,7 +91,7 @@
                                             </span>
                                             <span class="flex flex-col min-w-0 flex-1">
                                                 <span class="text-sm font-semibold text-headings truncate">#{{ $order->order_number ?? $order->id }}</span>
-                                                <span class="text-xs text-body/70 truncate">{{ formatDate($order->_created_at ?? null) }} · {{ (int) ($order->orderLineItems?->count() ?? 0) }} @t('items')</span>
+                                                <span class="text-xs text-body/70 truncate">{{ formatDate($order->_created_at ?? null) }} · {{ (int) ($order->orderLineItems?->sum('quantity') ?? 0) }} @t('items')</span>
                                             </span>
                                             <span @class([
                                                 'inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium flex-shrink-0',
@@ -136,6 +139,7 @@
                     </section>
                 @endif
             </div>
+            @show
         </div>
     </div>
     {{-- Owner-editable content region (bottom of page). --}}

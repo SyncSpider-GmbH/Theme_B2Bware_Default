@@ -150,31 +150,21 @@
                          selected variant the bulk table below owns purchase. --}}
                     @unless($variants->isNotEmpty() && ($store['variation_display_mode'] ?? 'table') === 'table' && empty($isVariantView))
                     @section('price')
-                        <div>
-                            @include('components.price', [
+                        {{-- The ONE price render (docs/pricing.md): struck list +
+                             current via the price component; the contract badge
+                             only labels WHY the price is lower — no figures. --}}
+                        <div class="product__price-block flex flex-wrap items-center gap-3">
+                            @include('components.product-price', [
+                                'product' => $product,
+                                'source'  => $selectedVariant ?: $product,
                                 'priceView' => $priceView ?? null,
-                                'amount'    => data_get($selectedVariant ?: $product, 'finalPrice.price')
-                                    ?? data_get($selectedVariant ?: $product, 'specialPrice.price')
-                                    ?? data_get($selectedVariant ?: $product, 'price.price')
-                                    ?? 0,
-                                'compareAt' => data_get($selectedVariant ?: $product, 'specialPrice.price') !== null
-                                    ? data_get($selectedVariant ?: $product, 'price.price')
-                                    : null,
-                                'size'      => 'lg',
+                                'size' => 'lg',
+                                'hideWhenConfigurableParentWithoutPrice' => data_get($product, 'product_type') === 'configurable' && empty($selectedVariant),
                             ])
+                            @if(!empty($contractPrice))
+                                <span class="product__contract-badge inline-flex items-center self-center rounded-full border border-primary bg-primary-subtle px-3 py-1 text-xs font-semibold text-primary">@t('Your contracted price')</span>
+                            @endif
                         </div>
-                    @show
-
-                    @section('contract-price')
-                        @if(!empty($contractPrice))
-                            <div class="product__contract-price flex flex-wrap items-baseline gap-2 self-start rounded border border-primary bg-primary-subtle px-3 py-2">
-                                <span class="text-sm font-semibold text-primary">@t('Your contracted price')</span>
-                                <span class="text-lg font-semibold text-headings">{{ formatCurrency($contractPrice['price']) }}</span>
-                                @if($contractPrice['has_saving'])
-                                    <span class="text-sm text-body line-through">{{ formatCurrency($contractPrice['regular']) }}</span>
-                                @endif
-                            </div>
-                        @endif
                     @show
 
                     @section('tier-prices')
@@ -188,7 +178,13 @@
                                             data-tier-card
                                             data-tier-min="{{ (int) ($tier['min_quantity'] ?? 0) }}"
                                         >
-                                            <span class="text-xs text-body">{{ (int) ($tier['min_quantity'] ?? 0) }}+ {{ t('pcs') }}</span>
+                                            <span class="text-xs text-body">
+                                                @if(($store['tier_quantity_comparison'] ?? 'gte') === 'gt')
+                                                    &gt;{{ (int) ($tier['min_quantity'] ?? 0) }} {{ t('pcs') }}
+                                                @else
+                                                    {{ (int) ($tier['min_quantity'] ?? 0) }}+ {{ t('pcs') }}
+                                                @endif
+                                            </span>
                                             <span class="text-sm font-semibold text-headings">{{ formatCurrency($tier['price'] ?? 0) }}</span>
                                         </div>
                                     @endforeach
@@ -198,13 +194,30 @@
                     @show
 
                     @section('availability')
-                        <div>
+                        <div class="flex flex-col gap-2">
                             @if($stockInfo['manage'])
                                 @include('components.stock-badge', [
                                     'inStock'  => $stockInfo['available'],
                                     'quantity' => $stockInfo['quantity'],
                                     'low'      => $stockInfo['low'],
                                 ])
+                            @endif
+                            @if(!empty($stockInfo['incoming']))
+                                <div class="product__incoming flex flex-col gap-1" data-incoming-stock>
+                                    <span class="text-xs font-medium text-body">@t('Incoming')</span>
+                                    <ul class="m-0 list-none p-0 text-sm text-headings">
+                                        @foreach($stockInfo['incoming'] as $row)
+                                            <li>
+                                                {{ $row['quantity'] }}
+                                                @if(!empty($row['date']))
+                                                    <span class="text-body">{{ $row['date'] }}</span>
+                                                @else
+                                                    <span class="text-body">@t('incoming')</span>
+                                                @endif
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
                             @endif
                         </div>
                     @show
@@ -225,7 +238,11 @@
                                             'value' => $stockInfo['min'],
                                             'min'   => $stockInfo['min'],
                                             'max'   => $stockInfo['max'],
+                                            'step'  => $stockInfo['step'],
                                         ])
+                                        @if($stockInfo['step'] > 1)
+                                            <span class="text-xs text-body">@t('This item must be ordered in multiples of %d.', $stockInfo['step'])</span>
+                                        @endif
                                     </div>
                                     <button
                                         type="submit"
@@ -386,11 +403,14 @@
                                                         <td class="px-4 py-3 text-right max-md:flex max-md:items-center max-md:justify-between max-md:gap-4 max-md:px-0 max-md:py-1.5">
                                                             <span class="md:hidden font-medium text-body/70">@t('Quantity')</span>
                                                             <input type="number" name="items[{{ $row['id'] }}]" value="0"
-                                                                min="0" step="1" inputmode="numeric"
+                                                                min="0" step="{{ (int) data_get($row, 'stock.step', 1) }}" inputmode="numeric"
                                                                 @if(data_get($row, 'stock.max') !== null) max="{{ (int) data_get($row, 'stock.max') }}" @endif
                                                                 data-variant-qty
                                                                 aria-label="{{ t('Quantity') }} {{ $row['name'] }}"
                                                                 class="w-20 rounded border border-surface-input-stroke bg-surface-input px-2 py-1 text-right text-body outline-none focus:border-primary">
+                                                            @if(data_get($row, 'stock.step', 1) > 1)
+                                                                <span class="block mt-1 text-xs text-body">@t('Multiples of %d only', data_get($row, 'stock.step'))</span>
+                                                            @endif
                                                         </td>
                                                     </tr>
                                                 @endforeach
@@ -544,10 +564,12 @@
                             const cards = [...scope.querySelectorAll('[data-tier-card]')];
                             const sync = () => {
                                 const qty = Number(qtyInput?.value || 0);
+                                const mode = window.__STOREFRONT__?.tier_quantity_comparison || 'gte';
                                 let activeMin = -1;
                                 for (const card of cards) {
                                     const min = Number(card.dataset.tierMin || 0);
-                                    if (qty >= min && min > activeMin) {
+                                    const matches = mode === 'gt' ? qty > min : qty >= min;
+                                    if (matches && min > activeMin) {
                                         activeMin = min;
                                     }
                                 }
@@ -574,20 +596,71 @@
 
 
             @section('related-products')
-                @if($crossSells->isNotEmpty())
-                    <section class="product__related mt-6 flex flex-col gap-4">
+                @if(($crossSellItems ?? $crossSells)->isNotEmpty())
+                    <section class="product__related mt-6 flex flex-col gap-4" data-cross-sell-section data-product-id="{{ $product->id }}" data-next-offset="{{ (int) ($crossSellNextOffset ?? $crossSellPageSize) }}">
                         <h2 class="font-primary text-2xl text-headings m-0">@t('Related products')</h2>
-                        <ul class="catalog__grid m-0 grid list-none grid-cols-2 gap-4 p-0 md:grid-cols-3 lg:grid-cols-4">
-                            @foreach($crossSells as $cs)
-                                <li>@include('components.product-card', [
-                                    'product'   => $cs,
-                                    'view'      => 'grid',
-                                    'priceView' => data_get($crossSellPriceViews ?? [], (string) ($cs->id ?? '')),
-                                    'redirect'  => '/' . $locale . '/products/' . $productSlug,
-                                ])</li>
-                            @endforeach
+                        <ul class="catalog__grid m-0 grid list-none grid-cols-2 gap-4 p-0 md:grid-cols-3 lg:grid-cols-4" data-cross-sell-products>
+                            @include('partials.product-cross-sell-items')
                         </ul>
+                        @if(!empty($crossSellHasMore))
+                            <div class="flex justify-center" data-cross-sell-more>
+                                <button type="button" class="inline-flex items-center justify-center rounded bg-primary px-4 py-2 font-medium text-primary-content transition-colors hover:bg-primary-600" data-load-more-cross-sells>
+                                    @t('Load more')
+                                </button>
+                            </div>
+                        @endif
                     </section>
+                    <script type="module">
+                        for (const section of document.querySelectorAll('[data-cross-sell-section]:not([data-cross-sell-bound])')) {
+                            section.dataset.crossSellBound = '1';
+                            const list = section.querySelector('[data-cross-sell-products]');
+                            const button = section.querySelector('[data-load-more-cross-sells]');
+                            if (!list || !button) {
+                                continue;
+                            }
+
+                            button.addEventListener('click', async () => {
+                                const base = window.__STOREFRONT__?.routes?.sections;
+                                if (!base || button.disabled) {
+                                    return;
+                                }
+
+                                button.disabled = true;
+                                section.setAttribute('aria-busy', 'true');
+                                try {
+                                    const url = `${base}${base.includes('?') ? '&' : '?'}sections=product-cross-sells&product=${encodeURIComponent(section.dataset.productId || '')}&offset=${encodeURIComponent(section.dataset.nextOffset || '0')}`;
+                                    const response = await fetch(url, {
+                                        credentials: 'same-origin',
+                                        headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                                    });
+                                    if (!response.ok) {
+                                        return;
+                                    }
+                                    const payload = await response.json();
+                                    const html = payload?.sections?.['product-cross-sells'];
+                                    if (typeof html !== 'string' || html.trim() === '') {
+                                        button.closest('[data-cross-sell-more]')?.remove();
+                                        return;
+                                    }
+
+                                    const wrap = document.createElement('div');
+                                    wrap.innerHTML = html;
+                                    for (const card of wrap.querySelectorAll('[data-cross-sell-product]')) {
+                                        list.append(card);
+                                    }
+                                    const marker = wrap.querySelector('[data-cross-sell-marker]');
+                                    if (marker?.dataset.crossSellNext) {
+                                        section.dataset.nextOffset = marker.dataset.crossSellNext;
+                                    } else {
+                                        button.closest('[data-cross-sell-more]')?.remove();
+                                    }
+                                } finally {
+                                    button.disabled = false;
+                                    section.removeAttribute('aria-busy');
+                                }
+                            });
+                        }
+                    </script>
                 @endif
             @show
         @endif

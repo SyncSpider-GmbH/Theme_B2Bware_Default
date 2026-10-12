@@ -416,25 +416,13 @@ dialog {
 }
 
 /* ----------------------------------------------------------------------------
- * Hidden scrollbar — horizontally-scrollable rows with their own arrow controls
+ * Hidden scrollbar — the product gallery thumbnail rail
  *
  * Tailwind ships no core utility for suppressing a native scrollbar, so this is
- * a targeted custom rule (docs/styling.md §10.4). Used by the header category row
- * (partials/nav.blade.php) — scrolling itself still works (touch, trackpad,
- * keyboard via the row's `tabindex`), only the native scrollbar chrome is
- * hidden in favor of the row's own prev/next arrow buttons.
- * -------------------------------------------------------------------------- */
-.storefront-nav__links {
-    scrollbar-width: none;
-}
-
-.storefront-nav__links::-webkit-scrollbar {
-    display: none;
-}
-
-/* Same technique, for the product gallery's thumbnail rail — its own scroll
+ * a targeted custom rule (docs/styling.md §10.4). The rail's own scroll
  * arrows replace the scrollbar on both axes (up/down in the tablet+ vertical
- * column, left/right in the horizontal strip on phones). */
+ * column, left/right in the horizontal strip on phones).
+ * -------------------------------------------------------------------------- */
 .product-gallery__thumbs {
     scrollbar-width: none;
 }
@@ -443,3 +431,68 @@ dialog {
     display: none;
 }
 
+
+/* ----------------------------------------------------------------------------
+ * Catalog export — progress indicator
+ *
+ * The account catalog export generates on a queued job; while it runs the page
+ * shows a processing panel (partials rendered in pages/account/catalog-export)
+ * with a spinning icon and an indeterminate progress bar. Tailwind ships no
+ * indeterminate-bar utility, so the animation lives here. Colors read the
+ * theme's --color-primary token so tenant branding recolors it automatically.
+ * -------------------------------------------------------------------------- */
+.catalog-export-spinner svg {
+    animation: catalog-export-spin 0.9s linear infinite;
+    transform-origin: center;
+}
+
+.catalog-export-progress {
+    position: relative;
+    height: 4px;
+    border-radius: 9999px;
+    overflow: hidden;
+    background-color: color-mix(in srgb, var(--color-primary, #3260e7) 18%, transparent);
+}
+
+.catalog-export-progress__bar {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 40%;
+    border-radius: 9999px;
+    background-color: var(--color-primary, #3260e7);
+    animation: catalog-export-indeterminate 1.25s ease-in-out infinite;
+}
+
+@keyframes catalog-export-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes catalog-export-indeterminate {
+    0% {
+        left: -40%;
+        width: 40%;
+    }
+    50% {
+        left: 30%;
+        width: 55%;
+    }
+    100% {
+        left: 100%;
+        width: 40%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .catalog-export-spinner svg,
+    .catalog-export-progress__bar {
+        animation-duration: 0s;
+    }
+
+    .catalog-export-progress__bar {
+        left: 0;
+        width: 100%;
+        opacity: 0.6;
+    }
+}

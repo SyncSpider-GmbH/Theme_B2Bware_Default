@@ -61,6 +61,7 @@
     @storefrontSlot('content-top')
     <div class="login flex min-h-dvh w-full">
         {{-- ── Left: brand / marketing panel (hidden below lg) ─────────────── --}}
+        @section('login.brand')
         <aside class="login__brand login__brand--gradient relative hidden flex-col overflow-hidden p-8 lg:flex lg:flex-1 lg:p-10">
             @if(!empty($store['login_background']))
                 <div class="login__brand-bg absolute inset-0 z-0">
@@ -139,8 +140,10 @@
                 &copy; {{ now()->year }} {{ $store['name'] }}
             </p>
         </aside>
+        @show
 
         {{-- ── Right: auth form panel ──────────────────────────────────────── --}}
+        @section('login.form')
         <section class="login__auth flex flex-1 flex-col overflow-y-auto bg-surface-page p-6 lg:p-10">
             <div class="login__form-wrap m-auto w-full max-w-420">
                 {{-- Logo on mobile (the brand panel that normally carries it is hidden):
@@ -175,7 +178,9 @@
                 @storefrontForm('login', ['class' => 'login__form mt-6 flex flex-col gap-4'])
                     {{-- Email --}}
                     <div class="login__field flex flex-col gap-1.5">
-                        <label for="login-email" class="login__label text-sm font-medium text-body">@t('Email address')</label>
+                        <label for="login-email" class="login__label text-sm font-medium text-body">
+                            @t('Email address')<span aria-hidden="true" class="text-error ml-0.5">*</span>
+                        </label>
                         <div class="login__input flex items-center gap-2 rounded-lg border border-surface-input-stroke bg-surface-input px-3 py-2 focus-within:border-primary">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="login__input-icon h-5 w-5 shrink-0 text-placeholder" aria-hidden="true">
                                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
@@ -199,7 +204,9 @@
                     {{-- Password --}}
                     <div class="login__field flex flex-col gap-1.5">
                         <div class="login__label-row flex items-center justify-between gap-2">
-                            <label for="login-password" class="login__label text-sm font-medium text-body">@t('Password')</label>
+                            <label for="login-password" class="login__label text-sm font-medium text-body">
+                                @t('Password')<span aria-hidden="true" class="text-error ml-0.5">*</span>
+                            </label>
                             <a href="@routeUrl('store.forgot-password')" tabindex="-1" class="login__forgot-link text-sm font-medium text-primary hover:text-primary-600">
                                 @t('Forgot password?')
                             </a>
@@ -278,6 +285,7 @@
                 @endif
             </div>
         </section>
+        @show
     </div>
 
     {{-- Password show/hide toggle (progressive enhancement; the field works

@@ -38,6 +38,7 @@
             ])
         @else
             {{-- Confirmation header --}}
+            @section('guest-order.header')
             <div class="flex flex-col gap-1 pt-2">
                 <h1 class="font-primary text-xl font-semibold text-headings m-0">@t('Order Confirmation')</h1>
                 @if(data_get($order, 'customer.email'))
@@ -51,8 +52,10 @@
                     @t('Bookmark this page — the link works without logging in and serves as your proof of purchase.')
                 </p>
             </div>
+            @show
 
             {{-- Order summary card --}}
+            @section('guest-order.summary')
             <div class="bg-surface-card border border-border-subtle rounded-lg p-5 flex flex-col gap-4">
                 <div class="flex items-start justify-between gap-3 flex-wrap">
                     <div class="flex flex-col gap-2">
@@ -93,8 +96,10 @@
                     </div>
                 </dl>
             </div>
+            @show
 
             {{-- Line items + totals --}}
+            @section('guest-order.items')
             <div class="bg-surface-card border border-border-subtle rounded-lg overflow-hidden">
                 <header class="px-5 py-4 border-b border-border-subtle">
                     <h2 class="font-primary text-base font-semibold text-headings m-0">@t('Items')</h2>
@@ -155,8 +160,10 @@
                     </dl>
                 </div>
             </div>
+            @show
 
             {{-- Addresses --}}
+            @section('guest-order.addresses')
             @if($order->shippingAddress || $order->billingAddress)
                 <section class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     @if($order->shippingAddress)
@@ -187,14 +194,17 @@
                     @endif
                 </section>
             @endif
+            @show
 
             {{-- Order note --}}
+            @section('guest-order.note')
             @if(!empty($order->order_note))
                 <section class="p-5 bg-surface-card border border-border-subtle rounded-lg flex flex-col gap-2">
                     <h2 class="font-primary text-base font-semibold text-headings m-0">@t('Your comment')</h2>
                     <p class="text-sm text-body m-0 whitespace-pre-line">{{ $order->order_note }}</p>
                 </section>
             @endif
+            @show
         @endif
     </div>
     {{-- Owner-editable content region (bottom of page). --}}

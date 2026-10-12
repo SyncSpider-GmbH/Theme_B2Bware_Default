@@ -7,8 +7,11 @@
     @storefrontSlot('content-top')
     <div class="page page--account page--account-profile flex flex-col gap-5">
         <div class="flex flex-col md:flex-row gap-6">
+            @section('account.nav')
             @include('partials.account-nav', ['active' => 'profile'])
+            @show
 
+            @section('account.main')
             <div class="flex-1 flex flex-col gap-5 min-w-0">
                 @include('components.banner', ['type' => 'success', 'message' => $messages['success'] ?? null])
 
@@ -204,43 +207,90 @@
                     </div>
                 @endif
 
-                {{-- Danger zone: delete account --}}
-                <div class="bg-surface-card border border-error/30 rounded-lg overflow-hidden">
-                    <div class="p-5 flex flex-col gap-3">
-                        <div class="flex flex-col gap-1">
-                            <h2 class="font-primary text-base font-semibold text-headings m-0">@t('Delete account')</h2>
-                            <p class="text-sm text-body m-0">@t('Permanently close your account. This signs you out and cannot be undone.')</p>
-                        </div>
-                        @storefrontError('account_delete_password')
-                        @storefrontError('account_delete')
-                        <button type="button" data-storefront-modal-open="delete-account-modal"
-                                class="inline-flex items-center justify-center self-start rounded-md border border-error text-error font-medium text-sm px-4 py-2 cursor-pointer hover:bg-error/10 transition-colors bg-transparent">
-                            @t('Delete account')
-                        </button>
-                    </div>
-                </div>
-
-                <dialog id="delete-account-modal" class="modal bg-surface-card text-body rounded-lg shadow-xl p-0 border-0 backdrop:bg-backdrop/40">
-                    <div class="flex flex-col gap-3 p-6 min-w-80 max-w-md">
-                        <header class="flex items-center justify-between gap-3 pb-3 border-b border-border-subtle">
-                            <h2 class="font-primary text-lg text-headings m-0">@t('Delete account')</h2>
-                            <button type="button" class="inline-flex h-8 w-8 items-center justify-center text-2xl leading-none text-body hover:text-headings cursor-pointer bg-transparent border-0" data-modal-close aria-label="@t('Close')">&times;</button>
-                        </header>
-                        <p class="text-sm text-body m-0">@t('This permanently closes your account and signs you out. This action cannot be undone.')</p>
-                        @storefrontForm('profile-delete', ['class' => 'flex flex-col gap-3'])
-                            <label class="flex flex-col gap-1 text-sm text-body">
-                                @t('Confirm your password')
-                                <input type="password" name="current_password" autocomplete="current-password" required
-                                       class="px-3 py-2 border border-surface-input-stroke rounded-md bg-surface-input text-body focus:border-primary outline-none">
-                            </label>
-                            <div class="flex items-center justify-end gap-2 pt-1">
-                                <button type="button" data-modal-close class="inline-flex items-center justify-center rounded-md border border-border-subtle bg-transparent text-headings px-4 py-2 cursor-pointer hover:bg-surface-hover text-sm">@t('Cancel')</button>
-                                <button type="submit" class="inline-flex items-center justify-center rounded-md bg-error text-neutral-white font-medium px-4 py-2 cursor-pointer hover:bg-error/90 text-sm">@t('Delete account')</button>
+                {{-- Danger zone: delete account (graceful flow: request → confirm code → grace period) --}}
+                @if(($deletionRequest['status'] ?? null) === 'scheduled')
+                    <div class="bg-surface-card border border-error/30 rounded-lg overflow-hidden">
+                        <div class="p-5 flex flex-col gap-3">
+                            <div class="flex flex-col gap-1">
+                                <h2 class="font-primary text-base font-semibold text-headings m-0">@t('Account deletion scheduled')</h2>
+                                <p class="text-sm text-body m-0">
+                                    @t('Your account will be permanently deleted on') <strong>@formatDate($deletionRequest['scheduled_for'])</strong>.
+                                    @t('You can cancel any time before that date.')
+                                </p>
                             </div>
-                        @endstorefrontForm
+                            @storefrontError('account_delete')
+                            @storefrontForm('profile-delete-cancel', ['class' => 'flex'])
+                                <button type="submit" class="inline-flex items-center justify-center rounded-md border border-border-subtle bg-transparent text-headings font-medium text-sm px-4 py-2 cursor-pointer hover:bg-surface-hover transition-colors">
+                                    @t('Cancel account deletion')
+                                </button>
+                            @endstorefrontForm
+                        </div>
                     </div>
-                </dialog>
+                @elseif(($deletionRequest['status'] ?? null) === 'awaiting_confirmation')
+                    <div class="bg-surface-card border border-error/30 rounded-lg overflow-hidden">
+                        <div class="p-5 flex flex-col gap-3">
+                            <div class="flex flex-col gap-1">
+                                <h2 class="font-primary text-base font-semibold text-headings m-0">@t('Confirm account deletion')</h2>
+                                <p class="text-sm text-body m-0">@t('We sent a 6-digit code to your email address. Enter it below to confirm the deletion request.')</p>
+                            </div>
+                            @storefrontError('account_delete_token')
+                            @storefrontError('account_delete')
+                            @storefrontForm('profile-delete-confirm', ['class' => 'flex flex-wrap items-end gap-3'])
+                                <label class="flex flex-col gap-1 text-sm text-body">
+                                    @t('Confirmation code')
+                                    <input type="text" name="token" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required autocomplete="one-time-code"
+                                           class="px-3 py-2 border border-surface-input-stroke rounded-md bg-surface-input text-body focus:border-primary outline-none w-40 tracking-widest">
+                                </label>
+                                <button type="submit" class="inline-flex items-center justify-center rounded-md bg-error text-neutral-white font-medium px-4 py-2 cursor-pointer hover:bg-error/90 text-sm">
+                                    @t('Confirm deletion')
+                                </button>
+                            @endstorefrontForm
+                            @storefrontForm('profile-delete-cancel', ['class' => 'flex'])
+                                <button type="submit" class="inline-flex items-center justify-center bg-transparent border-0 p-0 text-sm text-body underline cursor-pointer hover:text-headings">
+                                    @t('Cancel this request')
+                                </button>
+                            @endstorefrontForm
+                        </div>
+                    </div>
+                @else
+                    <div class="bg-surface-card border border-error/30 rounded-lg overflow-hidden">
+                        <div class="p-5 flex flex-col gap-3">
+                            <div class="flex flex-col gap-1">
+                                <h2 class="font-primary text-base font-semibold text-headings m-0">@t('Delete account')</h2>
+                                <p class="text-sm text-body m-0">@t('Request account deletion. You will confirm by email, then your account is deleted after a grace period during which you can change your mind.')</p>
+                            </div>
+                            @storefrontError('account_delete_password')
+                            @storefrontError('account_delete')
+                            <button type="button" data-storefront-modal-open="delete-account-modal"
+                                    class="inline-flex items-center justify-center self-start rounded-md border border-error text-error font-medium text-sm px-4 py-2 cursor-pointer hover:bg-error/10 transition-colors bg-transparent">
+                                @t('Delete account')
+                            </button>
+                        </div>
+                    </div>
+
+                    <dialog id="delete-account-modal" class="modal bg-surface-card text-body rounded-lg shadow-xl p-0 border-0 backdrop:bg-backdrop/40">
+                        <div class="flex flex-col gap-3 p-6 min-w-80 max-w-md">
+                            <header class="flex items-center justify-between gap-3 pb-3 border-b border-border-subtle">
+                                <h2 class="font-primary text-lg text-headings m-0">@t('Delete account')</h2>
+                                <button type="button" class="inline-flex h-8 w-8 items-center justify-center text-2xl leading-none text-body hover:text-headings cursor-pointer bg-transparent border-0" data-modal-close aria-label="@t('Close')">&times;</button>
+                            </header>
+                            <p class="text-sm text-body m-0">@t('We will email you a confirmation code. After you confirm, your account is scheduled for deletion and removed once the grace period ends. You can cancel during that period.')</p>
+                            @storefrontForm('profile-delete', ['class' => 'flex flex-col gap-3'])
+                                <label class="flex flex-col gap-1 text-sm text-body">
+                                    @t('Confirm your password')
+                                    <input type="password" name="current_password" autocomplete="current-password" required
+                                           class="px-3 py-2 border border-surface-input-stroke rounded-md bg-surface-input text-body focus:border-primary outline-none">
+                                </label>
+                                <div class="flex items-center justify-end gap-2 pt-1">
+                                    <button type="button" data-modal-close class="inline-flex items-center justify-center rounded-md border border-border-subtle bg-transparent text-headings px-4 py-2 cursor-pointer hover:bg-surface-hover text-sm">@t('Cancel')</button>
+                                    <button type="submit" class="inline-flex items-center justify-center rounded-md bg-error text-neutral-white font-medium px-4 py-2 cursor-pointer hover:bg-error/90 text-sm">@t('Request deletion')</button>
+                                </div>
+                            @endstorefrontForm
+                        </div>
+                    </dialog>
+                @endif
             </div>
+            @show
         </div>
     </div>
     {{-- Owner-editable content region (bottom of page). --}}
