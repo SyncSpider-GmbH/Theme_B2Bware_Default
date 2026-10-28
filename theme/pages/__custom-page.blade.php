@@ -5,10 +5,12 @@
 @section('content')
     {{-- Owner-editable content region (top of page). --}}
     @storefrontSlot('content-top')
-    <article class="page page--custom flex flex-col gap-4" data-slug="{{ $page['slug'] }}">
-        <header class="page__head flex flex-wrap items-baseline gap-3">
-            <h1 class="font-primary text-2xl text-headings m-0">{{ $page['title'] ?? '' }}</h1>
-        </header>
+    <article class="page page--custom flex flex-col gap-4" data-slug="{{ $page['slug'] }}" @if(!empty($page['is_home'])) data-home="1" @endif>
+        @unless(!empty($page['is_home']))
+            <header class="page__head flex flex-wrap items-baseline gap-3">
+                <h1 class="font-primary text-2xl text-headings m-0">{{ $page['title'] ?? '' }}</h1>
+            </header>
+        @endunless
 
         <div class="page__body flex flex-col gap-3 text-body">
             @if(!empty($page['body']))

@@ -29,6 +29,13 @@
                                 <input type="hidden" name="attr[{{ $attrId }}][]" value="{{ $val }}">
                             @endforeach
                         @endforeach
+                        @foreach($selectedDefinitions ?? [] as $attrId => $defs)
+                            @foreach($defs as $defName => $cells)
+                                @foreach($cells as $cell)
+                                    <input type="hidden" name="attr_def[{{ $attrId }}][{{ $defName }}][]" value="{{ $cell }}">
+                                @endforeach
+                            @endforeach
+                        @endforeach
                         @if(($priceSelected['min'] ?? null) !== null)
                             <input type="hidden" name="price_min" value="{{ $priceSelected['min'] }}">
                         @endif
@@ -62,7 +69,7 @@
                                     <circle cx="7" cy="18" r="2" fill="currentColor" stroke="none"></circle>
                                 </svg>
                                 <span>@t('Filters')</span>
-                                @if(!empty($selectedAttributes) || ($inStockSelected ?? false) || ($priceSelected['min'] ?? null) !== null || ($priceSelected['max'] ?? null) !== null || ($filters['q'] ?? ''))
+                                @if(!empty($selectedAttributes) || !empty($selectedDefinitions) || ($inStockSelected ?? false) || ($priceSelected['min'] ?? null) !== null || ($priceSelected['max'] ?? null) !== null || ($filters['q'] ?? ''))
                                     <span class="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-primary" aria-hidden="true"></span>
                                 @endif
                             </button>
@@ -70,11 +77,14 @@
                             <label class="flex items-center gap-2 text-sm text-body">
                                 <span class="hidden sm:inline">@t('Sort by')</span>
                                 <select name="sort" data-autosubmit class="rounded-lg border border-surface-input-stroke bg-surface-input px-2 py-1.5 text-sm text-body outline-none focus:border-primary">
-                                    <option value="relevance" @selected($sort === 'relevance')>@t('Relevance')</option>
                                     <option value="newest" @selected($sort === 'newest')>@t('Newest')</option>
                                     <option value="oldest" @selected($sort === 'oldest')>@t('Oldest')</option>
                                     <option value="name_asc" @selected($sort === 'name_asc')>@t('Name: A–Z')</option>
                                     <option value="name_desc" @selected($sort === 'name_desc')>@t('Name: Z–A')</option>
+                                    @if($canSeePrices)
+                                        <option value="price_asc" @selected($sort === 'price_asc')>@t('Price: low to high')</option>
+                                        <option value="price_desc" @selected($sort === 'price_desc')>@t('Price: high to low')</option>
+                                    @endif
                                     @foreach($sortOptions ?? [] as $option)
                                         <option value="{{ $option['key'] }}" @selected($sort === $option['key'])>{{ $option['label'] }}</option>
                                     @endforeach
@@ -142,6 +152,7 @@
             @show
 
             <div class="catalog__main flex min-w-0 flex-1 flex-col gap-4">
+                @include('partials.catalog-active-filters')
                 @section('listing')
                     @if($products->total() === 0)
                         @include('components.empty-state', [
@@ -157,7 +168,7 @@
                     @else
                         <ul class="catalog__grid grid grid-cols-1 gap-4 list-none m-0 p-0 sm:grid-cols-2 lg:grid-cols-3 desktop:grid-cols-4">
                             @foreach($products as $product)
-                                <li>@include('components.product-card', ['product' => $product, 'view' => 'grid', 'redirect' => '/' . $locale . '/products'])</li>
+                                <li class="h-full">@include('components.product-card', ['product' => $product, 'view' => 'grid', 'redirect' => '/' . $locale . '/products'])</li>
                             @endforeach
                         </ul>
                     @endif
@@ -192,7 +203,17 @@
 
         for (const form of document.querySelectorAll('.catalog-filter-form')) {
             let priceInputTimer;
-            form.querySelectorAll('input[type="checkbox"]').forEach((input) => {
+            form.querySelectorAll('[data-facet-search]').forEach((input) => {
+                input.addEventListener('input', () => {
+                    const section = input.closest('[data-facet-display]');
+                    const query = input.value.trim().toLowerCase();
+                    section?.querySelectorAll('[data-facet-option]').forEach((option) => {
+                        const label = (option.getAttribute('data-facet-value') || '').toLowerCase();
+                        option.hidden = query !== '' && !label.includes(query);
+                    });
+                });
+            });
+            form.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach((input) => {
                 input.addEventListener('change', () => form.requestSubmit());
             });
             form.querySelectorAll('input[type="number"]').forEach((input) => {

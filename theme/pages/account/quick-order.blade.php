@@ -150,7 +150,7 @@
                 <section
                     class="quick-order-review bg-surface-card border border-border-subtle rounded-lg p-5 flex flex-col gap-4"
                     data-quick-order-review
-                    {{ isset($review) && (int) data_get($review, 'valid_count') > 0 ? '' : 'hidden' }}>
+                    {{ data_get($reviewView, 'show_section') ? '' : 'hidden' }}>
                     <div class="flex flex-col gap-1">
                         <h2 class="font-primary text-base font-semibold text-headings m-0">@t('Order review')</h2>
                         <p class="text-xs text-body/70 m-0">@t('Review the products from your search and CSV file, adjust quantities or remove lines, then add them all to your cart.')</p>
@@ -158,49 +158,44 @@
 
                     {{-- Over-limit / could-not-match notices. Server-rendered for the
                          no-JS path; the inline module re-renders these after an AJAX
-                         upload. --}}
+                         upload. Quantity-multiple failures stay in the table below
+                         (correctable) and are intentionally omitted here. --}}
                     <div class="flex flex-col gap-2" data-qo-review-notices>
                         @isset($review)
                             @if (data_get($review, 'over_limit'))
                                 <div class="p-3 rounded-md bg-surface-error-subtle text-surface-error-subtle-content text-sm">
                                     @t('Your file has %d rows and the limit is %d — please split it into smaller files.', (int) data_get($review, 'total_rows'), (int) data_get($review, 'max_rows'))
                                 </div>
-                            @elseif((int) data_get($review, 'invalid_count') > 0)
+                            @elseif(count(data_get($reviewView, 'unrecoverable_rows', [])) > 0)
                                 <div
                                     class="p-3 rounded-md bg-surface-error-subtle text-surface-error-subtle-content text-sm flex flex-col gap-1">
                                     <span
-                                        class="font-medium">@t('%d row(s) from your file could not be added:', (int) data_get($review, 'invalid_count'))</span>
+                                        class="font-medium">@t('%d row(s) from your file could not be added:', count(data_get($reviewView, 'unrecoverable_rows', [])))</span>
                                     <ul class="list-disc list-inside m-0">
-                                        @foreach (data_get($review, 'rows', []) as $row)
-                                            @if (data_get($row, 'status') !== 'ok')
-                                                <li>@t('Line %d', (int) data_get($row, 'line')){{ data_get($row, 'sku') ? ' · ' . data_get($row, 'sku') : '' }}
-                                                    —
-                                                    @switch(data_get($row, 'status'))
-                                                        @case('missing_sku')
-                                                            @t('Missing SKU')
-                                                        @break
+                                        @foreach (data_get($reviewView, 'unrecoverable_rows', []) as $row)
+                                            <li>@t('Line %d', (int) data_get($row, 'line')){{ data_get($row, 'sku') ? ' · ' . data_get($row, 'sku') : '' }}
+                                                —
+                                                @switch(data_get($row, 'status'))
+                                                    @case('missing_sku')
+                                                        @t('Missing SKU')
+                                                    @break
 
-                                                        @case('invalid_quantity')
-                                                            @t('Invalid quantity')
-                                                        @break
+                                                    @case('invalid_quantity')
+                                                        @t('Invalid quantity')
+                                                    @break
 
-                                                        @case('not_found')
-                                                            @t('Not found')
-                                                        @break
+                                                    @case('not_found')
+                                                        @t('Not found')
+                                                    @break
 
-                                                        @case('out_of_stock')
-                                                            @t('Out of stock')
-                                                        @break
+                                                    @case('out_of_stock')
+                                                        @t('Out of stock')
+                                                    @break
 
-                                                        @case('invalid_quantity_step')
-                                                            {{ data_get($row, 'error_message') }}
-                                                        @break
-
-                                                        @default
-                                                            @t('Skipped')
-                                                    @endswitch
-                                                </li>
-                                            @endif
+                                                    @default
+                                                        @t('Skipped')
+                                                @endswitch
+                                            </li>
                                         @endforeach
                                     </ul>
                                 </div>
@@ -221,47 +216,65 @@
                                     </tr>
                                 </thead>
                                 <tbody data-qo-review-body>
-                                    @isset($review)
-                                        @foreach (data_get($review, 'rows', []) as $row)
-                                            @if (data_get($row, 'status') === 'ok')
-                                                <tr class="border-b border-border-subtle last:border-0" data-qo-review-row
-                                                    data-sku="{{ data_get($row, 'sku') }}">
-                                                    <td class="px-4 py-2.5 font-mono text-xs text-body/80 align-middle">
-                                                        {{ data_get($row, 'sku') }}</td>
-                                                    <td class="px-4 py-2.5 text-headings align-middle">
-                                                        {{ data_get($row, 'name') ?: data_get($row, 'sku') }}</td>
-                                                    <td class="px-4 py-2.5 text-right align-middle">
-                                                        <input type="hidden" name="sku[]" value="{{ data_get($row, 'sku') }}">
-                                                        <input type="number" name="quantity[]" min="1" step="1"
-                                                            inputmode="numeric"
-                                                            value="{{ max(1, (int) data_get($row, 'quantity')) }}" data-qo-row-qty
-                                                            class="w-20 rounded-lg border border-border-subtle bg-surface-card px-2 py-1.5 text-center text-sm font-semibold text-headings outline-none focus:border-primary">
-                                                    </td>
-                                                    <td class="px-4 py-2.5 text-right align-middle">
-                                                        <button type="button" data-qo-row-remove aria-label="{{ t('Remove') }}"
-                                                            class="text-body/60 hover:text-error bg-transparent border-0 p-1 leading-none text-lg cursor-pointer">&times;</button>
-                                                    </td>
-                                                </tr>
-                                            @endif
-                                        @endforeach
-                                    @endisset
+                                    @foreach (data_get($reviewView, 'reviewable_rows', []) as $row)
+                                        <tr
+                                            class="border-b border-border-subtle last:border-0{{ data_get($row, 'status') === 'invalid_quantity_step' ? ' bg-surface-error-subtle/40' : '' }}"
+                                            data-qo-review-row
+                                            data-sku="{{ data_get($row, 'sku') }}"
+                                            data-quantity-step="{{ max(1, (int) data_get($row, 'quantity_step', 1)) }}"
+                                            data-line="{{ (int) data_get($row, 'line') }}"
+                                            data-invalid="{{ data_get($row, 'status') === 'invalid_quantity_step' ? '1' : '0' }}">
+                                            <td class="px-4 py-2.5 font-mono text-xs text-body/80 align-middle">
+                                                {{ data_get($row, 'sku') }}</td>
+                                            <td class="px-4 py-2.5 text-headings align-middle">
+                                                <div class="flex flex-col gap-1">
+                                                    <span>{{ data_get($row, 'name') ?: data_get($row, 'sku') }}</span>
+                                                    <p data-qo-row-error
+                                                        class="text-xs text-surface-error-subtle-content m-0{{ data_get($row, 'status') === 'invalid_quantity_step' ? '' : ' hidden' }}">
+                                                        {{ data_get($row, 'status') === 'invalid_quantity_step' ? data_get($row, 'error_message') : '' }}
+                                                    </p>
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-2.5 text-right align-middle">
+                                                <input type="hidden" name="sku[]" value="{{ data_get($row, 'sku') }}"
+                                                    data-qo-row-sku>
+                                                {{-- Keep the uploaded quantity as-is — never auto-round to the step.
+                                                     Spinner arrows use the product multiple. --}}
+                                                <input type="number" name="quantity[]"
+                                                    min="{{ max(1, (int) data_get($row, 'quantity_step', 1)) }}"
+                                                    step="{{ max(1, (int) data_get($row, 'quantity_step', 1)) }}"
+                                                    inputmode="numeric"
+                                                    value="{{ is_numeric(data_get($row, 'quantity')) ? data_get($row, 'quantity') : 1 }}" data-qo-row-qty
+                                                    class="w-20 rounded-lg border {{ data_get($row, 'status') === 'invalid_quantity_step' ? 'border-error' : 'border-border-subtle' }} bg-surface-card px-2 py-1.5 text-center text-sm font-semibold text-headings outline-none focus:border-primary">
+                                            </td>
+                                            <td class="px-4 py-2.5 text-right align-middle">
+                                                <button type="button" data-qo-row-remove aria-label="{{ t('Remove') }}"
+                                                    class="text-body/60 hover:text-error bg-transparent border-0 p-1 leading-none text-lg cursor-pointer">&times;</button>
+                                            </td>
+                                        </tr>
+                                    @endforeach
                                 </tbody>
                             </table>
                         </div>
                         <div class="flex flex-wrap items-center justify-between gap-3">
                             <button type="button" data-qo-review-clear
                                 class="text-sm font-medium text-body/70 hover:text-error bg-transparent border-0 p-0 cursor-pointer">@t('Clear all')</button>
-                            <button type="submit"
-                                class="inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 font-medium bg-primary text-primary-content hover:bg-primary-600 cursor-pointer">
+                            <button type="submit" data-qo-review-submit
+                                @if (data_get($reviewView, 'has_invalid_quantity_step')) disabled aria-disabled="true" @endif
+                                class="inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 font-medium bg-primary text-primary-content hover:bg-primary-600 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                                 <span data-qo-review-submit-label>
                                     @t('Add products to the cart')
                                 </span>
                             </button>
                         </div>
+                        <p data-qo-review-block-hint
+                            class="text-xs text-surface-error-subtle-content m-0{{ data_get($reviewView, 'has_invalid_quantity_step') ? '' : ' hidden' }}">
+                            @t('Correct or remove every invalid quantity before adding products to your cart.')
+                        </p>
                     @endstorefrontForm
 
                     <p class="text-xs text-body/60 m-0" data-qo-review-empty
-                        {{ isset($review) && (int) data_get($review, 'valid_count') > 0 ? 'hidden' : '' }}>
+                        {{ count(data_get($reviewView, 'reviewable_rows', [])) > 0 ? 'hidden' : '' }}>
                         @t('No products yet — search above or upload a CSV file to build your order.')</p>
                 </section>
 
@@ -271,7 +284,7 @@
                         <h2 class="font-primary text-base font-semibold text-headings m-0">@t('You might also need')</h2>
                         <ul class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 list-none m-0 p-0">
                             @foreach ($suggestions as $product)
-                                <li>@include('components.product-card', [
+                                <li class="h-full">@include('components.product-card', [
                                     'product' => $product,
                                     'view' => 'grid',
                                     'redirect' => '/' . $locale . '/account/quick-order',
@@ -289,7 +302,10 @@
         // ── Review table refs ──────────────────────────────────────────────────
         const reviewSection     = document.querySelector('[data-quick-order-review]');
         const reviewBody        = reviewSection?.querySelector('[data-qo-review-body]');
+        const reviewForm        = reviewSection?.querySelector('[data-qo-review-form]');
+        const reviewSubmit      = reviewSection?.querySelector('[data-qo-review-submit]');
         const reviewSubmitLabel = reviewSection?.querySelector('[data-qo-review-submit-label]');
+        const reviewBlockHint   = reviewSection?.querySelector('[data-qo-review-block-hint]');
         const reviewClear       = reviewSection?.querySelector('[data-qo-review-clear]');
         const reviewNotices     = reviewSection?.querySelector('[data-qo-review-notices]');
         const reviewEmpty       = reviewSection?.querySelector('[data-qo-review-empty]');
@@ -310,13 +326,13 @@
             invalid_quantity: @json(t('Invalid quantity')),
             not_found:        @json(t('Not found')),
             out_of_stock:     @json(t('Out of stock')),
-            invalid_quantity_step: @json(t('Invalid quantity step')),
             skipped:          @json(t('Skipped')),
         };
         const invalidHeading    = @json(t('%d row(s) from your file could not be added:'));
         const lineLabel         = @json(t('Line %d'));
         const overLimitTemplate = @json(t('Your file has %d rows and the limit is %d — please split it into smaller files.'));
         const uploadFailed      = @json(t('We could not read that file — please check the format and try again.'));
+        const qtyStepErrorTemplate = @json(t('Quantity %d is invalid for SKU %s. This product must be ordered in multiples of %d.'));
 
         // ── Review table helpers ───────────────────────────────────────────────
         const findReviewRow = (sku) => {
@@ -326,21 +342,81 @@
                 .find((row) => (row.dataset.sku || '').toLowerCase() === key) ?? null;
         };
 
+        const quantityStepOf = (row) => Math.max(1, Number.parseInt(row?.dataset?.quantityStep || '1', 10) || 1);
+
+        const isQuantityMultiple = (qty, step) => {
+            const quantity = Number(qty);
+            const multiple = Math.max(1, Number(step) || 1);
+            return Number.isFinite(quantity)
+                && quantity > 0
+                && Number.isInteger(quantity)
+                && (quantity % multiple) === 0;
+        };
+
+        const formatQuantityStepError = (qty, sku, step) => qtyStepErrorTemplate
+            .replace('%d', String(qty))
+            .replace('%s', String(sku))
+            .replace('%d', String(step));
+
+        const setRowValidity = (row, valid, message = '') => {
+            if (!row) return;
+            row.dataset.invalid = valid ? '0' : '1';
+            row.classList.toggle('bg-surface-error-subtle/40', !valid);
+            const qtyField = row.querySelector('[data-qo-row-qty]');
+            if (qtyField) {
+                qtyField.classList.toggle('border-error', !valid);
+                qtyField.classList.toggle('border-border-subtle', valid);
+            }
+            const errorEl = row.querySelector('[data-qo-row-error]');
+            if (errorEl) {
+                errorEl.textContent = valid ? '' : message;
+                errorEl.classList.toggle('hidden', valid);
+            }
+        };
+
+        const validateReviewRow = (row) => {
+            if (!row) return true;
+            const step = quantityStepOf(row);
+            const qtyField = row.querySelector('[data-qo-row-qty]');
+            const qty = Number(qtyField?.value);
+            const sku = row.dataset.sku || '';
+            const valid = isQuantityMultiple(qty, step);
+            setRowValidity(
+                row,
+                valid,
+                valid ? '' : formatQuantityStepError(Number.isFinite(qty) ? qty : qtyField?.value || '', sku, step),
+            );
+            return valid;
+        };
+
         const refreshReview = () => {
             if (!reviewSection || !reviewBody) return;
-            const count = reviewBody.querySelectorAll('[data-qo-review-row]').length;
+            const rows = [...reviewBody.querySelectorAll('[data-qo-review-row]')];
+            rows.forEach((row) => validateReviewRow(row));
+            const count = rows.length;
+            const invalidCount = rows.filter((row) => row.dataset.invalid === '1').length;
             if (reviewSubmitLabel) {
                 reviewSubmitLabel.textContent = addLabel;
             }
             if (reviewEmpty) reviewEmpty.hidden = count > 0;
+            if (reviewSubmit) {
+                reviewSubmit.disabled = invalidCount > 0;
+                reviewSubmit.setAttribute('aria-disabled', invalidCount > 0 ? 'true' : 'false');
+            }
+            if (reviewBlockHint) {
+                reviewBlockHint.classList.toggle('hidden', invalidCount === 0);
+            }
             const hasNotices = !!(reviewNotices && reviewNotices.childElementCount > 0);
             reviewSection.hidden = count === 0 && !hasNotices;
         };
 
-        const buildReviewRow = (sku, name, qty, min = 1, max = null, step = 1) => {
+        const buildReviewRow = (sku, name, qty, min = 1, max = null, step = 1, options = {}) => {
+            const quantityStep = Math.max(1, Number(step) || 1);
             const row = document.createElement('tr');
             row.dataset.qoReviewRow = '';
             row.dataset.sku = sku;
+            row.dataset.quantityStep = String(quantityStep);
+            if (options.line) row.dataset.line = String(options.line);
             row.className = 'border-b border-border-subtle last:border-0';
 
             const skuCell = document.createElement('td');
@@ -349,7 +425,15 @@
 
             const nameCell = document.createElement('td');
             nameCell.className = 'px-4 py-2.5 text-headings align-middle';
-            nameCell.textContent = name || sku;
+            const nameWrap = document.createElement('div');
+            nameWrap.className = 'flex flex-col gap-1';
+            const nameText = document.createElement('span');
+            nameText.textContent = name || sku;
+            const errorEl = document.createElement('p');
+            errorEl.dataset.qoRowError = '';
+            errorEl.className = 'text-xs text-surface-error-subtle-content m-0 hidden';
+            nameWrap.append(nameText, errorEl);
+            nameCell.appendChild(nameWrap);
 
             const qtyCell = document.createElement('td');
             qtyCell.className = 'px-4 py-2.5 text-right align-middle';
@@ -357,12 +441,13 @@
             skuField.type = 'hidden';
             skuField.name = 'sku[]';
             skuField.value = sku;
+            skuField.dataset.qoRowSku = '';
             const qtyField = document.createElement('input');
             qtyField.type = 'number';
             qtyField.name = 'quantity[]';
-            qtyField.min = String(min);
+            qtyField.min = String(Math.max(min, quantityStep));
             if (max !== null) qtyField.max = String(max);
-            qtyField.step = String(step);
+            qtyField.step = String(quantityStep);
             qtyField.inputMode = 'numeric';
             qtyField.value = String(qty);
             qtyField.dataset.qoRowQty = '';
@@ -382,30 +467,40 @@
             removeCell.appendChild(removeButton);
 
             row.append(skuCell, nameCell, qtyCell, removeCell);
+            if (options.message) {
+                setRowValidity(row, false, options.message);
+            } else {
+                validateReviewRow(row);
+            }
             return row;
         };
 
         // Add a product row to the review table, merging by SKU: an existing
         // line has its quantity bumped; otherwise a new row is appended.
-        const mergeRow = (sku, name, qty, min = 1, max = null, step = 1) => {
+        // Uploaded quantities are never auto-rounded to the order multiple.
+        const mergeRow = (sku, name, qty, min = 1, max = null, step = 1, options = {}) => {
             if (!reviewBody || !sku) return;
             const quantity = Number(qty);
+            const quantityStep = Math.max(1, Number(options.quantityStep ?? step) || 1);
             const existing = findReviewRow(sku);
             if (existing) {
                 const field = existing.querySelector('[data-qo-row-qty]');
                 const current = Number(field?.value ?? 0);
+                existing.dataset.quantityStep = String(quantityStep);
+                if (options.line) existing.dataset.line = String(options.line);
                 if (field) {
-                    field.min = String(min);
+                    field.min = String(Math.max(min, quantityStep));
                     if (max !== null) {
                         field.max = String(max);
                     } else {
                         field.removeAttribute('max');
                     }
-                    field.step = String(step);
+                    field.step = String(quantityStep);
                     field.value = String(current + quantity);
                 }
+                validateReviewRow(existing);
             } else {
-                reviewBody.appendChild(buildReviewRow(sku, name, quantity, min, max, step));
+                reviewBody.appendChild(buildReviewRow(sku, name, quantity, min, max, quantityStep, options));
             }
         };
 
@@ -419,12 +514,28 @@
             refreshReview();
         });
 
-        // ── Review body: remove a row ──────────────────────────────────────────
+        // ── Review body: quantity edits + remove ───────────────────────────────
+        reviewBody?.addEventListener('input', (event) => {
+            const field = event.target.closest('[data-qo-row-qty]');
+            if (!field) return;
+            validateReviewRow(field.closest('[data-qo-review-row]'));
+            refreshReview();
+        });
+
         reviewBody?.addEventListener('click', (event) => {
             const remove = event.target.closest('[data-qo-row-remove]');
             if (!remove) return;
             remove.closest('[data-qo-review-row]')?.remove();
             refreshReview();
+        });
+
+        // Hard stop: never submit while unresolved quantity-multiple errors remain.
+        reviewForm?.addEventListener('submit', (event) => {
+            refreshReview();
+            const invalidCount = reviewBody?.querySelectorAll('[data-qo-review-row][data-invalid="1"]').length ?? 0;
+            if (invalidCount > 0) {
+                event.preventDefault();
+            }
         });
 
         // ── Clear all ──────────────────────────────────────────────────────────
@@ -530,7 +641,15 @@
                 }
                 renderUploadNotices(payload);
                 (Array.isArray(payload.rows) ? payload.rows : []).forEach((row) => {
-                    mergeRow(row.sku, row.name ?? row.sku, row.quantity);
+                    const step = Math.max(1, Number(row.quantity_step) || 1);
+                    const invalidStep = row.status === 'invalid_quantity_step';
+                    mergeRow(row.sku, row.name ?? row.sku, row.quantity, step, null, step, {
+                        line: row.line,
+                        quantityStep: step,
+                        message: invalidStep
+                            ? (row.message || formatQuantityStepError(row.quantity, row.sku, step))
+                            : '',
+                    });
                 });
                 refreshReview();
                 if (uploadInput) uploadInput.value = '';

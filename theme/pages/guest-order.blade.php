@@ -124,7 +124,7 @@
                                         <div class="flex items-center gap-3">
                                             @if(data_get($item, 'product.resolved_main_media.media_url') ?? data_get($item, 'product.main_media.media_url'))
                                                 <span class="block h-10 w-10 shrink-0 overflow-hidden rounded bg-surface">
-                                                    <img src="@storefrontImage(data_get($item, 'product.resolved_main_media.media_url') ?? data_get($item, 'product.main_media.media_url'), 80, 80, 85)" alt="{{ $item->name ?? optional($item->product)->name ?? '' }}" class="h-full w-full object-cover" loading="lazy">
+                                                    <img src="@storefrontImage(data_get($item, 'product.resolved_main_media.media_url') ?? data_get($item, 'product.main_media.media_url'), 80, 80, 85)" alt="{{ $item->name ?? optional($item->product)->name ?? '' }}" class="h-full w-full object-contain" loading="lazy">
                                                 </span>
                                             @else
                                                 <span class="block h-10 w-10 shrink-0 overflow-hidden rounded">
@@ -161,6 +161,9 @@
                 </div>
             </div>
             @show
+
+            {{-- Attribute collections flagged show_in_order_summary --}}
+            @include('partials.attribute-collections', ['collections' => $orderCollections ?? []])
 
             {{-- Addresses --}}
             @section('guest-order.addresses')

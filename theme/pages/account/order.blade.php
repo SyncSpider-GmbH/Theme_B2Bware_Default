@@ -131,7 +131,7 @@
                                                 <div class="flex items-center gap-3">
                                                     @if(data_get($item, 'product.resolved_main_media.media_url') ?? data_get($item, 'product.main_media.media_url'))
                                                         <span class="block h-10 w-10 shrink-0 overflow-hidden rounded bg-surface">
-                                                            <img src="@storefrontImage(data_get($item, 'product.resolved_main_media.media_url') ?? data_get($item, 'product.main_media.media_url'), 80, 80, 85)" alt="{{ $item->name ?? optional($item->product)->name ?? '' }}" class="h-full w-full object-cover" loading="lazy">
+                                                            <img src="@storefrontImage(data_get($item, 'product.resolved_main_media.media_url') ?? data_get($item, 'product.main_media.media_url'), 80, 80, 85)" alt="{{ $item->name ?? optional($item->product)->name ?? '' }}" class="h-full w-full object-contain" loading="lazy">
                                                         </span>
                                                     @else
                                                         <span class="block h-10 w-10 shrink-0 overflow-hidden rounded">
@@ -167,6 +167,25 @@
                             </dl>
                         </div>
                     </div>
+
+                    {{-- Attribute collections flagged show_in_order_summary --}}
+                    @include('partials.attribute-collections', ['collections' => $orderCollections ?? []])
+
+                    @if(count($order->attributeValues ?? []))
+                        <section class="p-5 bg-surface-card border border-border-subtle rounded-lg">
+                            <h2 class="font-primary text-base font-semibold text-headings m-0 mb-3">@t('Additional information')</h2>
+                            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4 m-0">
+                                @foreach($order->attributeValues as $attributeValue)
+                                    @if(data_get($attributeValue, 'value.value') !== null && data_get($attributeValue, 'value.value') !== '')
+                                        <div class="flex flex-col gap-0.5">
+                                            <dt class="text-xs font-medium text-body/70 uppercase tracking-wide">{{ data_get($attributeValue, 'value.attribute.name') ?? data_get($attributeValue, 'value.attribute.attribute_code') }}</dt>
+                                            <dd class="text-sm text-headings m-0 whitespace-pre-line">{{ data_get($attributeValue, 'value.value') }}</dd>
+                                        </div>
+                                    @endif
+                                @endforeach
+                            </dl>
+                        </section>
+                    @endif
 
                     {{-- Addresses --}}
                     @if($order->shippingAddress || $order->billingAddress)

@@ -1,5 +1,5 @@
 @foreach(($crossSellItems ?? []) as $cs)
-    <li data-cross-sell-product>@include('components.product-card', [
+    <li class="h-full" data-cross-sell-product>@include('components.product-card', [
         'product'   => $cs,
         'view'      => 'grid',
         'priceView' => data_get($crossSellItemPriceViews ?? [], (string) ($cs->id ?? '')),

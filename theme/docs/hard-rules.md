@@ -93,6 +93,7 @@ Each blade file must either match one of the canonical paths below **or** be a c
 - `checkout-address-summary.blade.php` &mdash; compact address row inside the checkout "Manage addresses" modals; pass `address` and `defaultForm`
 - `catalog-export-fields.blade.php` &mdash; shared column switches + native product filters for the catalog-export page (only rendered when `$store['catalog_export_enabled']`)
 - `catalog-export-preview.blade.php` &mdash; live catalog-export preview table (AJAX section, §9.7; only rendered when `$store['catalog_export_enabled']`)
+- `catalog-active-filters.blade.php` &mdash; applied catalog-filter chips (attribute values, price bounds, in stock, search) above the product grid; each chip links to the listing with that one filter removed. Rendered from `$activeFilters` (see catalog.md)
 - `product-details.blade.php` &mdash; the whole product-page body as a single AJAX-refreshable section (`product-details`, §9.7) so the variant picker can re-render it server-side
 - `added-to-cart-modal.blade.php` &mdash; the added-to-cart confirmation `<dialog>`; included from `shop.blade.php`. Override for a drawer/toast, or omit the `@include` to suppress it (§9.7)
 
@@ -378,7 +379,8 @@ to every visitor.
 - Wrap **every** catalog / customer media URL with `@storefrontImage($url, $width?, $height?, $quality?, $aspectRatio?)` — products, categories, gallery, cart, orders, and custom `@fetch` tiles that render `media_url`.
 - Do **not** put a bare `media_url` (Bunny `*.b-cdn.net` **or** SpiderDesk `/media/...`) in `src`.
 - Placeholders and `@themeAsset(...)` stay unwrapped; the directive is a no-op for those hosts anyway.
-- Pick sizes for the surface (see `seo-and-images.md` §9.11). Prefer width-only (`null` height) when a square crop would zoom into the subject.
-- The platform appends Bunny Optimizer / desk resize params (`width`, `height`, `quality`, `aspect_ratio`). Full Bunny Dynamic Images capabilities (crop gravity, `format=webp`, filters, …) are documented in §9.11 — do not hand-roll those on arbitrary hosts.
+- Pick sizes for the surface (see `seo-and-images.md` §9.11). Pass width and height for the box. Do not pass `aspect_ratio` for a product photo — that argument crops. Width and height together fit the image inside the box.
+- Product photos use `object-contain` inside a fixed frame. Do not use `object-cover` on product media. A grid card shares its row height: the cell is `h-full`, the article is `flex h-full flex-1 flex-col`, the image is `aspect-square`, the title is `line-clamp-2 min-h-12`, and the price and button sit in `mt-auto`. The recipe is §9.11.
+- The platform appends Bunny Optimizer Transform API query params (`width`, `height`, `quality`, `aspect_ratio`). Optimizer must be enabled on the pull zone or Bunny serves the original. Full Bunny capabilities (crop gravity, `format=webp`, filters, …) are documented in §9.11 — do not hand-roll those on arbitrary hosts.
 
 ---

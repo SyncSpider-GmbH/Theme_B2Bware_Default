@@ -27,7 +27,7 @@ Most of these flags also carry a **server-side safety net** (a 404, a rejected f
 | `$isAuthenticated`| bool    | `true` when a customer is signed in.                                                             |
 | `$canSeePrices`   | bool    | Whether prices may be shown to the current visitor.                                              |
 | `$canAddToCart`   | bool    | Whether the current visitor may put items in the cart.                                           |
-| `$cartLines`      | array   | Theme-ready cart line rows (image_url, name, sku, slug, unit_label, quantity, min/max_quantity, unit_price, original_price, has_discount, applied_catalog_rules, line_total, manage_stock, stock_quantity, stock_availability, delivery_date, **plus net/gross**: unit_price_excl/incl, original_price_excl/incl, line_total_excl/incl, tax_rate, has_tax). Consumed by `cart-line-items`; refreshes on AJAX. |
+| `$cartLines`      | array   | Theme-ready cart line rows (image_url, name, sku, slug, unit_label, quantity, min/max_quantity, unit_price, original_price, has_discount, applied_catalog_rules, line_total, manage_stock, stock_quantity, stock_availability, delivery_date, attribute_collections, **plus net/gross**: unit_price_excl/incl, original_price_excl/incl, line_total_excl/incl, tax_rate, has_tax). Consumed by `cart-line-items`; refreshes on AJAX. |
 | `$freeDelivery`   | array/null | Nearest free-shipping threshold for the "X away from free delivery" banner (`remaining`, `target`, `current`, `met`, `is_currency`), or `null` when no such rule applies. Consumed by `cart-summary`. |
 | `$store`          | array   | Store identity **and** capability flags (name, logo, support contacts, guest / registration / coupon / price rules) — read with `$store['key']`. Mirrors Shopify's `shop` object; see the keys table below. The **single** source for store info & flags. |
 | `$passwordRequirements` | array | Human-readable, config-driven password requirement strings (e.g. `"At least 8 characters"`, `"One uppercase letter"`) that mirror the server-enforced rules. Render as a checklist on the register / reset-password forms (wrap each in `@t(...)`). May be empty; guard with `@if(count($passwordRequirements))` (lazy proxies are objects — do not use `empty()`). |
@@ -99,8 +99,10 @@ Like Shopify's `shop` object, `$store` carries both store **identity** and store
 | `category_ui_type`         | string | `list`      | Header category navigation: `list` (a link to the categories index) or `mega_menu` (a panel of the depth window). Anything else, including a missing value, is `list`. |
 | `mega_menu_depth_start`    | int    | `0`         | First category depth shown in the mega-menu panel. The panel includes this depth and the next one. Missing or invalid values are `0`. |
 | `indexable`                | bool   | `true`      | Search engines may index the storefront; drives `<meta name="robots">` automatically. |
+| `default_billing_method_id` | int\|null | `null`   | Store fallback payment method, used only when the shopper has no visible default of their own. Not the id actually selected for this shopper. Set under Settings → Configuration → Storefront, not Store Setup → Features. |
+| `hide_payment_method`      | bool   | `false`     | Hide the Payment method block on checkout when a method could be selected. Always `false` when no store default is saved. Presentation only. |
 | `display_prices_with_tax`  | string | `excluding_tax` | How catalog/cart prices are shown: `excluding_tax` (net, B2B), `including_tax` (gross, B2C) or `both`. Follows the tenant's TaxHub setting. |
-| `captcha`                  | array  | `['enabled' => false]` | Client-safe CAPTCHA configuration: `enabled`, `provider`, `site_key`, `token_input`, `protected_forms`. The widget renders itself on protected forms (see `forms.md`), so read this only for extra copy around it. The secret key is never exposed. |
+| `captcha`                  | array  | `['enabled' => false]` | Client-safe CAPTCHA configuration: `enabled`, `provider`, `site_key`, `token_input`, `protected_forms`. The widget renders itself on protected forms (see `forms.md`), so read this only for extra copy around it. The secret key and v3 minimum score are never exposed. reCAPTCHA v3 has no checkbox; the platform script runs it on submit. |
 
 ### Feature-by-feature compliance guide
 
@@ -122,6 +124,7 @@ One row per tenant-toggleable feature from the Features admin page (plus `quick_
 | Enable catalog export                    | `catalog_export_enabled`                                | `false`   | Full — the export page and public feed both 404 when disabled.                                            | Only render the account nav item, export page and preview/fields partials when true — mirror `partials/account-nav.blade.php` and `pages/account/catalog-export.blade.php`. |
 | Allow search engines to index            | `indexable`                                              | `true`    | Automatic — platform-rendered.                                                                             | Nothing to do — keep `@storefrontSeo` in every layout; never hardcode your own robots meta tag. |
 | Product variation display mode           | `variation_display_mode` (`table` or `dropdown`)        | `'table'` | None — presentation only.                                                                                  | Branch your variant UI on this value — mirror `partials/product-details.blade.php` (see *Configurable products* below). |
+| Default payment method and hide _(Settings → Configuration → Storefront, not the Features page)_ | `default_billing_method_id`, `hide_payment_method` | `null` / `false` | None — presentation only. Place order still accepts any method that is visible for the shopper. | When `hide_payment_method` is true and checkout's `$defaultBillingMethodId` is set, omit the payment list and submit that id — mirror `pages/checkout.blade.php`. Otherwise show the list. `$defaultBillingMethodId` is the shopper's own default when they have one, else the store id when that method is visible, else empty. |
 | Parent category display mode             | `branch_display_mode` (`children`, `products`, or `both`) | `'children'` | Full — platform resolves `$showChildren` / `$showProducts` / `$branchDisplayMode` on category pages (store default + per-category override). | Branch category layout on `$showChildren` / `$showProducts` — mirror `pages/category.blade.php` (see catalog.md). Do not key layout off `$isLeaf` alone. |
 | Category UI type                         | `category_ui_type` (`list` or `mega_menu`) plus `mega_menu_depth_start` | `'list'` / `0` | None — presentation only. The panel's category rows are still limited to navigable categories (`exclude_from_main_menu` off). | Branch the header on `category_ui_type` — mirror `partials/nav.blade.php`. `list` links to the categories index. `mega_menu` opens `$megaMenuCategories` (depths `mega_menu_depth_start` and the next one). Do not reuse `$rootCategories` for the panel. |
 | Quick Order & CSV upload _(same tenant_config family; not yet on the Features page)_ | `quick_order_enabled` | `false` | Full — every Quick Order route 404s when disabled. | Only render the account nav link and Quick Order page when true — mirror `partials/account-nav.blade.php` and `pages/account/quick-order.blade.php`. |
@@ -441,6 +444,31 @@ Matching is an exact string comparison for both `options` and `boolean`. Toggle 
 Live row/total maths and the attribute filters are pure client-side enhancement (an inline `<script type="module">`): read each rendered price's `data-amount` for the unit, sum on `input`, and toggle each row's inline `display` on filter `change`/`input`. With JS off the form still posts and the cart updates the classic way.
 
 **Responsive (mobile cards).** Below `md` (768px) the bulk table reflows from a row-based table into one **card per variant**, so phones and portrait tablets never scroll sideways. The `<table>` / `<thead>` / `<tbody>` / `<tr>` / `<td>` carry `max-md:` display overrides (`max-md:block`, `max-md:hidden`, `max-md:flex`); each data cell gains a `md:hidden` label span (reusing the column / `SKU` / `Price` / `Quantity` strings — no new keys) and the thumbnail centres on top of the card. The desktop table markup/classes are unchanged. Two gotchas: (1) the filter script toggles **`row.style.display`** (an inline style), never the `hidden` attribute, because an inline style is the only thing that reliably outranks `max-md:block`; (2) `max-*` variants are not precompiled, so the `max-md:` utilities are force-included in `resources/css/storefront.css` (`@source inline(...)`) and `base.css` is rebuilt (see §10.3). No custom CSS is involved.
+
+### Attribute collections (grouped attribute rendering)
+
+AttributesHub **attribute collections** are named, ordered groups of attributes with per-surface display flags. When a tenant flags a collection for a storefront surface, the platform resolves it server-side (active collections only, ordered by `position`, members in pivot order, names/labels/values translated to the active storefront locale with tenant-default fallback) and passes a **theme-ready array** to the page. Empty members are skipped and a collection whose resource holds no member values is dropped entirely — render nothing for an empty array.
+
+Every entry has one shape: `{ code, name, collapsed, rows: [{ code, name, value, is_url, is_html, is_multiline }] }` — the row contract is identical to `$productAttributes`, so a collection row renders exactly like a specification row. `collapsed` mirrors the collection's `collapsed_by_default` flag (the default theme renders a closed `<details>` block).
+
+| Variable | Page(s) | Flag |
+| -------- | ------- | ---- |
+| `$productCollections` | product | `show_on_detail_page` — parent + selected-variant merge (variant wins per attribute), same semantics as `$productAttributes`. Additive: render alongside the flat specifications list. |
+| `$cartLines[*]['attribute_collections']` | cart (`cart-line-items` section) | `show_in_cart` — per line product; survives AJAX re-renders because it travels inside `$cartLines`. |
+| `$checkoutAttributeGroups` | checkout | `show_in_checkout` — **inputs, not values**: `[{ code, name, attributes: [{ index, attribute }] }]` grouping of the eligible `$checkoutAttributes` into collection-titled fieldsets; a trailing `code=null` group holds ungrouped attributes ("Additional details"). `index` feeds the `attributes[<i>][…]` input names and is unique across ALL groups — never restart it. Render each entry with `partials/checkout-attribute-field`. |
+| `$orderCollections` | account/order, guest-order | `show_in_order_summary` — the order's own attribute values. |
+| `$accountCollections` | account/profile | `show_in_customer_account` — customer + company collections merged, position-ordered. |
+| `$categoryCollections` | category | `show_on_category_page`. |
+
+Render display surfaces with the shared partial:
+
+```blade
+@include('partials.attribute-collections', ['collections' => $productCollections ?? []])
+{{-- compact density for cart lines: --}}
+@include('partials.attribute-collections', ['collections' => $line['attribute_collections'] ?? [], 'isCompact' => true])
+```
+
+Per-attribute storefront flags (`visible_on_the_product_page`, attribute-level `show_in_cart`, `use_in_checkout`) are unchanged — collections are **additive** grouped blocks, never a replacement for the standalone rendering.
 
 ### Cart reward progress bars
 

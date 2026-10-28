@@ -147,7 +147,7 @@
                                     <div class="h-14 w-14 shrink-0 overflow-hidden rounded bg-surface-page">
                                         @if(data_get($item, 'product.resolved_main_media.media_url') ?? data_get($item, 'product.main_media.media_url'))
                                             <img src="@storefrontImage(data_get($item, 'product.resolved_main_media.media_url') ?? data_get($item, 'product.main_media.media_url'), 112, 112, 85)"
-                                                 alt="{{ data_get($item, 'product.name') ?? '' }}" class="h-full w-full object-cover" loading="lazy">
+                                                 alt="{{ data_get($item, 'product.name') ?? '' }}" class="h-full w-full object-contain" loading="lazy">
                                         @endif
                                     </div>
                                     <div class="flex-1 min-w-0 flex flex-col">

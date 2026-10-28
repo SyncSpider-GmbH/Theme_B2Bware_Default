@@ -32,5 +32,6 @@ overwrites your Blade/CSS/`theme.json`).
 - **Images:** every catalog / customer `media_url` in an `<img src>` **must** use
   `@storefrontImage($url, $width?, $height?, $quality?, $aspectRatio?)`. Never put a
   raw Bunny (`*.b-cdn.net`) or SpiderDesk (`/media/...`) URL in `src`. Placeholders and
-  `@themeAsset(...)` stay unwrapped. See `theme/docs/hard-rules.md` §9 and
-  `theme/docs/seo-and-images.md` §9.11 (platform params + Bunny Dynamic Images API).
+  `@themeAsset(...)` stay unwrapped. Product photos use `object-contain` inside a fixed
+  frame, not `object-cover`, and grid cards share a height. See `theme/docs/hard-rules.md` §9 and
+  `theme/docs/seo-and-images.md` §9.11 (platform params + Bunny Transform API).

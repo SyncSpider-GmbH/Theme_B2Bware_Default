@@ -175,22 +175,31 @@
                                 'defaultColumns' => $defaultColumns,
                                 'selectedColumns' => old(
                                     'columns',
-                                    data_get($export, 'columns', $defaultColumns)),
-                                'selectedFormat' => old('format', data_get($export, 'format', 'csv')),
-                                'selectedSearch' => old('q', data_get($export, 'filters.search', '')),
-                                'selectedCategory' => old('category', data_get($export, 'filters.category', '')),
-                                'selectedPriceMin' => old('price_min', data_get($export, 'filters.price_min', '')),
-                                'selectedPriceMax' => old('price_max', data_get($export, 'filters.price_max', '')),
+                                    data_get($catalogSelection ?? null, 'columns', data_get($export, 'columns', $defaultColumns))),
+                                'selectedFormat' => old('format', data_get($catalogSelection ?? null, 'format', data_get($export, 'format', 'csv'))),
+                                'selectedSearch' => old('q', data_get($catalogSelection ?? null, 'filters.search', data_get($export, 'filters.search', ''))),
+                                'selectedCategory' => old('category', data_get($catalogSelection ?? null, 'filters.category', data_get($export, 'filters.category', ''))),
+                                'selectedPriceMin' => old('price_min', data_get($catalogSelection ?? null, 'filters.price_min', data_get($export, 'filters.price_min', ''))),
+                                'selectedPriceMax' => old('price_max', data_get($catalogSelection ?? null, 'filters.price_max', data_get($export, 'filters.price_max', ''))),
                                 'selectedInStock' => (bool) old(
                                     'in_stock',
-                                    data_get($export, 'filters.in_stock', false)),
-                                'selectedSort' => old('sort', data_get($export, 'filters.sort', 'relevance')),
+                                    data_get($catalogSelection ?? null, 'filters.in_stock', data_get($export, 'filters.in_stock', false))),
+                                'selectedSort' => old('sort', data_get($catalogSelection ?? null, 'filters.sort', data_get($export, 'filters.sort', 'newest'))),
                             ])
 
                             {{-- Live preview: server-rendered initial table (no-JS
                                  friendly), refreshed via the Section Rendering route
                                  as the columns/filters change. --}}
-                            <div data-catalog-preview data-endpoint="@routeUrl('store.sections')">
+                            <div class="relative" data-catalog-preview data-endpoint="@routeUrl('store.sections')">
+                                <div class="catalog-export-preview-status" data-preview-status role="status">
+                                    <span class="catalog-export-spinner flex items-center justify-center w-5 h-5 text-primary shrink-0" aria-hidden="true">
+                                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                                        </svg>
+                                    </span>
+                                    <span>@t('Updating preview…')</span>
+                                </div>
                                 @storefrontSection('catalog-export-preview')
                             </div>
 
@@ -379,11 +388,16 @@
             const endpoint = previewMount.dataset.endpoint || '';
             const target = previewMount.querySelector('[data-storefront-section="catalog-export-preview"]');
 
+            const FILTERS = new Set(['q', 'category', 'price_min', 'price_max', 'in_stock', 'sort']);
+
             const buildUrl = () => {
                 const url = new URL(endpoint, window.location.origin);
                 url.searchParams.set('sections', 'catalog-export-preview');
                 const data = new FormData(form);
-                for (const key of ['q', 'category', 'price_min', 'price_max', 'sort']) {
+                for (const key of FILTERS) {
+                    if (key === 'in_stock') {
+                        continue;
+                    }
                     const value = data.get(key);
                     if (value !== null && value !== '') {
                         url.searchParams.set(key, value);
@@ -392,14 +406,68 @@
                 if (data.get('in_stock')) {
                     url.searchParams.set('in_stock', '1');
                 }
-                for (const value of data.getAll('columns[]')) {
-                    url.searchParams.append('columns[]', value);
-                }
                 return url;
+            };
+
+            const previewData = () => {
+                const node = target?.querySelector('[data-catalog-preview-data]');
+                if (!node) {
+                    return null;
+                }
+                try {
+                    return JSON.parse(node.textContent || '');
+                } catch {
+                    return null;
+                }
+            };
+
+            const selectedKeys = (data) => {
+                const checked = [...form.querySelectorAll('input[name="columns[]"]:checked')]
+                    .map((input) => input.value);
+                if (checked.length > 0) {
+                    return checked;
+                }
+                return Array.isArray(data?.defaults) ? data.defaults : [];
+            };
+
+            const cell = (text, tag) => {
+                const element = document.createElement(tag);
+                const span = document.createElement('span');
+                span.className = 'sf-preview-cell';
+                span.textContent = text;
+                if (text !== '') {
+                    span.title = text;
+                }
+                element.appendChild(span);
+                return element;
+            };
+
+            // Column toggles and drag-reorder paint from the products already
+            // fetched. A filter change is what replaces that payload.
+            const paint = () => {
+                const data = previewData();
+                const table = target?.querySelector('.sf-preview-table');
+                if (!data || !table) {
+                    return;
+                }
+                const keys = selectedKeys(data);
+                const labels = data.labels || {};
+                const head = table.querySelector('thead tr');
+                const body = table.querySelector('tbody');
+                if (!head || !body) {
+                    return;
+                }
+                head.replaceChildren(...keys.map((key) => cell(labels[key] || key, 'th')));
+                body.replaceChildren(...(data.rows || []).map((row) => {
+                    const tr = document.createElement('tr');
+                    tr.append(...keys.map((key) => cell(String(row?.[key] ?? ''), 'td')));
+                    return tr;
+                }));
             };
 
             let timer = null;
             let inFlight = null;
+            let requestSerial = 0;
 
             const refresh = async () => {
                 if (!endpoint || !target) {
@@ -407,6 +475,8 @@
                 }
                 inFlight?.abort();
                 inFlight = new AbortController();
+                const signal = inFlight.signal;
+                const serial = ++requestSerial;
                 previewMount.setAttribute('aria-busy', 'true');
                 try {
                     const response = await window.fetch(buildUrl(), {
@@ -414,20 +484,29 @@
                             'X-Requested-With': 'XMLHttpRequest',
                             'Accept': 'application/json'
                         },
-                        signal: inFlight.signal,
+                        signal,
                     });
+                    if (serial !== requestSerial) {
+                        return;
+                    }
                     if (!response.ok) {
                         return;
                     }
                     const payload = await response.json();
+                    if (serial !== requestSerial) {
+                        return;
+                    }
                     const html = payload?.sections?.['catalog-export-preview'];
                     if (typeof html === 'string') {
                         target.innerHTML = html;
+                        paint();
                     }
                 } catch {
                     // Network error or aborted request — keep the last good preview.
                 } finally {
-                    previewMount.removeAttribute('aria-busy');
+                    if (serial === requestSerial) {
+                        previewMount.removeAttribute('aria-busy');
+                    }
                 }
             };
 
@@ -436,10 +515,24 @@
                 timer = window.setTimeout(refresh, 350);
             };
 
-            form.addEventListener('input', schedule);
-            form.addEventListener('change', schedule);
-            // Initial sync so the table reflects any pre-filled (saved) values.
-            refresh();
+            const onField = (event) => {
+                const name = event.target?.name || '';
+                if (name === 'columns[]') {
+                    paint();
+                    return;
+                }
+                if (FILTERS.has(name)) {
+                    schedule();
+                }
+            };
+
+            form.addEventListener('input', onField);
+            form.addEventListener('change', onField);
+            form.addEventListener('dragend', (event) => {
+                if (event.target?.closest?.('[data-col-row]')) {
+                    paint();
+                }
+            });
         }
     </script>
     {{-- Owner-editable content region (bottom of page). --}}

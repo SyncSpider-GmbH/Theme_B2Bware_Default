@@ -38,7 +38,7 @@
                         class="cart__item-image shrink-0 block w-24 h-24 rounded-lg bg-surface-page overflow-hidden hover:no-underline"
                     >
                         @if($line['image_url'])
-                            <img src="@storefrontImage($line['image_url'], 160, 160, 85)" alt="{{ $line['name'] }}" class="w-full h-full object-cover" loading="lazy">
+                            <img src="@storefrontImage($line['image_url'], 160, 160, 85)" alt="{{ $line['name'] }}" class="w-full h-full object-contain" loading="lazy">
                         @else
                             @include('partials.__image-placeholder', ['size' => 'h-8 w-8'])
                         @endif
@@ -58,6 +58,11 @@
                         @if($line['unit_label'] !== '')
                             <span class="cart__item-unit text-xs text-body">{{ $line['unit_label'] }}</span>
                         @endif
+
+                        @include('partials.attribute-collections', [
+                            'collections' => $line['attribute_collections'] ?? [],
+                            'isCompact'   => true,
+                        ])
 
                         @if($store['delivery_date_enabled'] ?? false)
                             @storefrontForm('cart-line-delivery-date', [

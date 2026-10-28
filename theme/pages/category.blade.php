@@ -34,6 +34,13 @@
                             <input type="hidden" name="attr[{{ $attrId }}][]" value="{{ $val }}">
                         @endforeach
                     @endforeach
+                    @foreach($selectedDefinitions ?? [] as $attrId => $defs)
+                        @foreach($defs as $defName => $cells)
+                            @foreach($cells as $cell)
+                                <input type="hidden" name="attr_def[{{ $attrId }}][{{ $defName }}][]" value="{{ $cell }}">
+                            @endforeach
+                        @endforeach
+                    @endforeach
                     @if(($priceSelected['min'] ?? null) !== null)
                         <input type="hidden" name="price_min" value="{{ $priceSelected['min'] }}">
                     @endif
@@ -56,11 +63,14 @@
                         <label class="flex items-center gap-2 text-sm text-body">
                             <span class="hidden sm:inline">@t('Sort by')</span>
                             <select name="sort" data-autosubmit class="rounded-lg border border-surface-input-stroke bg-surface-input px-2 py-1.5 text-sm text-body outline-none focus:border-primary">
-                                <option value="relevance" @selected($sort === 'relevance')>@t('Relevance')</option>
                                 <option value="newest" @selected($sort === 'newest')>@t('Newest')</option>
                                 <option value="oldest" @selected($sort === 'oldest')>@t('Oldest')</option>
                                 <option value="name_asc" @selected($sort === 'name_asc')>@t('Name: A–Z')</option>
                                 <option value="name_desc" @selected($sort === 'name_desc')>@t('Name: Z–A')</option>
+                                @if($canSeePrices)
+                                    <option value="price_asc" @selected($sort === 'price_asc')>@t('Price: low to high')</option>
+                                    <option value="price_desc" @selected($sort === 'price_desc')>@t('Price: high to low')</option>
+                                @endif
                                 @foreach($sortOptions ?? [] as $option)
                                     <option value="{{ $option['key'] }}" @selected($sort === $option['key'])>{{ $option['label'] }}</option>
                                 @endforeach
@@ -114,6 +124,9 @@
             @endif
         </header>
         @show
+
+        {{-- Attribute collections flagged show_on_category_page --}}
+        @include('partials.attribute-collections', ['collections' => $categoryCollections ?? []])
 
         @if($showChildren ?? false)
             {{-- Branch: sibling nav + subcategory grid. --}}
@@ -184,7 +197,7 @@
             <div class="catalog catalog--products flex flex-col gap-6 desktop:flex-row desktop:items-start">
                 <aside class="catalog__filters w-full shrink-0 desktop:w-64">
                     <div class="catalog__filters-card flex flex-col gap-6 rounded-xl border border-border-subtle bg-surface-card p-5">
-                        @if(!empty($selectedAttributes) || ($inStockSelected ?? false) || ($priceSelected['min'] ?? null) !== null || ($priceSelected['max'] ?? null) !== null || ($filters['q'] ?? ''))
+                        @if(!empty($selectedAttributes) || !empty($selectedDefinitions) || ($inStockSelected ?? false) || ($priceSelected['min'] ?? null) !== null || ($priceSelected['max'] ?? null) !== null || ($filters['q'] ?? ''))
                             <a
                                 href="@routeUrl('store.category', ['slug' => $categorySlug])@if(($view ?? 'grid') !== 'grid')?view={{ $view }}@endif"
                                 class="self-start text-sm text-body underline hover:text-primary"
@@ -218,32 +231,14 @@
                                 @if($filters['q'] ?? '')
                                     <input type="hidden" name="q" value="{{ $filters['q'] }}">
                                 @endif
-                                @if(($sort ?? 'relevance') !== 'relevance')
+                                @if(($sort ?? '') !== '')
                                     <input type="hidden" name="sort" value="{{ $sort }}">
                                 @endif
                                 @if(($view ?? 'grid') !== 'grid')
                                     <input type="hidden" name="view" value="{{ $view }}">
                                 @endif
 
-                                @foreach($facets as $facet)
-                                    <section class="catalog-filter flex flex-col gap-2 {{ ($categoryFacet ?? collect())->isNotEmpty() || !$loop->first ? 'border-t border-border-subtle pt-4' : '' }}">
-                                        <h2 class="text-sm font-semibold text-headings m-0">{{ $facet['name'] }}</h2>
-                                        <div class="flex flex-col gap-1.5">
-                                            @foreach($facet['values'] as $value)
-                                                <label class="flex items-center gap-2 text-sm text-body cursor-pointer">
-                                                    <input
-                                                        type="checkbox"
-                                                        name="attr[{{ $facet['id'] }}][]"
-                                                        value="{{ $value }}"
-                                                        class="shrink-0"
-                                                        @checked(in_array($value, $selectedAttributes[$facet['id']] ?? [], true))
-                                                    >
-                                                    <span class="truncate">{{ $value }}</span>
-                                                </label>
-                                            @endforeach
-                                        </div>
-                                    </section>
-                                @endforeach
+                                @include('partials.catalog-facet')
 
                                 @if($priceFilterEnabled ?? false)
                                     <section class="catalog-filter flex flex-col gap-3 border-t border-border-subtle pt-4">
@@ -272,21 +267,7 @@
                                     </section>
                                 @endif
 
-                                @if($inStockAvailable ?? false)
-                                    <section class="catalog-filter flex flex-col gap-2 border-t border-border-subtle pt-4">
-                                        <h2 class="text-sm font-semibold text-headings m-0">@t('Availability')</h2>
-                                        <label class="flex items-center gap-2 text-sm text-body cursor-pointer">
-                                            <input
-                                                type="checkbox"
-                                                name="in_stock"
-                                                value="1"
-                                                class="shrink-0"
-                                                @checked($inStockSelected ?? false)
-                                            >
-                                            <span>@t('In stock only')</span>
-                                        </label>
-                                    </section>
-                                @endif
+                                @include('partials.catalog-availability')
 
                                 <noscript>
                                     <button type="submit" class="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-content cursor-pointer">@t('Apply filters')</button>
@@ -297,6 +278,7 @@
                 </aside>
 
                 <div class="catalog__main flex min-w-0 flex-1 flex-col gap-4">
+                    @include('partials.catalog-active-filters')
                     @if($products->total() === 0)
                         @include('components.empty-state', [
                             'title'   => t('No products in this category yet'),
@@ -311,7 +293,7 @@
                     @else
                         <ul class="catalog__grid grid grid-cols-2 gap-4 list-none m-0 p-0 lg:grid-cols-3 desktop:grid-cols-4">
                             @foreach($products as $product)
-                                <li>@include('components.product-card', ['product' => $product, 'view' => 'grid', 'redirect' => '/' . $locale . '/category/' . $categorySlug])</li>
+                                <li class="h-full">@include('components.product-card', ['product' => $product, 'view' => 'grid', 'redirect' => '/' . $locale . '/category/' . $categorySlug])</li>
                             @endforeach
                         </ul>
                     @endif
@@ -328,7 +310,17 @@
 
                 for (const form of document.querySelectorAll('.catalog-filter-form')) {
                     let priceInputTimer;
-                    form.querySelectorAll('input[type="checkbox"]').forEach((input) => {
+                    form.querySelectorAll('[data-facet-search]').forEach((input) => {
+                        input.addEventListener('input', () => {
+                            const section = input.closest('[data-facet-display]');
+                            const query = input.value.trim().toLowerCase();
+                            section?.querySelectorAll('[data-facet-option]').forEach((option) => {
+                                const label = (option.getAttribute('data-facet-value') || '').toLowerCase();
+                                option.hidden = query !== '' && !label.includes(query);
+                            });
+                        });
+                    });
+                    form.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach((input) => {
                         input.addEventListener('change', () => form.requestSubmit());
                     });
                     form.querySelectorAll('input[type="number"]').forEach((input) => {

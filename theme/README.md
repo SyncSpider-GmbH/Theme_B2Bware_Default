@@ -52,6 +52,15 @@ Prefer working in **[Cursor](https://cursor.com)** (recommended, not required): 
 `.cursor/rules` that point your agent at the right docs. Any AI tool works — the same links are
 in each repo's `README.md` / `AGENTS.md`.
 
+## Footer replacement note
+
+The complete default footer is the paired `footer` slot. Saving owner-authored content for that
+slot replaces the shipped footer; resetting the slot restores it. Because `footer.promo` and
+`footer-note` are nested inside the shipped footer, they do not render while `footer` is replaced.
+Recreate any required nested-slot content in the replacement before publishing it.
+
+## Layout
+
 ```
 theme.json      metadata (required)
 README.md       this file — what the theme does (required)

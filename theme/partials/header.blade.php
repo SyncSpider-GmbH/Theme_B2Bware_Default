@@ -3,11 +3,11 @@
     @section('header.banner')
         {{-- Always rendered so the light/dark theme toggle stays reachable even
              when the store has no contact details and only one locale. --}}
-        <div class="storefront-header__banner bg-secondary-800 text-neutral-white">
+        <div class="storefront-header__banner bg-secondary text-secondary-content">
             <div class="mx-auto flex w-full max-w-desktop items-center justify-between gap-4 px-4 py-1.5">
-                    <div class="storefront-header__contact flex min-w-0 items-center gap-3 text-sm text-neutral-white sm:gap-5">
+                    <div class="storefront-header__contact flex min-w-0 items-center gap-3 text-sm text-secondary-content sm:gap-5">
                         @if(!empty($store['contact_phone']))
-                            <a href="tel:{{ $store['contact_phone'] }}" class="flex min-w-0 items-center gap-1.5 text-neutral-white hover:no-underline">
+                            <a href="tel:{{ $store['contact_phone'] }}" class="flex min-w-0 items-center gap-1.5 text-secondary-content hover:no-underline">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5 shrink-0" aria-hidden="true">
                                     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"></path>
                                 </svg>
@@ -15,7 +15,7 @@
                             </a>
                         @endif
                         @if(!empty($store['contact_email']))
-                            <a href="mailto:{{ $store['contact_email'] }}" class="hidden min-w-0 items-center gap-1.5 text-neutral-white hover:no-underline sm:flex">
+                            <a href="mailto:{{ $store['contact_email'] }}" class="hidden min-w-0 items-center gap-1.5 text-secondary-content hover:no-underline sm:flex">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5 shrink-0" aria-hidden="true">
                                     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
                                     <polyline points="22,6 12,13 2,6"></polyline>
@@ -33,14 +33,14 @@
                         @storefrontForm('color-scheme', ['class' => 'theme-toggle inline-flex items-center', 'data-theme-toggle' => true])
                             <input type="hidden" name="redirect" value="{{ $currentPath ?? '/' }}">
                             <button type="submit" name="scheme" value="dark"
-                                class="theme-toggle__to-dark inline-flex h-8 w-8 items-center justify-center rounded text-neutral-white/80 transition-colors hover:bg-neutral-white/10 hover:text-neutral-white"
+                                class="theme-toggle__to-dark inline-flex h-8 w-8 items-center justify-center rounded text-secondary-content/80 transition-colors hover:bg-secondary-content/10 hover:text-secondary-content"
                                 aria-label="@t('Switch to dark mode')">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" aria-hidden="true">
                                     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
                                 </svg>
                             </button>
                             <button type="submit" name="scheme" value="light"
-                                class="theme-toggle__to-light inline-flex h-8 w-8 items-center justify-center rounded text-neutral-white/80 transition-colors hover:bg-neutral-white/10 hover:text-neutral-white"
+                                class="theme-toggle__to-light inline-flex h-8 w-8 items-center justify-center rounded text-secondary-content/80 transition-colors hover:bg-secondary-content/10 hover:text-secondary-content"
                                 aria-label="@t('Switch to light mode')">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" aria-hidden="true">
                                     <circle cx="12" cy="12" r="5"></circle>
@@ -198,18 +198,6 @@
 
         const LIVE_SEARCH_DEBOUNCE_MS = 350;
         const normalizeSearchQuery = (value) => value.trim();
-        const normalizePath = (value) => {
-            try {
-                const url = new URL(value, window.location.origin);
-                const path = url.pathname.replace(/\/+$/, '');
-                return path === '' ? '/' : path;
-            } catch {
-                return '';
-            }
-        };
-
-        const currentPath = normalizePath(window.location.href);
-
         for (const form of document.querySelectorAll('[data-live-search-form]')) {
             const input = form.querySelector('[data-live-search-input]');
             if (!(input instanceof HTMLInputElement)) {
@@ -229,12 +217,9 @@
                 });
             }
 
-            // Auto-search only on the products listing itself; elsewhere keep
-            // the manual submit behavior to avoid unexpected page jumps.
-            const actionPath = normalizePath(form.getAttribute('action') ?? '');
-            if (currentPath === '' || actionPath === '' || currentPath !== actionPath) {
-                continue;
-            }
+            // Every header search targets the products listing. Submitting the
+            // form from another storefront page therefore navigates there with
+            // the current query, while the listing refreshes itself in place.
 
             let debounceTimer = 0;
             let isComposing = false;

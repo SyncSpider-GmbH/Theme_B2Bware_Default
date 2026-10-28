@@ -1,7 +1,7 @@
 <section class="product__tabs flex flex-col gap-4" data-tabs>
     <div class="product__tablist flex flex-wrap gap-6 border-b border-border-subtle" role="tablist" aria-label="{{ t('Product information') }}">
         <button type="button" role="tab" id="tab-description" aria-controls="panel-description" aria-selected="true" data-tab="description" class="product__tab-btn -mb-px border-b-2 border-primary py-3 text-sm font-medium text-primary cursor-pointer">@t('Description')</button>
-        @if(!empty($productAttributes))
+        @if(!empty($productAttributes) || !empty($productCollections ?? []))
             <button type="button" role="tab" id="tab-specifications" aria-controls="panel-specifications" aria-selected="false" data-tab="specifications" class="product__tab-btn -mb-px border-b-2 border-transparent py-3 text-sm font-medium text-body cursor-pointer hover:text-headings">@t('Specifications')</button>
         @endif
         @if($attachments->isNotEmpty())
@@ -13,8 +13,9 @@
         {!! $product->description ?? '' !!}
     </div>
 
-    @if(!empty($productAttributes))
-        <div id="panel-specifications" role="tabpanel" aria-labelledby="tab-specifications" data-tab-panel="specifications" class="product__tab-panel">
+    @if(!empty($productAttributes) || !empty($productCollections ?? []))
+        <div id="panel-specifications" role="tabpanel" aria-labelledby="tab-specifications" data-tab-panel="specifications" class="product__tab-panel flex flex-col gap-4">
+            @if(!empty($productAttributes))
             <dl class="product__specs m-0 overflow-hidden rounded-lg border border-border-subtle">
                 @foreach($productAttributes as $attr)
                     <div class="product__spec-row flex items-start justify-between gap-4 border-b border-border-subtle bg-surface-card px-4 py-3 last:border-b-0">
@@ -33,6 +34,8 @@
                     </div>
                 @endforeach
             </dl>
+            @endif
+            @include('partials.attribute-collections', ['collections' => $productCollections ?? []])
         </div>
     @endif
 

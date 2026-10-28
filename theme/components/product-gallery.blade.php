@@ -48,7 +48,7 @@
                             data-gallery-alt="{{ $img['alt'] ?? '' }}"
                             aria-label="{{ t('View image') }}"
                         >
-                            <img src="@storefrontImage($img['url'], 150, 150, 85)" alt="{{ $img['alt'] ?? '' }}" class="h-full w-full object-cover" loading="lazy">
+                            <img src="@storefrontImage($img['url'], 150, 150, 85)" alt="{{ $img['alt'] ?? '' }}" class="h-full w-full object-contain" loading="lazy">
                         </button>
                     @endforeach
                 </div>

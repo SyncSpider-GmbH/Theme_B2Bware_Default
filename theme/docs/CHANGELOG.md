@@ -7,6 +7,52 @@
 This file tracks changes to the **theme authoring contract** (directives, form types, `$store`
 keys, canonical surface, tokens). It is not the platform-wide release log. Dates are UTC.
 
+## 2026-10-27 — Quieter impersonation banner
+
+- **Default theme:** the impersonation bar uses the page surface, body text, and outline actions. It no longer uses the warning fill. See `partials/impersonation-banner.blade.php`.
+- **Default theme:** customer selection keeps the search field and **Continue as selected user** in place. Results scroll inside a fixed-height pane, so a new search does not move the form.
+
+## 2026-10-26 — Sales agent company search
+
+- **Customer selection** opens on company search. `$searchMode` is `company` or `user`. `$companies` is the company-step paginator (empty on the user step and the drill-in). `$selectedCompany` is set while drilling into one company. `$customers` is the user list for user mode and the drill-in. On the company step it is still the flat people list for `q`, so an override that only loops `$customers` keeps showing people.
+- **Company row:** `id`, `name`, `company_number`, `email`, `user_count`, and `user` (one eligible user, or null). One user submits that `customer_id`. Several users link to `?company={id}`.
+- **Form** is unchanged: `customer-selection` posts `customer_id` and optional `redirect`. A copied `pages/customer-selection.blade.php` does not pick up the company layout until that file is updated. See `page-recipes.md` §10.4.
+
+## 2026-10-25 — Store fallback payment method
+
+- **`$store['default_billing_method_id']`** and **`$store['hide_payment_method']`** come from Settings → Configuration → Storefront. The id is the store fallback, not the method selected for this shopper. Hide is false when no fallback is saved.
+- **Checkout `$defaultBillingMethodId`** is the shopper's own default when that method is visible, else the store fallback when it is visible, else empty. Hide removes the Payment method block only when a method resolved. See `view-data.md` and `page-recipes.md` §10.2.
+
+## 2026-10-25 — Built-in catalog sort orders
+
+- **Default sort** on Store setup → Features can be Newest, Oldest, Price: low to high, or Price: high to low, as well as a sortable product attribute. An empty choice stays Newest. Price order uses the product's regular price.
+- **`$sort`** accepts `price_asc` and `price_desc` on All Products and category listings. See `catalog.md`.
+
+## 2026-10-25 — Catalog sort no longer has a relevance option
+
+- **Default theme:** All Products, category listings, and catalog export no longer list a relevance sort. Remove that `<option>` from a theme that copied it.
+- **`$sort`** is the store's default sorting attribute, or `newest` when none is configured, whenever the URL omits `sort` or sends a key the catalog does not accept. An accepted `sort` is echoed as-is. Search uses the same key. See `catalog.md`.
+
+## 2026-10-23 — Product photos stay whole; grid cards share a height
+
+- **Default theme:** product photos on the grid card, the list thumbnail, gallery thumbnails, the cart, orders, and proposals use `object-contain`. Grid cells are `h-full` so the square image, two-line title, and bottom price block line up. Logos, flags, and sign-in backgrounds are unchanged.
+- **Hard rule:** do not crop a product photo with `object-cover` or with `@storefrontImage`'s `aspect_ratio` argument. Width and height together fit inside the box. Bunny Optimizer must be enabled on the pull zone or the original file is served. The URL helper is unchanged. See `seo-and-images.md` §9.11 and `hard-rules.md` §9.
+
+## 2026-10-23 — Definition-cell catalog filters (`attr_def`) and facet counts
+
+- **`$facets` may be `kind=definition`.** An attribute with a discrete definition no longer lists member labels. Each definition is its own facet: string `id` `"<attribute_id>:<definition name>"`, plus `attribute_id`, `definition_name`, and cell `values`. Do not submit that `id` as `attr[<id>]`. See `catalog.md`.
+- **`$selectedDefinitions`** is `attribute_id => [definition name => [cell, …]]`.
+- **Query `attr_def[<id>][<definition name>][]`.** OR within one definition, AND across definitions on the same attribute, OR with `attr` on that attribute, AND across attributes. Keep it in hidden inputs with the other catalog state.
+- **`$activeFilters` `kind=definition`.** One chip per selected cell. `name` is the definition name.
+- **Attribute facets (`kind=attribute`) include `$facets[].counts`.** Each remaining label maps to how many products it would leave. `values` omits a label whose count is zero. Search, category, the other selected attributes, the price range, and "In stock only" all narrow that list. The selected facet still shows its other values.
+- An impossible filter URL stays put and shows an empty grid. The chips stay so the shopper can remove one filter. The page does not redirect.
+
+## 2026-10-23 — Catalog facet display types
+
+- **`$facets` attribute rows** now include `code` (`attribute_code`), `display`, and `swatches`. `values` is still a list of label strings. `display` is `null` or `checkbox`, `searchable_select`, `color_swatch`, `boolean_icon`. `null` keeps today's checkboxes (multiselect) or radios. Do not pick a control from the translated `name`. See `catalog.md`.
+- **Swatch attributes** flagged for filtering are facets and stay single-value.
+- **Default theme** renders the four controls on the product list and category pages. The in-stock filter uses the same icon chip and still submits `in_stock=1`.
+
 ## 2026-10-11 — Required theme README, section overrides on default pages
 
 - **Hard rule:** every theme ships a root `README.md` with four filled-in sections (`Purpose`,
@@ -39,10 +85,31 @@ keys, canonical surface, tokens). It is not the platform-wide release log. Dates
   `quality`, `aspect_ratio`) and the broader Bunny Dynamic Images API (crop, format, filters,
   …) for author reference.
 
+## 2026-10-01 — Subscriptions
+
+- **New form type `subscription-checkout`** (instant subscription checkout of one product,
+  signed-in customers only), contributed by SubscriptionHub inside its own `product.detail.meta`
+  slot contribution. Themes may override `modules/subscription-hub/product-subscription.blade.php`.
+  See `forms.md`.
+- **New form types `subscription-cancel`, `subscription-resume` and `subscription-pay`** (`_params: ['subscription' => id]`),
+  contributed by SubscriptionHub. See `forms.md`.
+- **New module page** `/account/subscriptions` with its own `account.nav` entry (shown only to
+  customers who subscribed). Themes may override `modules/subscription-hub/account-subscriptions.blade.php`
+  and `modules/subscription-hub/account-nav.blade.php`; nothing to add to your own sidebar.
+
 ## 2026-10-01 — Category UI type in the header
 
 - **`$store['category_ui_type']`** (`list` default | `mega_menu`) and **`$store['mega_menu_depth_start']`** (`0` default) drive the header category nav. `list` links to the categories index. `mega_menu` opens `$megaMenuCategories` (that depth and the next). See `view-data.md`.
 - Default theme: `partials/nav.blade.php`. `$rootCategories` is unchanged (footer, catalog export).
+
+## 2026-10-02 — Single-select catalog facets
+
+- **`$facets[].multiple`** is true only for multiselect attributes. Select and radio facets are single-value: the default theme renders them as radios named `attr[<id>]`, and the server keeps one label even when the query repeats values. Multiselect stays `attr[<id>][]`. See `catalog.md`.
+
+## 2026-10-02 — Applied catalog filters
+
+- **`$activeFilters`** on All Products and category listings that show products. One chip per applied attribute value, price bound, in-stock flag, and search query, each with a `url` that removes only that constraint. See `catalog.md`.
+- Default theme: `partials/catalog-active-filters.blade.php`, included above the product grid on `pages/products.blade.php` and `pages/category.blade.php`.
 
 ## 2026-10-01 — CAPTCHA on storefront forms
 
@@ -58,6 +125,20 @@ keys, canonical surface, tokens). It is not the platform-wide release log. Dates
 - Tenants choose which of `login`, `register`, `forgot-password`, `reset-password`,
   `verify-email`, `resend-verification` and `cms-form` to protect; verification is server-side,
   and the failure message renders inside the widget wrapper. No theme change is required.
+
+## 2026-09-28 — Attribute collections on the storefront
+
+- **New view data**: `$productCollections` (product), `$cartLines[*]['attribute_collections']`
+  (cart lines), `$checkoutAttributeGroups` (checkout), `$orderCollections` (account/order,
+  guest-order), `$accountCollections` (account/profile), `$categoryCollections` (category) —
+  theme-ready, locale-resolved AttributesHub attribute collections per surface flag.
+  See `view-data.md` §Attribute collections.
+- **New canonical partials**: `partials/attribute-collections.blade.php` (shared `<details>`
+  renderer, `isCompact` density switch) and `partials/checkout-attribute-field.blade.php`
+  (one checkout custom-attribute input, extracted from the checkout page).
+- Default theme: PDP Specifications tab, cart line items, checkout fieldsets, order pages,
+  profile page and category page now render flagged collections. Additive — per-attribute
+  flags and the flat specifications list are unchanged.
 
 ## 2026-09-22 — Default catalog sort
 

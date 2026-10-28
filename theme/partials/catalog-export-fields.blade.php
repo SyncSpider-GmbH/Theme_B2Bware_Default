@@ -64,8 +64,7 @@
         <span class="font-semibold text-headings">@t('Sort')</span>
         <select name="sort"
             class="px-3 py-2 border border-surface-input-stroke rounded-md bg-surface-input text-body focus:border-primary outline-none">
-            <option value="relevance" @selected(($selectedSort ?? 'relevance') === 'relevance')>@t('Relevance')</option>
-            <option value="newest" @selected(($selectedSort ?? '') === 'newest')>@t('Newest')</option>
+            <option value="newest" @selected(!in_array((string) ($selectedSort ?? 'newest'), ['oldest', 'name_asc', 'name_desc'], true))>@t('Newest')</option>
             <option value="oldest" @selected(($selectedSort ?? '') === 'oldest')>@t('Oldest')</option>
             <option value="name_asc" @selected(($selectedSort ?? '') === 'name_asc')>@t('Name (A–Z)')</option>
             <option value="name_desc" @selected(($selectedSort ?? '') === 'name_desc')>@t('Name (Z–A)')</option>

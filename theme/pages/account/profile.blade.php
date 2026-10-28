@@ -207,6 +207,10 @@
                     </div>
                 @endif
 
+                {{-- Attribute collections flagged show_in_customer_account
+                     (customer + company group types, position-ordered) --}}
+                @include('partials.attribute-collections', ['collections' => $accountCollections ?? []])
+
                 {{-- Danger zone: delete account (graceful flow: request → confirm code → grace period) --}}
                 @if(($deletionRequest['status'] ?? null) === 'scheduled')
                     <div class="bg-surface-card border border-error/30 rounded-lg overflow-hidden">

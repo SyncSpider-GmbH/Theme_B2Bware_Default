@@ -280,7 +280,13 @@
                         <input type="hidden" name="shipping_method_id" value="{{ data_get($shippingMethods->first(), 'id') }}">
                     @endif
 
-                    {{-- 3. Payment method --}}
+                    {{-- 3. Payment method. Hidden when the store asked to hide it and a
+                         method resolved (cascade default, else the store fallback).
+                         The id is still submitted. A custom theme must do this
+                         itself; the server still accepts another visible method. --}}
+                    @if(!empty($store['hide_payment_method']) && !empty($defaultBillingMethodId))
+                        <input type="hidden" name="billing_method_id" value="{{ $defaultBillingMethodId }}">
+                    @else
                     <section class="checkout__panel flex flex-col gap-4 p-5 bg-surface-card border border-border-subtle rounded-lg">
                         <header class="checkout__panel-head flex items-center gap-2.5">
                             <span class="checkout__step inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary-subtle text-primary text-xs font-semibold shrink-0">3</span>
@@ -313,106 +319,31 @@
                             @storefrontError('billing_method_id')
                         @endif
                     </section>
+                    @endif
 
-                    {{-- Additional details: tenant-defined custom order attributes
-                         (group.type=order, use_in_checkout). Each renders a hidden
-                         attributes[i][attribute_id] plus a value input mapped from
-                         the attribute type. The `value` submitted for option types
-                         is the option's raw value (CheckoutRepository looks it up by
-                         value). `media` attributes are skipped — a file upload isn't
-                         supported in this server-rendered flow. --}}
-                    @if(!empty($checkoutAttributes) && count($checkoutAttributes) > 0)
-                        <section class="checkout__panel flex flex-col gap-4 p-5 bg-surface-card border border-border-subtle rounded-lg">
+                    {{-- Custom order attributes (group.type=order, use_in_checkout),
+                         grouped into collection-titled panels by the active
+                         show_in_checkout collections; ungrouped attributes render in
+                         the trailing "Additional details" panel. Each attribute
+                         renders a hidden attributes[i][attribute_id] plus a value
+                         input mapped from the attribute type (see
+                         partials/checkout-attribute-field). The `value` submitted for
+                         option types is the option's raw value (CheckoutRepository
+                         looks it up by value). `media` attributes are skipped — a
+                         file upload isn't supported in this server-rendered flow. --}}
+                    @foreach($checkoutAttributeGroups ?? [] as $attributeGroup)
+                        <section class="checkout__panel flex flex-col gap-4 p-5 bg-surface-card border border-border-subtle rounded-lg" @if($attributeGroup['code']) data-collection="{{ $attributeGroup['code'] }}" @endif>
                             <header class="checkout__panel-head flex items-center gap-2.5">
                                 <svg class="w-4 h-4 text-primary shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M6 3.75A1.75 1.75 0 0 1 7.75 2h4.5A1.75 1.75 0 0 1 14 3.75v.5h.25A2.75 2.75 0 0 1 17 7v8.25A2.75 2.75 0 0 1 14.25 18h-8.5A2.75 2.75 0 0 1 3 15.25V7a2.75 2.75 0 0 1 2.75-2.75H6v-.5Zm1.5.5h5v-.5a.25.25 0 0 0-.25-.25h-4.5a.25.25 0 0 0-.25.25v.5Z" clip-rule="evenodd" /></svg>
-                                <h2 class="font-primary text-base font-semibold text-headings m-0">@t('Additional details')</h2>
+                                <h2 class="font-primary text-base font-semibold text-headings m-0">{{ $attributeGroup['name'] ?? t('Additional details') }}</h2>
                             </header>
                             <div class="flex flex-col gap-3">
-                                @foreach($checkoutAttributes as $attribute)
-                                    @if(strtolower((string) $attribute->type) === 'media')
-                                        @continue
-                                    @endif
-                                    <div class="checkout__attribute flex flex-col gap-1">
-                                        <input type="hidden" name="attributes[{{ $loop->index }}][attribute_id]" value="{{ $attribute->id }}">
-                                        @switch(strtolower((string) $attribute->type))
-                                            @case('boolean')
-                                                <label class="flex items-center gap-2 text-sm text-body">
-                                                    <input type="hidden" name="attributes[{{ $loop->index }}][value]" value="0">
-                                                    <input type="checkbox" name="attributes[{{ $loop->index }}][value]" value="1" @checked(old('attributes.' . $loop->index . '.value')) class="accent-primary shrink-0">
-                                                    <span>{{ $attribute->name }}</span>
-                                                </label>
-                                                @break
-                                            @case('select')
-                                            @case('swatch')
-                                                <label class="flex flex-col gap-1 text-sm text-body">
-                                                    <span>{{ $attribute->name }}@if($attribute->required) <span class="text-error">*</span>@endif</span>
-                                                    <select name="attributes[{{ $loop->index }}][value]" {{ $attribute->required ? 'required' : '' }} class="px-3 py-2 border border-surface-input-stroke rounded-lg bg-surface-input text-body focus:border-primary outline-none">
-                                                        <option value="">@t('Select an option')</option>
-                                                        @foreach($attribute->values as $opt)
-                                                            <option value="{{ $opt->value }}" @selected(old('attributes.' . $loop->parent->index . '.value') == $opt->value)>{{ $opt->value }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                </label>
-                                                @break
-                                            @case('radio')
-                                                <span class="text-sm text-body">{{ $attribute->name }}@if($attribute->required) <span class="text-error">*</span>@endif</span>
-                                                <div class="flex flex-col gap-2">
-                                                    @foreach($attribute->values as $opt)
-                                                        <label class="inline-flex items-center gap-2 text-sm text-body">
-                                                            <input type="radio" name="attributes[{{ $loop->parent->index }}][value]" value="{{ $opt->value }}" @checked(old('attributes.' . $loop->parent->index . '.value') == $opt->value) {{ $attribute->required ? 'required' : '' }} class="accent-primary shrink-0">
-                                                            <span>{{ $opt->value }}</span>
-                                                        </label>
-                                                    @endforeach
-                                                </div>
-                                                @break
-                                            @case('multiselect')
-                                                <span class="text-sm text-body">{{ $attribute->name }}@if($attribute->required) <span class="text-error">*</span>@endif</span>
-                                                <div class="flex flex-col gap-2">
-                                                    @foreach($attribute->values as $opt)
-                                                        <label class="inline-flex items-center gap-2 text-sm text-body">
-                                                            <input type="checkbox" name="attributes[{{ $loop->parent->index }}][value][]" value="{{ $opt->value }}" @checked(in_array($opt->value, (array) old('attributes.' . $loop->parent->index . '.value', []))) class="accent-primary shrink-0">
-                                                            <span>{{ $opt->value }}</span>
-                                                        </label>
-                                                    @endforeach
-                                                </div>
-                                                @break
-                                            @case('textarea')
-                                            @case('richtext')
-                                                <label class="flex flex-col gap-1 text-sm text-body">
-                                                    <span>{{ $attribute->name }}@if($attribute->required) <span class="text-error">*</span>@endif</span>
-                                                    <textarea name="attributes[{{ $loop->index }}][value]" rows="3" {{ $attribute->required ? 'required' : '' }} class="px-3 py-2 border border-surface-input-stroke rounded-lg bg-surface-input text-body focus:border-primary outline-none">{{ old('attributes.' . $loop->index . '.value') }}</textarea>
-                                                </label>
-                                                @break
-                                            @case('number')
-                                                <label class="flex flex-col gap-1 text-sm text-body">
-                                                    <span>{{ $attribute->name }}@if($attribute->required) <span class="text-error">*</span>@endif</span>
-                                                    <input type="number" name="attributes[{{ $loop->index }}][value]" value="{{ old('attributes.' . $loop->index . '.value') }}" {{ $attribute->required ? 'required' : '' }} class="px-3 py-2 border border-surface-input-stroke rounded-lg bg-surface-input text-body focus:border-primary outline-none">
-                                                </label>
-                                                @break
-                                            @case('date')
-                                                <label class="flex flex-col gap-1 text-sm text-body">
-                                                    <span>{{ $attribute->name }}@if($attribute->required) <span class="text-error">*</span>@endif</span>
-                                                    <input type="date" name="attributes[{{ $loop->index }}][value]" value="{{ old('attributes.' . $loop->index . '.value') }}" {{ $attribute->required ? 'required' : '' }} class="px-3 py-2 border border-surface-input-stroke rounded-lg bg-surface-input text-body focus:border-primary outline-none">
-                                                </label>
-                                                @break
-                                            @case('datetime')
-                                                <label class="flex flex-col gap-1 text-sm text-body">
-                                                    <span>{{ $attribute->name }}@if($attribute->required) <span class="text-error">*</span>@endif</span>
-                                                    <input type="datetime-local" name="attributes[{{ $loop->index }}][value]" value="{{ old('attributes.' . $loop->index . '.value') }}" {{ $attribute->required ? 'required' : '' }} class="px-3 py-2 border border-surface-input-stroke rounded-lg bg-surface-input text-body focus:border-primary outline-none">
-                                                </label>
-                                                @break
-                                            @default
-                                                <label class="flex flex-col gap-1 text-sm text-body">
-                                                    <span>{{ $attribute->name }}@if($attribute->required) <span class="text-error">*</span>@endif</span>
-                                                    <input type="text" name="attributes[{{ $loop->index }}][value]" value="{{ old('attributes.' . $loop->index . '.value') }}" {{ $attribute->required ? 'required' : '' }} class="px-3 py-2 border border-surface-input-stroke rounded-lg bg-surface-input text-body focus:border-primary outline-none">
-                                                </label>
-                                        @endswitch
-                                        @storefrontError('attributes.' . $loop->index . '.value')
-                                    </div>
+                                @foreach($attributeGroup['attributes'] as $field)
+                                    @include('partials.checkout-attribute-field', ['attribute' => $field['attribute'], 'index' => $field['index']])
                                 @endforeach
                             </div>
                         </section>
-                    @endif
+                    @endforeach
 
                     {{-- Order notes --}}
                     <section class="checkout__panel flex flex-col gap-4 p-5 bg-surface-card border border-border-subtle rounded-lg">
@@ -546,7 +477,7 @@
                  method name still renders in the radio list. The body renders the
                  admin-configured description as HTML (storefront-richtext, mirroring
                  the product/category description blocks) and scrolls for long copy. --}}
-            @if(!empty($billingMethods) && count($billingMethods) > 0)
+            @if((empty($store['hide_payment_method']) || empty($defaultBillingMethodId)) && !empty($billingMethods) && count($billingMethods) > 0)
                 @foreach($billingMethods as $method)
                     @if(!empty($method->details))
                         <dialog id="payment-method-{{ $method->id }}" class="modal bg-surface-card text-body rounded-lg shadow-xl p-0 border-0 w-full max-w-640 backdrop:bg-backdrop/40">
@@ -599,8 +530,8 @@
         @endif
     </div>
 
-    {{-- Live order-summary recompute. Selecting a shipping method, a delivery
-         address, or toggling same-as-billing re-renders the `checkout-summary`
+    {{-- Live order-summary recompute. Selecting a shipping method, a payment
+         method, a delivery address, or toggling same-as-billing re-renders the `checkout-summary`
          section server-side WITH the real shipping charge (the platform runtime
          fetches GET /{locale}/sections?sections=checkout-summary&...). The
          "Place order" button total lives outside the swapped section, so its
@@ -615,6 +546,7 @@
                 ?? document.querySelector('.checkout__place-order span:last-of-type');
             const recomputeNames = new Set([
                 'shipping_method_id',
+                'billing_method_id',
                 'shipping_address_id',
                 'billing_address_id',
                 'shipping_address_is_same_as_billing',
@@ -623,9 +555,12 @@
             const currentSelection = () => {
                 const method = document.querySelector('input[name="shipping_method_id"]:checked')
                     ?? document.querySelector('input[type="hidden"][name="shipping_method_id"]');
+                const billing = document.querySelector('input[name="billing_method_id"]:checked')
+                    ?? document.querySelector('input[type="hidden"][name="billing_method_id"]');
                 const sameToggle = document.querySelector('input[type="checkbox"][name="shipping_address_is_same_as_billing"]');
                 return {
                     shipping_method_id: method?.value ?? null,
+                    billing_method_id: billing?.value ?? null,
                     shipping_address_id: document.querySelector('input[name="shipping_address_id"]:checked')?.value ?? null,
                     billing_address_id: document.querySelector('input[name="billing_address_id"]:checked')?.value ?? null,
                     shipping_address_is_same_as_billing: sameToggle ? (sameToggle.checked ? 1 : 0) : null,

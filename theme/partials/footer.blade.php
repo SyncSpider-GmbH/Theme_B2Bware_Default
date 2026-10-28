@@ -1,3 +1,4 @@
+@startStorefrontSlot('footer')
 <footer class="storefront-footer bg-secondary-800 text-neutral-white" role="contentinfo">
     {{-- Owner-editable, full-width footer promo (site-wide). Renders nothing
          until a shop manager assigns a widget to the 'footer.promo' slot. --}}
@@ -152,3 +153,4 @@
         </div>
     @show
 </footer>
+@endStorefrontSlot

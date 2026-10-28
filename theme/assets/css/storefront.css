@@ -364,16 +364,54 @@
     border-bottom: 1px solid var(--color-border-subtle, #e5e8ee);
     text-align: left;
     vertical-align: top;
+    /* At least as wide as the longest word, so a token is never cut to fit. */
+    min-width: min-content;
+    max-width: 18rem;
 }
 
 .sf-preview-table thead th {
     font-weight: 600;
     color: var(--color-headings, #1a2233);
-    white-space: nowrap;
 }
 
 .sf-preview-table tbody td {
     color: var(--color-body, #3b4252);
+}
+
+/* Two lines max, broken on spaces only. The inner span is required because
+   line-clamp does not apply to a table-cell. A word longer than the column
+   widens the column (min-width wins over max-width) instead of being split. */
+.sf-preview-cell {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    word-break: normal;
+    overflow-wrap: normal;
+    line-height: 1.25rem;
+    max-height: 2.5rem;
+    max-width: 18rem;
+    min-width: min-content;
+}
+
+[data-catalog-preview] .catalog-export-preview-status {
+    display: none;
+}
+
+[data-catalog-preview][aria-busy="true"] .catalog-export-preview-status {
+    display: flex;
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 0.375rem;
+    background-color: color-mix(in srgb, var(--color-surface-card, #fff) 84%, transparent);
+    color: var(--color-headings, #1a2233);
+    font-size: 0.875rem;
+    font-weight: 600;
 }
 
 .sf-preview-table tbody tr:last-child td {

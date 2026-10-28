@@ -38,14 +38,14 @@
                     <img
                         src="@storefrontImage(data_get($product, 'resolved_main_media.media_url') ?? data_get($product, 'main_media.media_url'), 200, 200, 85)"
                         alt="{{ $product->name ?? '' }}"
-                        class="h-full w-full object-cover"
+                        class="h-full w-full object-contain"
                         loading="lazy"
                     >
                 @elseif(!empty($store['product_placeholder']))
                     <img
                         src="{{ $store['product_placeholder'] }}"
                         alt="{{ $product->name ?? '' }}"
-                        class="h-full w-full object-cover"
+                        class="h-full w-full object-contain"
                         loading="lazy"
                     >
                 @else
@@ -233,7 +233,7 @@
         </article>
     @else
         <article
-            class="product-card product-card--grid relative flex h-full flex-col border border-border-subtle rounded-xl bg-surface-card overflow-hidden transition-colors hover:border-primary"
+            class="product-card product-card--grid relative flex h-full flex-1 flex-col border border-border-subtle rounded-xl bg-surface-card overflow-hidden transition-colors hover:border-primary"
             data-product-id="{{ $product->id ?? '' }}"
             data-analytics-item-id="{{ ($product->sku ?? '') ?: ($product->id ?? '') }}"
             data-analytics-item-name="{{ $product->name ?? '' }}"
@@ -253,14 +253,14 @@
                     <img
                         src="@storefrontImage(data_get($product, 'resolved_main_media.media_url') ?? data_get($product, 'main_media.media_url'), 400, 400, 85)"
                         alt="{{ $product->name ?? '' }}"
-                        class="w-full h-full object-cover"
+                        class="w-full h-full object-contain"
                         loading="lazy"
                     >
                 @elseif(!empty($store['product_placeholder']))
                     <img
                         src="{{ $store['product_placeholder'] }}"
                         alt="{{ $product->name ?? '' }}"
-                        class="w-full h-full object-cover"
+                        class="w-full h-full object-contain"
                         loading="lazy"
                     >
                 @else

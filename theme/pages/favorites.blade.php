@@ -106,7 +106,7 @@
                         <ul class="catalog__grid grid grid-cols-2 md:grid-cols-3 gap-4 list-none m-0 p-0" data-favorites-list>
                             @foreach($favoriteItems as $item)
                                 @if($products->get((int) data_get($item, 'id', 0)))
-                                    <li class="flex flex-col gap-2">
+                                    <li class="flex h-full flex-col gap-2">
                                         @include('components.product-card', ['product' => $products->get((int) data_get($item, 'id', 0))])
                                         @storefrontForm('favorite-toggle', ['class' => 'self-stretch'])
                                             <input type="hidden" name="product_id" value="{{ data_get($item, 'id') }}">

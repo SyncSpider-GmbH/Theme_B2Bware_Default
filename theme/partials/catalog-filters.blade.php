@@ -1,6 +1,6 @@
 {{-- Shared by the desktop filters sidebar and the mobile filters dialog (pages/products.blade.php). --}}
 
-@if(!empty($selectedAttributes) || ($inStockSelected ?? false) || ($priceSelected['min'] ?? null) !== null || ($priceSelected['max'] ?? null) !== null || ($filters['q'] ?? ''))
+@if(!empty($selectedAttributes) || !empty($selectedDefinitions) || ($inStockSelected ?? false) || ($priceSelected['min'] ?? null) !== null || ($priceSelected['max'] ?? null) !== null || ($filters['q'] ?? ''))
     <a
         href="@routeUrl('store.products')@if(($view ?? 'grid') !== 'grid')?view={{ $view }}@endif"
         class="self-start text-sm text-body underline hover:text-primary"
@@ -38,32 +38,14 @@
         @if($filters['q'] ?? '')
             <input type="hidden" name="q" value="{{ $filters['q'] }}">
         @endif
-        @if(($sort ?? 'relevance') !== 'relevance')
+        @if(($sort ?? '') !== '')
             <input type="hidden" name="sort" value="{{ $sort }}">
         @endif
         @if(($view ?? 'grid') !== 'grid')
             <input type="hidden" name="view" value="{{ $view }}">
         @endif
 
-        @foreach($facets as $facet)
-            <section class="catalog-filter flex flex-col gap-2 {{ ($categoryFacet ?? collect())->isNotEmpty() || !$loop->first ? 'border-t border-border-subtle pt-4' : '' }}">
-                <h2 class="text-sm font-semibold text-headings m-0">{{ $facet['name'] }}</h2>
-                <div class="flex flex-col gap-1.5">
-                    @foreach($facet['values'] as $value)
-                        <label class="flex items-center gap-2 text-sm text-body cursor-pointer">
-                            <input
-                                type="checkbox"
-                                name="attr[{{ $facet['id'] }}][]"
-                                value="{{ $value }}"
-                                class="shrink-0"
-                                @checked(in_array($value, $selectedAttributes[$facet['id']] ?? [], true))
-                            >
-                            <span class="truncate">{{ $value }}</span>
-                        </label>
-                    @endforeach
-                </div>
-            </section>
-        @endforeach
+        @include('partials.catalog-facet')
 
         @if($priceFilterEnabled ?? false)
             <section class="catalog-filter flex flex-col gap-3 border-t border-border-subtle pt-4">
@@ -92,21 +74,7 @@
             </section>
         @endif
 
-        @if($inStockAvailable ?? false)
-            <section class="catalog-filter flex flex-col gap-2 border-t border-border-subtle pt-4">
-                <h2 class="text-sm font-semibold text-headings m-0">@t('Availability')</h2>
-                <label class="flex items-center gap-2 text-sm text-body cursor-pointer">
-                    <input
-                        type="checkbox"
-                        name="in_stock"
-                        value="1"
-                        class="shrink-0"
-                        @checked($inStockSelected ?? false)
-                    >
-                    <span>@t('In stock only')</span>
-                </label>
-            </section>
-        @endif
+        @include('partials.catalog-availability')
 
         <noscript>
             <button type="submit" class="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-content cursor-pointer">@t('Apply filters')</button>

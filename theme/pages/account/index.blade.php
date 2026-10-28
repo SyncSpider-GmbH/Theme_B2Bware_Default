@@ -68,10 +68,12 @@
                                 <h2 class="font-primary text-base font-semibold text-headings m-0">@t('Recent orders')</h2>
                                 <span class="text-xs text-body/70">@t('Your latest orders')</span>
                             </div>
-                            <a href="@routeUrl('store.account.orders')" class="inline-flex items-center gap-1 text-sm font-medium text-primary hover:text-primary-600 no-underline">
-                                @t('View all')
-                                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
-                            </a>
+                            @if($recentOrders->isNotEmpty())
+                                <a href="@routeUrl('store.account.orders')" class="inline-flex items-center gap-1 text-sm font-medium text-primary hover:text-primary-600 no-underline">
+                                    @t('View all')
+                                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+                                </a>
+                            @endif
                         </header>
 
                         @if($recentOrders->isEmpty())

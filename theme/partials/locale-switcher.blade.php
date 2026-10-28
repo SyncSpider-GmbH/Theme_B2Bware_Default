@@ -1,6 +1,6 @@
 @if(count($localeOptions ?? []) > 1)
     <details class="locale-switcher group relative" data-storefront-dropdown="locale" data-locale-switcher data-endpoint="{{ route('store.locale.set') }}">
-        <summary class="locale-switcher__trigger flex cursor-pointer list-none items-center gap-1.5 rounded px-1.5 py-1 text-neutral-white transition-colors hover:text-neutral-white">
+        <summary class="locale-switcher__trigger flex cursor-pointer list-none items-center gap-1.5 rounded px-1.5 py-1 text-inherit transition-colors hover:opacity-90">
             @foreach($localeOptions as $option)
                 @if($option['active'])
                     <img src="{{ $option['flag'] }}" alt="" class="h-4 w-6 shrink-0 rounded-sm object-cover" width="24" height="16" loading="lazy">
