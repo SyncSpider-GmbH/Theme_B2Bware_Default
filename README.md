@@ -3,6 +3,8 @@
 The complete **B2Bware default storefront theme** — every layout, partial, component and page,
 ready to restyle and re-upload as your own theme.
 
+The APOfit pitch package does not replace this default. It lives in [`themes/apofit/`](themes/apofit/) and is documented in [`docs/APOFIT-PITCH.md`](docs/APOFIT-PITCH.md). Build it with `./scripts/build-apofit-zip.sh`. Leave `theme/theme.json` as B2Bware Default.
+
 - **Yes** all the Blade and assets the default storefront renders (under [`theme/`](theme/)).
 - **Yes** the full authoring contract under [`theme/docs/`](theme/docs/).
 - We **recommend [Cursor](https://cursor.com)**; `.cursor/rules` points agents at
