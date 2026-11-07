@@ -12,6 +12,7 @@ Storefront für den APOfit-Shop. Öffentliche B2C-Preise und Bestellung als Gast
 - Startseite mit Sortiment-Kacheln aus denselben Kategorien.
 - Produktbilder bleiben vollständig im Rahmen sichtbar.
 - Kasse bleibt das Shop-Formular: Kontakt, Adressen, Versand, Zahlung und Summe kommen vom Server. Die Zusammenfassung steht neben bzw. unter den Angaben, der Bestellbutton ist klar grün.
+- Kasse ist zweistufig aufgebaut: zuerst „Adresse“, dann „Abschluss“. Der mobile Zusammenfassungsblock kann ein- und ausgeklappt werden.
 - Gäste sehen keine Staffelkarten und keine eingebetteten Staffelpreise. Angemeldete Kunden sehen nur die Staffeln, die der Server für ihre Sitzung schickt.
 - Schrift: Maven Pro für Überschriften, Inter für Text. Beide stecken in der Theme-CSS, damit kein separater Schriftabruf 404 liefert.
 

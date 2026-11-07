@@ -2,7 +2,7 @@
     "name": "APOfit",
     "slug": "apofit",
     "author": "APOfit",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "description": "Storefront für APOfit: Natur und Wohlbefinden, öffentliche B2C-Preise, Gästecheckout. Staffelpreise nur für angemeldete berechtigte Kunden.",
     "license": "Proprietary",
     "_slots_note": "Informational only — slots are discovered by scanning @storefrontSlot('key'[, config]) in the Blade files, and that scan is the source of truth. Optional second-argument config objects declare slot context for the Theme Editor (e.g. ['context' => ['product' => 'product']]). 'content-top' / 'content-bottom' are the standard owner-editable regions on every page; 'hero' renders full-width above the breadcrumbs via the layout's @yield('hero').",

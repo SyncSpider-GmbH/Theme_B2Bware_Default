@@ -1186,6 +1186,48 @@ body.apofit-sheet-open {
     box-shadow: 0 10px 30px rgba(36, 60, 16, 0.06);
 }
 
+.checkout__progress-step {
+    transition: color 160ms ease, opacity 160ms ease;
+}
+
+.checkout__progress-step--active {
+    color: #2c3824;
+}
+
+.checkout__progress-step--done {
+    color: #3f6b14;
+}
+
+.checkout__progress-step--active .checkout__progress-badge,
+.checkout__progress-step--done .checkout__progress-badge {
+    background: #3f6b14;
+    color: #fff;
+}
+
+.checkout__summary-toggle {
+    transition: background-color 160ms ease, color 160ms ease;
+}
+
+.checkout__summary-panel[hidden] {
+    display: none;
+}
+
+.checkout__summary-toggle[aria-expanded='true'] .checkout__summary-chevron {
+    transform: rotate(180deg);
+}
+
+.checkout__summary-chevron {
+    transition: transform 160ms ease;
+}
+
+.checkout__panel--step2[hidden] {
+    display: none;
+}
+
+.checkout__mobile-submit {
+    box-shadow: 0 10px 24px rgba(36, 60, 16, 0.04);
+}
+
 @media (max-width: 359px) {
     .storefront__main,
     .storefront-header__bar,

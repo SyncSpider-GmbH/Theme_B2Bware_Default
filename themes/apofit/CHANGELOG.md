@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.1 — 2026-11-07
+
+- Kasse auf zwei Schritte umgestellt: „Adresse“ / „Lieferung und Rechnung“ und danach „Abschluss“ / „Versand- und Zahlungsart“.
+- Mobile Zusammenfassung als aufklappbarer Block mit Gesamtbetrag am Kopf.
+- Nur native Versand- und Zahlungsmethoden aus dem Server bleiben aktiv; keine Wallet-Platzhalter.
+
 ## 1.1.0 — 2026-11-07
 
 - Kopfzeile weiß, dünne grüne Servicezeile, Produkte öffnet ein breites Menüraster mit grünen Überschriften. Keine zweite Scrollspalte und kein wiederholtes „Unterpunkte“.
