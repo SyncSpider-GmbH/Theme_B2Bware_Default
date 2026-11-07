@@ -90,8 +90,42 @@ else
   bad "nav is missing menu_path or category_ui_type"
 fi
 
+if grep -q 'data:font/woff2;base64,' "$THEME_DIR/assets/css/storefront.css" \
+  && ! grep -q 'url("../fonts/' "$THEME_DIR/assets/css/storefront.css"; then
+  say "fonts embedded, no relative font urls"
+else
+  bad "font css still depends on a separate woff2 request"
+fi
+
+python3 - <<'PY' || bad "robots coverage"
+from pathlib import Path
+root = Path("themes/apofit")
+needle = '<meta name="robots" content="noindex, nofollow">'
+pages = list((root / "pages").rglob("*.blade.php"))
+missing = []
+for page in pages:
+    text = page.read_text(encoding="utf-8")
+    if "@extends('layouts.shop')" not in text and "@extends('layouts.auth')" not in text:
+        missing.append(str(page))
+print(f"pages {len(pages)} all extend shop or auth")
+if missing:
+    raise SystemExit("pages without layout: " + ", ".join(missing))
+for layout in ["layouts/shop.blade.php", "layouts/auth.blade.php"]:
+    text = (root / layout).read_text(encoding="utf-8")
+    if needle not in text or "@storefrontSeo" not in text:
+        raise SystemExit(layout + " missing noindex or storefrontSeo")
+    if text.find(needle) > text.find("@storefrontSeo"):
+        raise SystemExit(layout + " noindex is after storefrontSeo")
+    print(layout, "noindex before @storefrontSeo")
+PY
+
 ./scripts/build-apofit-zip.sh
-zipfile=$(ls -1 dist/apofit-*.zip | head -n1)
+slug=$(sed -n 's/.*"slug"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$THEME_DIR/theme.json" | head -n1)
+version=$(sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$THEME_DIR/theme.json" | head -n1)
+zipfile="dist/${slug}-${version}.zip"
+if [ ! -f "$zipfile" ]; then
+  bad "expected zip $zipfile"
+fi
 python3 - "$zipfile" <<'PY' || bad "zip root"
 import sys, zipfile
 path = sys.argv[1]

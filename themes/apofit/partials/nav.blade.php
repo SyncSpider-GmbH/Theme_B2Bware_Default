@@ -8,52 +8,74 @@
             @if($megaMenuCategories->isEmpty())
                 <p class="m-0 py-3 text-sm text-body">@t('No categories')</p>
             @else
-                <ul class="apofit-nav__tabs">
-                    @foreach($megaMenuCategories as $category)
-                        <li>
-                            @if(count($category->children ?? []) > 0)
-                                <details class="apofit-nav__details" data-apofit-details>
-                                    <summary class="apofit-nav__summary">{{ $category->name }}</summary>
-                                    <div class="apofit-nav__flyout">
-                                        <div class="apofit-nav__flyout-head">
-                                            <input type="search" data-apofit-flyout-search autocomplete="off"
-                                                placeholder="@t('Search categories')"
-                                                aria-label="@t('Search categories')">
-                                            @if(data_get($category, 'menu_path'))
-                                                <a class="apofit-nav__all" href="@routeUrl('store.category', ['slug' => data_get($category, 'menu_path')])">@t('Alle anzeigen')</a>
-                                            @endif
-                                        </div>
-                                        <ul class="apofit-nav__groups">
-                                            @foreach($category->children as $child)
-                                                <li data-apofit-item data-name="{{ mb_strtolower((string) $child->name) }}">
-                                                    @if(data_get($child, 'menu_path'))
-                                                        <a class="apofit-nav__child-link" href="@routeUrl('store.category', ['slug' => data_get($child, 'menu_path')])">{{ $child->name }}</a>
-                                                    @else
-                                                        <span class="apofit-nav__child-link">{{ $child->name }}</span>
-                                                    @endif
-                                                    @if(count(data_get($child, 'children') ?? []) > 0)
-                                                        <ul class="apofit-nav__grand">
-                                                            @foreach(data_get($child, 'children') as $grandchild)
-                                                                @if(data_get($grandchild, 'menu_path'))
-                                                                    <li data-apofit-item data-name="{{ mb_strtolower((string) data_get($grandchild, 'name')) }}">
-                                                                        <a href="@routeUrl('store.category', ['slug' => data_get($grandchild, 'menu_path')])">{{ data_get($grandchild, 'name') }}</a>
-                                                                    </li>
-                                                                @endif
-                                                            @endforeach
-                                                        </ul>
-                                                    @endif
-                                                </li>
-                                            @endforeach
-                                        </ul>
-                                        <p hidden data-apofit-none class="m-0 text-sm text-body">@t('No categories')</p>
+                {{-- One control. The live depth window is about 18 parents and
+                     their children. Putting every parent in the header wrapped
+                     onto two rows, including Unkategorisiert and both
+                     Wärmeflaschen names. Those names stay in the panel. --}}
+                <details class="apofit-nav__details" data-apofit-details>
+                    <summary class="apofit-nav__summary">@t('Sortiment')</summary>
+                    <div class="apofit-nav__flyout">
+                        <div class="apofit-nav__flyout-head">
+                            <input type="search" data-apofit-flyout-search autocomplete="off"
+                                placeholder="@t('Search categories')"
+                                aria-label="@t('Search categories')">
+                            <a class="apofit-nav__all" href="@routeUrl('store.categories')">@t('Categories')</a>
+                        </div>
+                        <div class="apofit-nav__split">
+                            <ul class="apofit-nav__parents">
+                                @foreach($megaMenuCategories as $category)
+                                    <li data-apofit-parent data-name="{{ mb_strtolower((string) $category->name) }}">
+                                        @if(data_get($category, 'menu_path'))
+                                            <a href="@routeUrl('store.category', ['slug' => data_get($category, 'menu_path')])">{{ $category->name }}</a>
+                                        @else
+                                            <span>{{ $category->name }}</span>
+                                        @endif
+                                        @if(count($category->children ?? []) > 0)
+                                            <button type="button" data-apofit-tab="{{ $loop->index }}" aria-expanded="{{ $loop->first ? 'true' : 'false' }}">@t('Unterpunkte')</button>
+                                        @endif
+                                    </li>
+                                @endforeach
+                            </ul>
+                            <div class="apofit-nav__panes">
+                                @foreach($megaMenuCategories as $category)
+                                    <div data-apofit-pane="{{ $loop->index }}" @if(!$loop->first) hidden @endif>
+                                        <p class="apofit-nav__pane-title">{{ $category->name }}</p>
+                                        @if(data_get($category, 'menu_path'))
+                                            <a class="apofit-nav__all" href="@routeUrl('store.category', ['slug' => data_get($category, 'menu_path')])">@t('Alle anzeigen')</a>
+                                        @endif
+                                        @if(count($category->children ?? []) > 0)
+                                            <ul class="apofit-nav__groups">
+                                                @foreach($category->children as $child)
+                                                    <li data-apofit-item data-name="{{ mb_strtolower((string) $child->name) }}">
+                                                        @if(data_get($child, 'menu_path'))
+                                                            <a class="apofit-nav__child-link" href="@routeUrl('store.category', ['slug' => data_get($child, 'menu_path')])">{{ $child->name }}</a>
+                                                        @else
+                                                            <span class="apofit-nav__child-link">{{ $child->name }}</span>
+                                                        @endif
+                                                        @if(count(data_get($child, 'children') ?? []) > 0)
+                                                            <ul class="apofit-nav__grand">
+                                                                @foreach(data_get($child, 'children') as $grandchild)
+                                                                    @if(data_get($grandchild, 'menu_path'))
+                                                                        <li data-apofit-item data-name="{{ mb_strtolower((string) data_get($grandchild, 'name')) }}">
+                                                                            <a href="@routeUrl('store.category', ['slug' => data_get($grandchild, 'menu_path')])">{{ data_get($grandchild, 'name') }}</a>
+                                                                        </li>
+                                                                    @endif
+                                                                @endforeach
+                                                            </ul>
+                                                        @endif
+                                                    </li>
+                                                @endforeach
+                                            </ul>
+                                        @else
+                                            <p class="m-0 text-sm text-body">@t('No categories')</p>
+                                        @endif
                                     </div>
-                                </details>
-                            @elseif(data_get($category, 'menu_path'))
-                                <a class="apofit-nav__direct" href="@routeUrl('store.category', ['slug' => data_get($category, 'menu_path')])">{{ $category->name }}</a>
-                            @endif
-                        </li>
-                    @endforeach
-                </ul>
+                                @endforeach
+                            </div>
+                        </div>
+                        <p hidden data-apofit-none class="m-0 text-sm text-body">@t('No categories')</p>
+                    </div>
+                </details>
             @endif
         </div>
 
@@ -140,7 +162,26 @@
         if (nav) {
             nav.classList.add('apofit-nav--enhanced');
             const groups = [...nav.querySelectorAll('[data-apofit-details]')];
-            const summaries = [...nav.querySelectorAll('.apofit-nav__summary')];
+            const tabs = [...nav.querySelectorAll('[data-apofit-tab]')];
+            const panes = [...nav.querySelectorAll('[data-apofit-pane]')];
+
+            const showPane = (id) => {
+                for (const pane of panes) {
+                    pane.hidden = pane.getAttribute('data-apofit-pane') !== id;
+                }
+                for (const tab of tabs) {
+                    tab.setAttribute('aria-expanded', tab.getAttribute('data-apofit-tab') === id ? 'true' : 'false');
+                }
+            };
+
+            for (const tab of tabs) {
+                tab.addEventListener('click', () => {
+                    const id = tab.getAttribute('data-apofit-tab');
+                    if (id) {
+                        showPane(id);
+                    }
+                });
+            }
 
             const closeGroups = () => {
                 for (const group of groups) {
@@ -149,51 +190,37 @@
             };
 
             for (const group of groups) {
-                group.addEventListener('toggle', () => {
-                    if (!group.open) {
-                        return;
-                    }
-                    for (const other of groups) {
-                        if (other !== group) {
-                            other.open = false;
-                        }
-                    }
-                });
                 const input = group.querySelector('[data-apofit-flyout-search]');
                 const empty = group.querySelector('[data-apofit-none]');
                 if (input instanceof HTMLInputElement) {
-                    const apply = () => {
+                    input.addEventListener('input', () => {
                         const query = input.value.trim().toLowerCase();
-                        const items = [...group.querySelectorAll('[data-apofit-item]')].reverse();
-                        for (const item of items) {
+                        let visible = 0;
+                        for (const parent of group.querySelectorAll('[data-apofit-parent]')) {
+                            const name = parent.getAttribute('data-name') || '';
+                            const show = query === '' || name.includes(query);
+                            parent.hidden = !show;
+                            if (show) {
+                                visible += 1;
+                            }
+                        }
+                        for (const item of group.querySelectorAll('[data-apofit-item]')) {
                             const name = item.getAttribute('data-name') || '';
-                            const nested = item.querySelector('ul');
-                            const childShown = nested ? [...nested.children].some((child) => !child.hidden) : false;
-                            item.hidden = query !== '' && !name.includes(query) && !childShown;
+                            item.hidden = query !== '' && !name.includes(query);
                         }
                         if (empty) {
-                            const any = [...group.querySelectorAll('.apofit-nav__groups > [data-apofit-item]')].some((item) => !item.hidden);
-                            empty.hidden = any;
+                            empty.hidden = visible !== 0;
                         }
-                    };
-                    input.addEventListener('input', apply);
+                    });
                 }
             }
 
-            for (const summary of summaries) {
-                summary.addEventListener('keydown', (event) => {
-                    const index = summaries.indexOf(summary);
-                    if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
-                        event.preventDefault();
-                        const next = event.key === 'ArrowRight' ? index + 1 : index - 1;
-                        const target = summaries[(next + summaries.length) % summaries.length];
-                        target.focus();
-                    }
-                    if (event.key === 'Escape') {
-                        closeGroups();
-                    }
-                });
-            }
+            const summary = nav.querySelector('.apofit-nav__summary');
+            summary?.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    closeGroups();
+                }
+            });
 
             document.addEventListener('keydown', (event) => {
                 if (event.key === 'Escape') {

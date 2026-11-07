@@ -10,6 +10,8 @@
          the tenant has configured no tracking. --}}
     @storefrontAnalytics
     <title>@yield('title', $store['name'])</title>
+    {{-- Same noindex as the shop layout. Auth pages use this layout. --}}
+    <meta name="robots" content="noindex, nofollow">
     @if(!empty($store['favicon']))
         <link rel="icon" href="{{ $store['favicon'] }}">
     @endif

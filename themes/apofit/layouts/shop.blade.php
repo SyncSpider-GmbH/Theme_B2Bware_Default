@@ -10,6 +10,12 @@
          the tenant has configured no tracking. --}}
     @storefrontAnalytics
     <title>@yield('title', $store['name'])</title>
+    {{-- Pitch: indexing stays off. The platform SEO directive still owns description,
+         canonical and social tags. On this tenant it currently also emits
+         index,follow while Store Setup indexing is off and seo.robots is null.
+         This tag is first and is noindex. Crawlers that combine tags keep the
+         stricter noindex. --}}
+    <meta name="robots" content="noindex, nofollow">
     @if(!empty($store['favicon']))
         <link rel="icon" href="{{ $store['favicon'] }}">
     @endif

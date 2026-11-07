@@ -13,13 +13,14 @@ Storefront für den APOfit-Shop. Öffentliche B2C-Preise und Bestellung als Gast
 - Produktbilder bleiben vollständig im Rahmen sichtbar.
 - Kasse bleibt das Shop-Formular: Kontakt, Adressen, Versand, Zahlung und Summe kommen vom Server. Die Zusammenfassung steht neben bzw. unter den Angaben, der Bestellbutton ist klar grün.
 - Gäste sehen keine Staffelkarten und keine eingebetteten Staffelpreise. Angemeldete Kunden sehen nur die Staffeln, die der Server für ihre Sitzung schickt.
-- Schrift: Maven Pro für Überschriften, Inter für Text. Beide liegen im Theme, ohne Abruf bei Google.
+- Schrift: Maven Pro für Überschriften, Inter für Text. Beide stecken in der Theme-CSS, damit kein separater Schriftabruf 404 liefert.
 
 ## Scripts and libraries
 
 - Shop-Laufzeit der Plattform für Warenkorb, Formulare und Abschnitte.
-- Kleine Skripte direkt in Menü und Kategoriefilter: öffnen, schließen, Suche, Zurück, Escape. Ohne JavaScript bleiben die Desktop-Kategorien als aufklappbare Liste nutzbar, der Warenkorb funktioniert über normale Formulare.
-- Schriftarten Inter und Maven Pro, selbst gehostet, SIL Open Font License. Kein externes Schrift-CDN, kein Tailwind-CDN, keine weitere Bibliothek.
+- Kleine Skripte direkt in Menü und Kategoriefilter: öffnen, schließen, Suche, Zurück, Escape. Ohne JavaScript bleibt ein Sortiment-Aufklapper mit den Hauptlinks, der Warenkorb funktioniert über normale Formulare.
+- Schriftarten Inter und Maven Pro, SIL Open Font License, als Daten direkt in der Theme-CSS. Kein externes Schrift-CDN, kein Tailwind-CDN, keine weitere Bibliothek.
+- In Shop- und Anmelde-Layout steht vor den Plattform-SEO-Angaben ein `noindex, nofollow`. Das ist die Demo-Sperre, solange die Plattform trotz ausgeschalteter Indexierung `index, follow` sendet.
 - Keine Anbindung an andere Shops.
 
 ## Still on the default theme

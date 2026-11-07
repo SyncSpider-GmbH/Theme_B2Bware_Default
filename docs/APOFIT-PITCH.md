@@ -31,9 +31,26 @@ Adresse: `https://344a67f6-41a1-4e75-9d43-a210a5798b58.store.b2bware.com/de-de`
 - `/de-de/home` antwortet auf dem aktiven Plattformdefault mit HTTP 500 und der Fehlerseite „Etwas ist schiefgelaufen“, ohne Stacktrace im HTML. Dieses Paket liefert `pages/home.blade.php`. Nach der Vorschau `/de-de/home` erneut öffnen. Wenn der Fehler bleibt, nicht über diese Route aktivieren; die Liste unter `/de-de` bleibt die Startseite.
 - Gästecheckout ist zum Messzeitpunkt aus. Öffentliche B2C-Preise und der Gastkauf sind damit noch nicht belegbar. Staffelpreise waren im Gast-HTML nicht eingebettet. Das ist der Ist-Zustand vor dem Einschalten des Gästecheckouts, keine Freigabe der Preislogik.
 
+## 1.0.1 gegenüber dem Admin-Zähler von 1.0.0
+
+Das ZIP 1.0.0 hatte 115 Archiveinträge: 10 Ordner und 105 Dateien. Der Admin nannte 102 Dateien und 72 Overrides. 72 ist die Zahl der Seiten, Partials und Komponenten ohne die zwei Layouts. Die drei fehlenden Dateien gegenüber 105 liegen nicht als Upload-Protokoll vor. Die Schrift-404 kamen nicht von einem fehlenden ZIP-Eintrag: die CSS stand unter `/assets/css/storefront.css`, und `../fonts/*.woff2` wurde dadurch zu `/assets/fonts/*.woff2`, das mit 404 antwortet. 1.0.1 bettet die Schriften in die CSS ein.
+
+## Indexierung
+
+Öffentliche GETs vom 7. November 2026 auf dem noch aktiven Standard-Theme:
+
+- `/de-de/products` und `/de-de/products/3384` enthalten `<meta name="robots" content="index, follow">`.
+- Store Setup zeigt Indexierung aus. `seo.robots` ist null.
+- Der Vertrag sagt: `$store['indexable']` steuert das Meta über `@storefrontSeo`. Ein Theme soll kein eigenes Robots-Meta setzen. Dieser Vertrag liefert hier kein noindex.
+
+APOfit 1.0.1 lässt `@storefrontSeo` stehen und setzt davor in `layouts/shop.blade.php` und `layouts/auth.blade.php` zusätzlich `<meta name="robots" content="noindex, nofollow">`. Jede Demo-Seite hängt an genau einem dieser Layouts. Lokal geprüft wird die Quelldatei, nicht ein gerendertes Blade, weil hier keine Storefront läuft.
+
+Vorschau nach dem Upload von 1.0.1, vor der Aktivierung: Seitenquelltext von Produktliste, Produkt, Kategorie, Warenkorb, Kasse, Anmeldung. Das erste Robots-Meta muss `noindex, nofollow` sein. Ein zweites `index, follow` von der Plattform kann darunter stehen. Nicht aktivieren, wenn das noindex fehlt.
+
 ## Offene Grenzen vor der Aktivierung
 
-- Parent schaltet Gästecheckout selbst ein und prüft EUR. Danach auf Karte, Produktseite, Varianten, Warenkorb und Suche prüfen: öffentliche Beträge sichtbar, keine Staffelpreise in HTML, JSON oder `data-tier-prices` für Gäste. Bei einem Leck nicht per CSS verstecken und nicht aktivieren.
+- Gästecheckout ist inzwischen an, Login für Preise aus, Mega-Menü an, Indexierung im Setup aus. Eine Produktseite zeigte Variantenpreise 23,90 und 21,90 Euro. Das ist eine Stichprobe, keine volle Preisabnahme. Warenkorb und Kasse mit Artikel, ohne Bestellabschluss, prüft der Parent in der Vorschau.
+- Rollen sind noch nicht angelegt. Zuweisung und Rollenpreise sind kein Blocker. Nichts davon anlegen oder ändern. Gast-Staffeldaten bleiben eine serverseitige Grenze. Rolle A gegen Rolle B, Logout und Cache sind offen und gehören nicht zu 1.0.1.
 - `mega_menu` setzen, sonst bleibt das neue Menü aus.
 - Upload, Vorschau und Aktivierung nur im Browser-Admin. Dieses Paket wurde nicht hochgeladen.
 - Kein SEO, keine Indexierung einschalten, kein DNS, kein Woo-Eingriff, kein Naturfeh.
