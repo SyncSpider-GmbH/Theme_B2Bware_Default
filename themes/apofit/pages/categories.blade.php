@@ -27,18 +27,16 @@
                                 href="@routeUrl('store.category', ['slug' => data_get($category, 'seo.slug') ?: data_get($category, 'slug', '')])"
                                 class="category-card flex h-full flex-col overflow-hidden rounded-xl border border-border-subtle bg-surface-card transition-colors hover:border-primary hover:no-underline"
                             >
-                                <span class="category-card__image flex aspect-square w-full items-center justify-center overflow-hidden bg-surface">
-                                    @if(data_get($category, 'resolved_main_media.media_url') ?? data_get($category, 'media.0.media_url') ?? data_get($category, 'seo.image.public_url') ?? data_get($category, 'seo.seo_image.public_url'))
+                                @if(data_get($category, 'resolved_main_media.media_url') ?? data_get($category, 'media.0.media_url') ?? data_get($category, 'seo.image.public_url') ?? data_get($category, 'seo.seo_image.public_url'))
+                                    <span class="category-card__image flex aspect-square w-full items-center justify-center overflow-hidden bg-surface">
                                         <img
                                             src="@storefrontImage(data_get($category, 'resolved_main_media.media_url') ?? data_get($category, 'media.0.media_url') ?? data_get($category, 'seo.image.public_url') ?? data_get($category, 'seo.seo_image.public_url'), 320, 320, 85)"
                                             alt="{{ data_get($category, 'name', '') }}"
                                             class="h-full w-full object-contain"
                                             loading="lazy"
                                         >
-                                    @else
-                                        @include('partials.__image-placeholder', ['size' => 'h-12 w-12'])
-                                    @endif
-                                </span>
+                                    </span>
+                                @endif
                                 <span class="category-card__name block px-3 py-4 text-center font-medium text-headings break-words">{{ data_get($category, 'name', '') }}</span>
                             </a>
                         </li>

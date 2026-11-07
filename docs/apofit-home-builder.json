@@ -1,0 +1,1387 @@
+{
+  "layout": "grid",
+  "dataSources": [],
+  "children": [
+    {
+      "id": "home-hero",
+      "type": "section",
+      "props": {
+        "background": {
+          "type": "color",
+          "color": "#ffffff"
+        },
+        "padding": {
+          "t": 16,
+          "r": 16,
+          "b": 16,
+          "l": 16
+        },
+        "maxWidth": 1440
+      },
+      "grid": {
+        "desktop": {
+          "columns": 24,
+          "gap": 16,
+          "rowHeight": 10
+        },
+        "tablet": {
+          "columns": 8,
+          "gap": 12,
+          "rowHeight": 10
+        },
+        "mobile": {
+          "columns": 4,
+          "gap": 12,
+          "rowHeight": 10
+        }
+      },
+      "children": [
+        {
+          "id": "hero-aroma-img",
+          "type": "image",
+          "props": {
+            "src": "https://www.apofit.at/wp-content/uploads/2025/06/apofit-aromatherapie-aetherische-oele-zubehoer.jpg",
+            "alt": "Aromatherapie, ätherische Öle und Zubehör",
+            "fit": "cover"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 12,
+              "rowStart": 1,
+              "rowSpan": 22,
+              "z": 1
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 1,
+              "rowSpan": 18,
+              "z": 1
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 1,
+              "rowSpan": 18,
+              "z": 1
+            }
+          }
+        },
+        {
+          "id": "hero-aroma-copy",
+          "type": "text",
+          "props": {
+            "html": "<h2>Aromatherapie</h2><p>Ätherische Öle wirken ganzheitlich</p>"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 8,
+              "rowStart": 8,
+              "rowSpan": 4,
+              "z": 2
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 8,
+              "rowSpan": 4,
+              "z": 2
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 6,
+              "rowSpan": 4,
+              "z": 2
+            }
+          }
+        },
+        {
+          "id": "hero-aroma-btn",
+          "type": "button",
+          "props": {
+            "label": "Produkte finden",
+            "href": "/categories/aromatherapie",
+            "preset": "primary"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 5,
+              "rowStart": 13,
+              "rowSpan": 3,
+              "z": 2
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 3,
+              "rowStart": 13,
+              "rowSpan": 3,
+              "z": 2
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 3,
+              "rowStart": 11,
+              "rowSpan": 3,
+              "z": 2
+            }
+          }
+        },
+        {
+          "id": "hero-herbst-img",
+          "type": "image",
+          "props": {
+            "src": "https://www.apofit.at/wp-content/uploads/2026/09/wohlfuehlzeit-herbst-frau-geniesst-warme-sonnenstrahlen.jpg",
+            "alt": "Wohlfühlzeit Herbst",
+            "fit": "cover"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 13,
+              "colSpan": 12,
+              "rowStart": 1,
+              "rowSpan": 22,
+              "z": 1
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 5,
+              "colSpan": 4,
+              "rowStart": 1,
+              "rowSpan": 18,
+              "z": 1
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 20,
+              "rowSpan": 18,
+              "z": 1
+            }
+          }
+        },
+        {
+          "id": "hero-herbst-copy",
+          "type": "text",
+          "props": {
+            "html": "<h2>Wohlfühlzeit Herbst</h2><p>Auszeit genießen</p>"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 13,
+              "colSpan": 8,
+              "rowStart": 8,
+              "rowSpan": 4,
+              "z": 2
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 5,
+              "colSpan": 4,
+              "rowStart": 8,
+              "rowSpan": 4,
+              "z": 2
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 26,
+              "rowSpan": 4,
+              "z": 2
+            }
+          }
+        },
+        {
+          "id": "hero-herbst-btn",
+          "type": "button",
+          "props": {
+            "label": "Jetzt entdecken",
+            "href": "/categories/neuheiten/wohlfuhlzeit-herbst",
+            "preset": "primary"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 13,
+              "colSpan": 5,
+              "rowStart": 13,
+              "rowSpan": 3,
+              "z": 2
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 5,
+              "colSpan": 3,
+              "rowStart": 13,
+              "rowSpan": 3,
+              "z": 2
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 3,
+              "rowStart": 31,
+              "rowSpan": 3,
+              "z": 2
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "home-tiles",
+      "type": "section",
+      "props": {
+        "background": {
+          "type": "color",
+          "color": "#ffffff"
+        },
+        "padding": {
+          "t": 16,
+          "r": 16,
+          "b": 16,
+          "l": 16
+        },
+        "maxWidth": 1440
+      },
+      "grid": {
+        "desktop": {
+          "columns": 24,
+          "gap": 16,
+          "rowHeight": 10
+        },
+        "tablet": {
+          "columns": 8,
+          "gap": 12,
+          "rowHeight": 10
+        },
+        "mobile": {
+          "columns": 4,
+          "gap": 12,
+          "rowHeight": 10
+        }
+      },
+      "children": [
+        {
+          "id": "basis-img",
+          "type": "image",
+          "props": {
+            "src": "https://www.apofit.at/wp-content/uploads/2025/09/apofit-pflanzenoele-jojobaoel.jpg",
+            "alt": "Basis- und Massageöle",
+            "fit": "cover"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 8,
+              "rowStart": 1,
+              "rowSpan": 18,
+              "z": 1
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 1,
+              "rowSpan": 14,
+              "z": 1
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 1,
+              "rowSpan": 16,
+              "z": 1
+            }
+          }
+        },
+        {
+          "id": "basis-copy",
+          "type": "text",
+          "props": {
+            "html": "<h2>Basis- &amp; Massageöle</h2><p>Für Hautpflege und Aromamassage</p>"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 7,
+              "rowStart": 6,
+              "rowSpan": 4,
+              "z": 2
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 6,
+              "rowSpan": 4,
+              "z": 2
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 6,
+              "rowSpan": 4,
+              "z": 2
+            }
+          }
+        },
+        {
+          "id": "basis-btn",
+          "type": "button",
+          "props": {
+            "label": "Auswahl entdecken",
+            "href": "/categories/aromatherapie/pflanzenole",
+            "preset": "primary"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 11,
+              "rowSpan": 3,
+              "z": 2
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 3,
+              "rowStart": 11,
+              "rowSpan": 3,
+              "z": 2
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 3,
+              "rowStart": 11,
+              "rowSpan": 3,
+              "z": 2
+            }
+          }
+        },
+        {
+          "id": "abwehr-img",
+          "type": "image",
+          "props": {
+            "src": "https://www.apofit.at/wp-content/uploads/2026/01/frau-staerkt-ihr-immunsystem-mit-caesaro-med.jpg",
+            "alt": "Abwehrkräfte",
+            "fit": "cover"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 9,
+              "colSpan": 8,
+              "rowStart": 1,
+              "rowSpan": 18,
+              "z": 1
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 5,
+              "colSpan": 4,
+              "rowStart": 1,
+              "rowSpan": 14,
+              "z": 1
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 19,
+              "rowSpan": 16,
+              "z": 1
+            }
+          }
+        },
+        {
+          "id": "abwehr-copy",
+          "type": "text",
+          "props": {
+            "html": "<h2>Abwehrkräfte</h2><p>Natürlich und nachhaltig unterstützen</p>"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 9,
+              "colSpan": 7,
+              "rowStart": 6,
+              "rowSpan": 4,
+              "z": 2
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 5,
+              "colSpan": 4,
+              "rowStart": 6,
+              "rowSpan": 4,
+              "z": 2
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 24,
+              "rowSpan": 4,
+              "z": 2
+            }
+          }
+        },
+        {
+          "id": "abwehr-btn",
+          "type": "button",
+          "props": {
+            "label": "Produkte finden",
+            "href": "/categories/caesaro-med",
+            "preset": "primary"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 9,
+              "colSpan": 4,
+              "rowStart": 11,
+              "rowSpan": 3,
+              "z": 2
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 5,
+              "colSpan": 3,
+              "rowStart": 11,
+              "rowSpan": 3,
+              "z": 2
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 3,
+              "rowStart": 29,
+              "rowSpan": 3,
+              "z": 2
+            }
+          }
+        },
+        {
+          "id": "vital-img",
+          "type": "image",
+          "props": {
+            "src": "https://www.apofit.at/wp-content/uploads/2025/12/caesaro-med-natuerliche-vitalstoffe-und-vitamine.jpg",
+            "alt": "Natürliche Vitalstoffe",
+            "fit": "cover"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 17,
+              "colSpan": 8,
+              "rowStart": 1,
+              "rowSpan": 18,
+              "z": 1
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 16,
+              "rowSpan": 14,
+              "z": 1
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 37,
+              "rowSpan": 16,
+              "z": 1
+            }
+          }
+        },
+        {
+          "id": "vital-copy",
+          "type": "text",
+          "props": {
+            "html": "<h2>Natürliche Vitalstoffe</h2><p>und Vitamine</p>"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 17,
+              "colSpan": 7,
+              "rowStart": 6,
+              "rowSpan": 4,
+              "z": 2
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 21,
+              "rowSpan": 4,
+              "z": 2
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 42,
+              "rowSpan": 4,
+              "z": 2
+            }
+          }
+        },
+        {
+          "id": "vital-btn",
+          "type": "button",
+          "props": {
+            "label": "Caesaro Med",
+            "href": "/categories/caesaro-med",
+            "preset": "primary"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 17,
+              "colSpan": 4,
+              "rowStart": 11,
+              "rowSpan": 3,
+              "z": 2
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 3,
+              "rowStart": 26,
+              "rowSpan": 3,
+              "z": 2
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 3,
+              "rowStart": 47,
+              "rowSpan": 3,
+              "z": 2
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "home-story",
+      "type": "section",
+      "props": {
+        "background": {
+          "type": "color",
+          "color": "#ffffff"
+        },
+        "padding": {
+          "t": 24,
+          "r": 24,
+          "b": 24,
+          "l": 24
+        },
+        "maxWidth": 1440
+      },
+      "grid": {
+        "desktop": {
+          "columns": 24,
+          "gap": 16,
+          "rowHeight": 10
+        },
+        "tablet": {
+          "columns": 8,
+          "gap": 12,
+          "rowHeight": 10
+        },
+        "mobile": {
+          "columns": 4,
+          "gap": 12,
+          "rowHeight": 10
+        }
+      },
+      "children": [
+        {
+          "id": "story-photo",
+          "type": "image",
+          "props": {
+            "src": "https://www.apofit.at/wp-content/uploads/2024/06/apofit-apotheke-1.jpg",
+            "alt": "APOfit Beratung in der Apotheke",
+            "fit": "cover"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 8,
+              "rowStart": 1,
+              "rowSpan": 28,
+              "z": 1
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 8,
+              "rowStart": 1,
+              "rowSpan": 22,
+              "z": 1
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 1,
+              "rowSpan": 22,
+              "z": 1
+            }
+          }
+        },
+        {
+          "id": "story-copy",
+          "type": "text",
+          "props": {
+            "html": "<h2>APOfit – Wohlfühlen mit Naturprodukten!</h2><p>Die beste Auswahl für deinen Körper, deine Gesundheit, dein Zuhause und deine Liebsten.</p><p>Tauch ein in die vielfältige Produktwelt: Aromatherapie, Gesundheit, Alltagshilfen, Beauty, Hautpflege, Kids Corner und Geschenkideen.</p>"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 10,
+              "colSpan": 14,
+              "rowStart": 2,
+              "rowSpan": 16,
+              "z": 1
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 8,
+              "rowStart": 24,
+              "rowSpan": 12,
+              "z": 1
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 24,
+              "rowSpan": 14,
+              "z": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "home-values",
+      "type": "section",
+      "props": {
+        "background": {
+          "type": "color",
+          "color": "#ffffff"
+        },
+        "padding": {
+          "t": 24,
+          "r": 24,
+          "b": 24,
+          "l": 24
+        },
+        "maxWidth": 1440
+      },
+      "grid": {
+        "desktop": {
+          "columns": 24,
+          "gap": 16,
+          "rowHeight": 10
+        },
+        "tablet": {
+          "columns": 8,
+          "gap": 12,
+          "rowHeight": 10
+        },
+        "mobile": {
+          "columns": 4,
+          "gap": 12,
+          "rowHeight": 10
+        }
+      },
+      "children": [
+        {
+          "id": "values-h",
+          "type": "text",
+          "props": {
+            "html": "<h2>Werte, die dich begleiten</h2>"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 24,
+              "rowStart": 1,
+              "rowSpan": 3,
+              "z": 1
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 8,
+              "rowStart": 1,
+              "rowSpan": 3,
+              "z": 1
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 1,
+              "rowSpan": 3,
+              "z": 1
+            }
+          }
+        },
+        {
+          "id": "icon-qual",
+          "type": "image",
+          "props": {
+            "src": "https://www.apofit.at/wp-content/uploads/2024/06/4xIcons_P2-2-01_klein-1.jpg",
+            "alt": "Premium Qualität",
+            "fit": "contain"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 5,
+              "rowSpan": 8,
+              "z": 1
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 2,
+              "rowStart": 5,
+              "rowSpan": 8,
+              "z": 1
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 2,
+              "rowStart": 5,
+              "rowSpan": 8,
+              "z": 1
+            }
+          }
+        },
+        {
+          "id": "icon-leben",
+          "type": "image",
+          "props": {
+            "src": "https://www.apofit.at/wp-content/uploads/2024/06/4xIcons_P2-2-02_klein-1.jpg",
+            "alt": "Ein glückliches Leben",
+            "fit": "contain"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 7,
+              "colSpan": 4,
+              "rowStart": 5,
+              "rowSpan": 8,
+              "z": 1
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 3,
+              "colSpan": 2,
+              "rowStart": 5,
+              "rowSpan": 8,
+              "z": 1
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 2,
+              "rowStart": 13,
+              "rowSpan": 8,
+              "z": 1
+            }
+          }
+        },
+        {
+          "id": "icon-nach",
+          "type": "image",
+          "props": {
+            "src": "https://www.apofit.at/wp-content/uploads/2024/06/4xIcons_P2-2-03_klein-1.jpg",
+            "alt": "Nachhaltigkeit",
+            "fit": "contain"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 13,
+              "colSpan": 4,
+              "rowStart": 5,
+              "rowSpan": 8,
+              "z": 1
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 5,
+              "colSpan": 2,
+              "rowStart": 5,
+              "rowSpan": 8,
+              "z": 1
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 2,
+              "rowStart": 21,
+              "rowSpan": 8,
+              "z": 1
+            }
+          }
+        },
+        {
+          "id": "icon-service",
+          "type": "image",
+          "props": {
+            "src": "https://www.apofit.at/wp-content/uploads/2024/06/HABRHLTA-1.jpeg",
+            "alt": "Service ohne Kompromiss",
+            "fit": "contain"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 19,
+              "colSpan": 4,
+              "rowStart": 5,
+              "rowSpan": 8,
+              "z": 1
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 7,
+              "colSpan": 2,
+              "rowStart": 5,
+              "rowSpan": 8,
+              "z": 1
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 2,
+              "rowStart": 29,
+              "rowSpan": 8,
+              "z": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "home-worlds",
+      "type": "section",
+      "props": {
+        "background": {
+          "type": "color",
+          "color": "#ffffff"
+        },
+        "padding": {
+          "t": 16,
+          "r": 16,
+          "b": 16,
+          "l": 16
+        },
+        "maxWidth": 1440
+      },
+      "grid": {
+        "desktop": {
+          "columns": 24,
+          "gap": 16,
+          "rowHeight": 10
+        },
+        "tablet": {
+          "columns": 8,
+          "gap": 12,
+          "rowHeight": 10
+        },
+        "mobile": {
+          "columns": 4,
+          "gap": 12,
+          "rowHeight": 10
+        }
+      },
+      "children": [
+        {
+          "id": "worlds-h",
+          "type": "text",
+          "props": {
+            "html": "<h2>Themenwelten gesund &amp; aktiv</h2>"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 24,
+              "rowStart": 1,
+              "rowSpan": 3,
+              "z": 1
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 8,
+              "rowStart": 1,
+              "rowSpan": 3,
+              "z": 1
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 1,
+              "rowSpan": 3,
+              "z": 1
+            }
+          }
+        },
+        {
+          "id": "world-blase-img",
+          "type": "image",
+          "props": {
+            "src": "https://www.apofit.at/wp-content/uploads/2025/10/cranberry-preiselbeer-saft-gesunde-blase.jpg",
+            "alt": "Gesunde Blase",
+            "fit": "cover"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 6,
+              "rowStart": 5,
+              "rowSpan": 16,
+              "z": 1
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 5,
+              "rowSpan": 14,
+              "z": 1
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 5,
+              "rowSpan": 14,
+              "z": 1
+            }
+          }
+        },
+        {
+          "id": "world-blase-copy",
+          "type": "text",
+          "props": {
+            "html": "<h3>Gesunde Blase</h3><p>Preiselbeere &amp; Cranberry</p>"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 6,
+              "rowStart": 12,
+              "rowSpan": 4,
+              "z": 2
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 12,
+              "rowSpan": 4,
+              "z": 2
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 12,
+              "rowSpan": 4,
+              "z": 2
+            }
+          }
+        },
+        {
+          "id": "world-blase-btn",
+          "type": "button",
+          "props": {
+            "label": "Produkte finden",
+            "href": "/categories/caesaro-med/preiselbeere-cranberry",
+            "preset": "primary"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 17,
+              "rowSpan": 3,
+              "z": 2
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 3,
+              "rowStart": 17,
+              "rowSpan": 3,
+              "z": 2
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 3,
+              "rowStart": 17,
+              "rowSpan": 3,
+              "z": 2
+            }
+          }
+        },
+        {
+          "id": "world-warm-img",
+          "type": "image",
+          "props": {
+            "src": "https://www.apofit.at/wp-content/uploads/2025/09/warmies-waermekissen-kuscheltiere.jpg",
+            "alt": "Wärme und Trost",
+            "fit": "cover"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 7,
+              "colSpan": 6,
+              "rowStart": 5,
+              "rowSpan": 16,
+              "z": 1
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 5,
+              "colSpan": 4,
+              "rowStart": 5,
+              "rowSpan": 14,
+              "z": 1
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 23,
+              "rowSpan": 14,
+              "z": 1
+            }
+          }
+        },
+        {
+          "id": "world-warm-copy",
+          "type": "text",
+          "props": {
+            "html": "<h3>Wärme &amp; Trost</h3><p>Warmies | Kuscheltiere</p>"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 7,
+              "colSpan": 6,
+              "rowStart": 12,
+              "rowSpan": 4,
+              "z": 2
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 5,
+              "colSpan": 4,
+              "rowStart": 12,
+              "rowSpan": 4,
+              "z": 2
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 30,
+              "rowSpan": 4,
+              "z": 2
+            }
+          }
+        },
+        {
+          "id": "world-warm-btn",
+          "type": "button",
+          "props": {
+            "label": "Jetzt stöbern",
+            "href": "/categories/warmies",
+            "preset": "primary"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 7,
+              "colSpan": 4,
+              "rowStart": 17,
+              "rowSpan": 3,
+              "z": 2
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 5,
+              "colSpan": 3,
+              "rowStart": 17,
+              "rowSpan": 3,
+              "z": 2
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 3,
+              "rowStart": 35,
+              "rowSpan": 3,
+              "z": 2
+            }
+          }
+        },
+        {
+          "id": "world-tape-img",
+          "type": "image",
+          "props": {
+            "src": "https://www.apofit.at/wp-content/uploads/2025/10/apofit-kinesiologie-tape-blau.jpg",
+            "alt": "Kinesiologie Tape",
+            "fit": "cover"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 13,
+              "colSpan": 6,
+              "rowStart": 5,
+              "rowSpan": 16,
+              "z": 1
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 23,
+              "rowSpan": 14,
+              "z": 1
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 41,
+              "rowSpan": 14,
+              "z": 1
+            }
+          }
+        },
+        {
+          "id": "world-tape-copy",
+          "type": "text",
+          "props": {
+            "html": "<h3>Sanfte Unterstützung</h3><p>Kinesiologie Tapes</p>"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 13,
+              "colSpan": 6,
+              "rowStart": 12,
+              "rowSpan": 4,
+              "z": 2
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 30,
+              "rowSpan": 4,
+              "z": 2
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 48,
+              "rowSpan": 4,
+              "z": 2
+            }
+          }
+        },
+        {
+          "id": "world-tape-btn",
+          "type": "button",
+          "props": {
+            "label": "Jetzt auswählen",
+            "href": "/categories/alltagshilfen/kinesiologie-tapes",
+            "preset": "primary"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 13,
+              "colSpan": 4,
+              "rowStart": 17,
+              "rowSpan": 3,
+              "z": 2
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 3,
+              "rowStart": 35,
+              "rowSpan": 3,
+              "z": 2
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 3,
+              "rowStart": 53,
+              "rowSpan": 3,
+              "z": 2
+            }
+          }
+        },
+        {
+          "id": "world-schwarz-img",
+          "type": "image",
+          "props": {
+            "src": "https://www.apofit.at/wp-content/uploads/2025/10/pflanzliche-naehrstoffe-schwarzkuemmel-sanddorn.jpg",
+            "alt": "Schwarzkümmel und Sanddorn",
+            "fit": "cover"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 19,
+              "colSpan": 6,
+              "rowStart": 5,
+              "rowSpan": 16,
+              "z": 1
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 5,
+              "colSpan": 4,
+              "rowStart": 23,
+              "rowSpan": 14,
+              "z": 1
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 59,
+              "rowSpan": 14,
+              "z": 1
+            }
+          }
+        },
+        {
+          "id": "world-schwarz-copy",
+          "type": "text",
+          "props": {
+            "html": "<h3>Schwarzkümmel</h3><p>Allergien &amp; Immunstärkung</p>"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 19,
+              "colSpan": 6,
+              "rowStart": 12,
+              "rowSpan": 4,
+              "z": 2
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 5,
+              "colSpan": 4,
+              "rowStart": 30,
+              "rowSpan": 4,
+              "z": 2
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 4,
+              "rowStart": 66,
+              "rowSpan": 4,
+              "z": 2
+            }
+          }
+        },
+        {
+          "id": "world-schwarz-btn",
+          "type": "button",
+          "props": {
+            "label": "Produkte entdecken",
+            "href": "/categories/caesaro-med/schwarzkummel-ol",
+            "preset": "primary"
+          },
+          "layout": {
+            "desktop": {
+              "mode": "grid",
+              "colStart": 19,
+              "colSpan": 4,
+              "rowStart": 17,
+              "rowSpan": 3,
+              "z": 2
+            },
+            "tablet": {
+              "mode": "grid",
+              "colStart": 5,
+              "colSpan": 3,
+              "rowStart": 35,
+              "rowSpan": 3,
+              "z": 2
+            },
+            "mobile": {
+              "mode": "grid",
+              "colStart": 1,
+              "colSpan": 3,
+              "rowStart": 71,
+              "rowSpan": 3,
+              "z": 2
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.0 — 2026-11-07
+
+- Kopfzeile weiß, dünne grüne Servicezeile, Produkte öffnet ein breites Menüraster mit grünen Überschriften. Keine zweite Scrollspalte und kein wiederholtes „Unterpunkte“.
+- Produktseite: Bild links, Name, Kurztext, Variantenlinks, Preis und grüner Button rechts. Die lange Beschreibung steht darunter. Die native Variantentabelle bleibt erhalten.
+- Kategorien ohne Bild haben keine Platzhalterfläche.
+- Die bearbeitbare Startseite ist ein Builder-Entwurf außerhalb des Theme-ZIP.
+
 ## 1.0.3 — 2026-11-07
 
 - Produktbeschreibungen können eine feste Tabelle enthalten. Bei Produkt 3384 ist sie 756 Pixel breit und hat die Produktseite seitlich verschoben. Die Tabelle bleibt lesbar und rollt nur in ihrem eigenen Bereich. Die Seite selbst bleibt im Bildschirm. Variantenbuttons liegen außerhalb dieses Bereichs.

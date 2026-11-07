@@ -144,6 +144,17 @@
                         @endif
                     @show
 
+                    @if(empty($isVariantView) && $variants->isNotEmpty() && ($store['variation_display_mode'] ?? 'table') === 'table' && !empty($variantRows))
+                        <div class="product__chips flex flex-col gap-2">
+                            <span class="text-sm font-semibold text-headings">{{ $variantFilters[0]['name'] ?? t('Variant') }}</span>
+                            <div class="flex flex-wrap gap-2">
+                                @foreach($variantRows as $row)
+                                    <a href="/{{ $locale }}/products/{{ $productSlug }}?variant={{ $row['id'] }}" class="product__chip">{{ data_get($row['attributes'][0] ?? [], 'value') ?: ($row['name'] ?? $row['sku']) }}</a>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
                     {{-- Single-buy UI (price, availability, add-to-cart). Shown for
                          simple products, dropdown variant mode, and table-mode
                          variant view (?variant=<id>). In table mode without a
@@ -300,13 +311,14 @@
                         @endif
                     @show
 
-                    @if(!($variants->isNotEmpty() && ($store['variation_display_mode'] ?? 'table') === 'dropdown'))
-                        @section('tabs')
-                            @include('partials.product-details-tabs')
-                        @show
-                    @endif
                 </div>
             </div>
+
+            @if(!($variants->isNotEmpty() && ($store['variation_display_mode'] ?? 'table') === 'dropdown'))
+                @section('tabs')
+                    @include('partials.product-details-tabs')
+                @show
+            @endif
 
             @section('variant-table')
                 @if(empty($isVariantView) && $variants->isNotEmpty() && ($store['variation_display_mode'] ?? 'table') === 'table')

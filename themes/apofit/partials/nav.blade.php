@@ -12,70 +12,38 @@
                      their children. Putting every parent in the header wrapped
                      onto two rows, including Unkategorisiert and both
                      Wärmeflaschen names. Those names stay in the panel. --}}
-                <details class="apofit-nav__details" data-apofit-details>
-                    <summary class="apofit-nav__summary">@t('Sortiment')</summary>
-                    <div class="apofit-nav__flyout">
-                        <div class="apofit-nav__flyout-head">
-                            <input type="search" data-apofit-flyout-search autocomplete="off"
-                                placeholder="@t('Search categories')"
-                                aria-label="@t('Search categories')">
-                            <a class="apofit-nav__all" href="@routeUrl('store.categories')">@t('Categories')</a>
-                        </div>
-                        <div class="apofit-nav__split">
-                            <ul class="apofit-nav__parents">
+                <div class="apofit-nav__toplinks">
+                    <details class="apofit-nav__details" data-apofit-details>
+                        <summary class="apofit-nav__summary">@t('Products')</summary>
+                        <div class="apofit-nav__flyout apofit-nav__flyout--board">
+                            <div class="apofit-nav__board">
                                 @foreach($megaMenuCategories as $category)
-                                    <li data-apofit-parent data-name="{{ mb_strtolower((string) $category->name) }}">
+                                    <section class="apofit-nav__col" data-apofit-item data-name="{{ mb_strtolower((string) $category->name) }}">
                                         @if(data_get($category, 'menu_path'))
-                                            <a href="@routeUrl('store.category', ['slug' => data_get($category, 'menu_path')])">{{ $category->name }}</a>
+                                            <a class="apofit-nav__heading" href="@routeUrl('store.category', ['slug' => data_get($category, 'menu_path')])">{{ $category->name }}</a>
                                         @else
-                                            <span>{{ $category->name }}</span>
+                                            <p class="apofit-nav__heading">{{ $category->name }}</p>
                                         @endif
                                         @if(count($category->children ?? []) > 0)
-                                            <button type="button" data-apofit-tab="{{ $loop->index }}" aria-expanded="{{ $loop->first ? 'true' : 'false' }}">@t('Unterpunkte')</button>
-                                        @endif
-                                    </li>
-                                @endforeach
-                            </ul>
-                            <div class="apofit-nav__panes">
-                                @foreach($megaMenuCategories as $category)
-                                    <div data-apofit-pane="{{ $loop->index }}" @if(!$loop->first) hidden @endif>
-                                        <p class="apofit-nav__pane-title">{{ $category->name }}</p>
-                                        @if(data_get($category, 'menu_path'))
-                                            <a class="apofit-nav__all" href="@routeUrl('store.category', ['slug' => data_get($category, 'menu_path')])">@t('Alle anzeigen')</a>
-                                        @endif
-                                        @if(count($category->children ?? []) > 0)
-                                            <ul class="apofit-nav__groups">
+                                            <ul>
                                                 @foreach($category->children as $child)
-                                                    <li data-apofit-item data-name="{{ mb_strtolower((string) $child->name) }}">
-                                                        @if(data_get($child, 'menu_path'))
-                                                            <a class="apofit-nav__child-link" href="@routeUrl('store.category', ['slug' => data_get($child, 'menu_path')])">{{ $child->name }}</a>
-                                                        @else
-                                                            <span class="apofit-nav__child-link">{{ $child->name }}</span>
-                                                        @endif
-                                                        @if(count(data_get($child, 'children') ?? []) > 0)
-                                                            <ul class="apofit-nav__grand">
-                                                                @foreach(data_get($child, 'children') as $grandchild)
-                                                                    @if(data_get($grandchild, 'menu_path'))
-                                                                        <li data-apofit-item data-name="{{ mb_strtolower((string) data_get($grandchild, 'name')) }}">
-                                                                            <a href="@routeUrl('store.category', ['slug' => data_get($grandchild, 'menu_path')])">{{ data_get($grandchild, 'name') }}</a>
-                                                                        </li>
-                                                                    @endif
-                                                                @endforeach
-                                                            </ul>
-                                                        @endif
-                                                    </li>
+                                                    @if(data_get($child, 'menu_path'))
+                                                        <li data-apofit-item data-name="{{ mb_strtolower((string) $child->name) }}"><a href="@routeUrl('store.category', ['slug' => data_get($child, 'menu_path')])">{{ $child->name }}</a></li>
+                                                    @endif
                                                 @endforeach
                                             </ul>
-                                        @else
-                                            <p class="m-0 text-sm text-body">@t('No categories')</p>
                                         @endif
-                                    </div>
+                                    </section>
                                 @endforeach
                             </div>
                         </div>
-                        <p hidden data-apofit-none class="m-0 text-sm text-body">@t('No categories')</p>
-                    </div>
-                </details>
+                    </details>
+                    @foreach($storefrontContentNav ?? [] as $item)
+                        @if(data_get($item, 'href'))
+                            <a class="apofit-nav__direct" href="{{ data_get($item, 'href') }}">{{ data_get($item, 'label') }}</a>
+                        @endif
+                    @endforeach
+                </div>
             @endif
         </div>
 

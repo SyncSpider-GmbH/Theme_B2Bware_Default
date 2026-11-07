@@ -612,13 +612,103 @@ dialog {
 }
 
 .apofit-topbar {
-    background: #f3f6ec;
-    color: #3f4a38;
+    background: #3f6b14;
+    color: #fff;
 }
 
 .apofit-topbar a,
 .apofit-topbar button {
-    color: #3f4a38;
+    color: #fff;
+}
+
+.storefront-header {
+    background: #fff;
+}
+
+.apofit-nav {
+    border-top: 0;
+    background: #fff;
+}
+
+.apofit-nav__toplinks {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 1rem;
+}
+
+.apofit-nav__flyout--board {
+    max-height: none;
+    overflow: visible;
+    padding: 1.5rem 1.25rem 2rem;
+}
+
+.apofit-nav__board {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr));
+    gap: 1.5rem 1.75rem;
+}
+
+.apofit-nav__col ul {
+    margin: 0.35rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.apofit-nav__heading {
+    display: inline-flex;
+    margin: 0;
+    color: #3f6b14;
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-decoration: none;
+}
+
+.apofit-nav__col a {
+    color: #706f6f;
+    font-size: 0.82rem;
+    font-weight: 400;
+    min-height: 0;
+    padding: 0.12rem 0;
+    text-decoration: none;
+}
+
+.apofit-nav__col .apofit-nav__heading {
+    color: #3f6b14;
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.product__chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.5rem;
+    min-height: 2.25rem;
+    padding: 0.2rem 0.7rem;
+    border: 1px solid #d8ddcf;
+    border-radius: 0.4rem;
+    color: #2c3824;
+    background: #fff;
+    text-decoration: none;
+}
+
+.product__chip:hover,
+.product__chip:focus-visible {
+    border-color: #3f6b14;
+    color: #3f6b14;
+}
+
+.product__tabs {
+    margin-top: 0.5rem;
+    border: 1px solid #e6e6e6;
+    border-radius: 0.25rem;
+    background: #fff;
+}
+
+.product__cart-form button[type="submit"] {
+    background: #3f6b14;
+    min-height: 44px;
 }
 
 /* The header is a nowrap flex row. On a 390px screen the logo, icon buttons
