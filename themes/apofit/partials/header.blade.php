@@ -112,7 +112,7 @@
         @show
 
         @section('header.actions')
-            <div class="storefront-header__actions ml-auto flex shrink-0 items-center gap-2 lg:gap-3">
+            <div class="storefront-header__actions ml-auto flex min-w-0 items-center gap-1 md:gap-2 lg:gap-3">
                 @if($store['favorites_enabled'] ?? true)
                     <a href="@routeUrl('store.favorites')" class="storefront-header__action inline-flex items-center gap-2 rounded px-2 py-2 text-headings hover:text-primary hover:no-underline">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" aria-hidden="true">
@@ -145,12 +145,12 @@
                         </a>
                     @endif
                 @else
-                    <a href="@routeUrl('store.login')" class="storefront-header__signin inline-flex min-h-11 items-center gap-2 rounded border border-primary px-3 py-2 font-medium text-primary hover:bg-primary-subtle hover:no-underline">
+                    <a href="@routeUrl('store.login')" class="storefront-header__signin inline-flex min-h-11 items-center gap-2 rounded border border-primary px-3 py-2 font-medium text-primary hover:bg-primary-subtle hover:no-underline" aria-label="@t('Log in')">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" aria-hidden="true">
                             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                             <circle cx="12" cy="7" r="4"></circle>
                         </svg>
-                        <span>@t('Log in')</span>
+                        <span class="hidden md:inline">@t('Log in')</span>
                     </a>
                     @if(empty($store['restrict_registration']))
                         <a href="@routeUrl('store.register')" class="storefront-header__action hidden items-center rounded px-2 py-2 text-headings hover:text-primary hover:no-underline lg:inline-flex">@t('Register')</a>

@@ -621,6 +621,66 @@ dialog {
     color: #3f4a38;
 }
 
+/* The header is a nowrap flex row. On a 390px screen the logo, icon buttons
+ * and the full “Anmelden” label together were wider than the viewport, so the
+ * page grew a horizontal scrollbar. Shrink the logo and let the row stay
+ * inside the screen. Do not clip the page with overflow:hidden. */
+@media (max-width: 767px) {
+    .storefront-header__bar,
+    .storefront-header__search-mobile,
+    .storefront__main,
+    .page,
+    .product,
+    .product__info,
+    .product__variant-table,
+    .catalog,
+    .catalog__main,
+    .catalog-toolbar,
+    .catalog-toolbar__controls {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .storefront-header__brand {
+        min-width: 0;
+    }
+
+    .storefront-header__bar {
+        gap: 0.5rem;
+    }
+
+    .storefront-header__brand img,
+    .storefront-header__bar .storefront-logo {
+        max-width: 7.25rem;
+        height: auto;
+    }
+
+    .catalog-toolbar__controls {
+        flex-wrap: wrap;
+    }
+
+    .catalog-toolbar__controls select {
+        max-width: 100%;
+    }
+
+    .product__variant-table .overflow-x-auto {
+        max-width: 100%;
+        overflow-x: auto;
+    }
+}
+
+@media (max-width: 389px) {
+    .storefront-header__bar {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    .storefront-header__brand img,
+    .storefront-header__bar .storefront-logo {
+        max-width: 5rem;
+    }
+}
+
 .apofit-nav-open,
 .apofit-filter-open,
 .apofit-nav-dialog__bar button,

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.2 — 2026-11-07
+
+- Auf schmalen Bildschirmen bleibt die Kopfzeile in der Breite. Das Wort „Anmelden“ erscheint ab mittlerer Breite, das Logo wird kleiner. Die Seite bekommt dadurch keinen seitlichen Rollbalken. Inhalte werden nicht abgeschnitten.
+
 ## 1.0.1 — 2026-11-07
 
 - Schriften liegen in der CSS-Datei. Die Vorschau hat die einzelnen Schriftdateien mit 404 beantwortet.
