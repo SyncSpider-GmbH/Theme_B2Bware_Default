@@ -669,6 +669,41 @@ dialog {
     }
 }
 
+/* Product descriptions are imported HTML. Product 3384 contains
+   <table width="756"> inside .product__tab-panel. A grid item sizes to that
+   table, so the whole page scrolls sideways. Keep the table intact and let
+   only the description panel scroll. Variant actions stay outside that panel. */
+.product {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 768px) {
+    .product {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+}
+
+.product__tab-panel,
+.product__short,
+.storefront-richtext {
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.product__tab-panel img,
+.product__short img,
+.storefront-richtext img {
+    max-width: 100%;
+    height: auto;
+}
+
+.page--product,
+.product__variant-table {
+    min-width: 0;
+    max-width: 100%;
+}
+
 @media (max-width: 389px) {
     .storefront-header__bar {
         padding-left: 0.75rem;

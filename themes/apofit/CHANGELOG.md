@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.3 — 2026-11-07
+
+- Produktbeschreibungen können eine feste Tabelle enthalten. Bei Produkt 3384 ist sie 756 Pixel breit und hat die Produktseite seitlich verschoben. Die Tabelle bleibt lesbar und rollt nur in ihrem eigenen Bereich. Die Seite selbst bleibt im Bildschirm. Variantenbuttons liegen außerhalb dieses Bereichs.
+
 ## 1.0.2 — 2026-11-07
 
 - Auf schmalen Bildschirmen bleibt die Kopfzeile in der Breite. Das Wort „Anmelden“ erscheint ab mittlerer Breite, das Logo wird kleiner. Die Seite bekommt dadurch keinen seitlichen Rollbalken. Inhalte werden nicht abgeschnitten.
