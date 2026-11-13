@@ -58,7 +58,7 @@ Section names you can override:
 | `pages/proposal-preview` | `proposal.header`, `proposal.items`, `proposal.products`, `proposal.summary` |
 | `pages/customer-selection` | `customer-selection.search`, `customer-selection.list` |
 | `pages/error`, `pages/not-found` | `<page>.message`, `<page>.actions` — e.g. `not-found.actions` |
-| `pages/product` (via `partials/product-details`) | `gallery`, `sku`, `availability`, `price`, `tier-highlight`, `tier-prices`, `short-description`, `variants`, `variant-table`, `purchase`, `tabs`, `related-products` |
+| `pages/product` (via `partials/product-details`) | `gallery`, `product-title`, `sku`, `availability`, `price`, `tier-highlight`, `tier-prices`, `short-description`, `variants`, `variant-table`, `purchase`, `tabs`, `related-products` |
 | `partials/header` | `header.banner`, `header.brand`, `header.search`, `header.search-mobile`, `header.nav`, `header.actions` |
 | `partials/footer` | `footer.brand`, `footer.shop`, `footer.account`, `footer.support`, `footer.copyright` |
 | `layouts/shop` | `breadcrumbs` |
