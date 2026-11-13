@@ -20,7 +20,11 @@
                         </a>
                     @endif
 
-                    @section('title')
+                    {{-- Named `product-title`, not `title`: `pages/product` already fills the
+                         `title` section with the browser title, and a section that is
+                         already filled wins over this one. Under the old name the page
+                         title string was printed here and the h1 never rendered. --}}
+                    @section('product-title')
                         <h1 class="product__title font-primary text-3xl text-headings m-0">{{ ($displayProduct ?? $product)->name }}</h1>
                     @show
 
