@@ -469,6 +469,35 @@ dialog {
     display: none;
 }
 
+/* ----------------------------------------------------------------------------
+ * Product gallery — keep the main image square, at the top, on a card surface
+ *
+ * The gallery sits in a two-column grid next to the product details. Grid items
+ * stretch to the row height by default, so with a long description the gallery
+ * grew as tall as the text column: the main image box lost its square shape,
+ * showed a tall tinted area and centered the photo far below the fold.
+ * `align-self: start` keeps the gallery at its own height; on tablet+ the row
+ * layout must not stretch the image box either, and the gallery stays in view
+ * while the details scroll. Plain CSS (not utilities) so it is served live and
+ * does not depend on variants compiled into base.css.
+ * -------------------------------------------------------------------------- */
+.product-gallery {
+    align-self: start;
+}
+
+.product-gallery__main,
+.product-gallery__thumb {
+    background-color: var(--color-surface-card);
+}
+
+@media (min-width: 768px) {
+    .product-gallery {
+        align-items: flex-start;
+        position: sticky;
+        top: 1rem;
+    }
+}
+
 
 /* ----------------------------------------------------------------------------
  * Catalog export — progress indicator

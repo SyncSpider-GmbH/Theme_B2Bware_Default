@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-15
+
+- Product page: the gallery no longer stretches to the height of a long description. The main
+  image stays square and at the top, on a white card surface instead of the tinted one, and
+  stays in view on tablet and desktop while the details scroll.
+
 ## 2026-11-14
 
 - Header search: typing no longer reloads the product listing. It opens a suggestion panel
