@@ -43,6 +43,13 @@ compare  = regular list price, whenever list > current
            — regardless of WHICH mechanism produced the discount
 
 priceView = { current_excl, current_incl, compare_excl, compare_incl, has_tax }
+
+configurable parent (listings, cross-sells, and the product page
+when no variant is selected):
+  current_* = cheapest public variant (same resolution as above)
+  max_excl / max_incl = dearest public variant
+  is_range = the two bounds differ
+  price_missing = no public variant has a resolvable price
 ```
 
 **Invariant:** the displayed price is always the figure the cart will charge at quantity 1;
@@ -67,7 +74,7 @@ the struck price is always the regular list price.
 | 10 | Tax mode `including_tax` / `both` | pre-computed net/gross splits; VAT label only when `has_tax` | same | same |
 | 11 | Cart: quantity matches a tier | — | — | unit = tier price; ~~list × qty~~ shown |
 | 12 | Cart: catalog-rule line | — | — | ~~list × qty~~ + rule names |
-| 13 | Configurable parent without own price | price hidden | bulk variant table owns purchase | — |
+| 13 | Configurable parent (own price is a placeholder) | `min – max` across public variants (`is_range`); one figure when they match; "Unknown price" / "Request quote" when none are priced (`price_missing`) | selected variant's price; with none selected, the same range or `price_missing`. Table mode still lets the variant table own purchase | — |
 | 14 | List view, quantity stepper changed | live total = matched tier unit × qty; ~~list × qty~~ appears when discounted | — | — |
 
 Edge rules the platform enforces:

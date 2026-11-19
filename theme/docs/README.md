@@ -37,6 +37,7 @@ can load only what a task needs.
 | [`view-data.md`](view-data.md) | Globals, `$store`, feature flags, pricing, variants, rewards | **Usually yes** | [/view-data](https://b2bware.documentationai.com/advanced/storefront-themes/view-data) |
 | [`pricing.md`](pricing.md) | The pricing rendering contract — resolution + per-surface matrix | Anything that shows a price | [/pricing](https://b2bware.documentationai.com/advanced/storefront-themes/pricing) |
 | [`ajax-and-runtime.md`](ajax-and-runtime.md) | Sections, hooks, events, `window.Storefront` | AJAX / interactivity | [/ajax-and-runtime](https://b2bware.documentationai.com/advanced/storefront-themes/ajax-and-runtime) |
+| [`assistant.md`](assistant.md) | Shop assistant widget | Including the chat widget | |
 | [`catalog.md`](catalog.md) | Facets, sort, price, in-stock, view, pagination | Catalog / listing pages | [/catalog](https://b2bware.documentationai.com/advanced/storefront-themes/catalog) |
 | [`seo-and-images.md`](seo-and-images.md) | `@storefrontSeo` + `@storefrontImage` (hard rule for every `media_url`; Bunny Dynamic Images API) | **Any `<img>` with catalog / customer media** | [/seo-and-images](https://b2bware.documentationai.com/advanced/storefront-themes/seo-and-images) |
 | [`fetch-and-auth.md`](fetch-and-auth.md) | `@fetch`, `@storefrontAuthToken`, API reference | Server data / auth (security) | [/fetch-and-auth](https://b2bware.documentationai.com/advanced/storefront-themes/fetch-and-auth) |

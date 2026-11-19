@@ -564,7 +564,12 @@ dialog {
     }
 }
 
-/* ── Header search: suggestion panel (partials/header.blade.php) ────────── */
+/* ── Header search: suggestion panel (partials/header.blade.php) ──────────
+ * Colors read the resolved --color-* tokens (they fall back when a tenant has
+ * not set the matching --brand-* override). The selected filter uses the
+ * translucent primary wash, and the confirm button uses primary-content, so a
+ * light brand colour stays readable in light and dark.
+ * -------------------------------------------------------------------------- */
 .search-panel {
     position: absolute;
     left: 0;
@@ -575,10 +580,10 @@ dialog {
     margin-inline: auto;
     overflow-y: auto;
     overscroll-behavior: contain;
-    border: 1px solid var(--brand-color-border-subtle);
+    border: 1px solid var(--color-border-subtle);
     border-radius: 1rem;
-    background: var(--brand-color-surface-card);
-    color: var(--brand-color-body);
+    background: var(--color-surface-card);
+    color: var(--color-body);
     box-shadow: 0 24px 48px -12px rgb(0 0 0 / 0.25);
     transition: opacity 120ms ease;
 }
@@ -597,11 +602,11 @@ dialog {
     justify-content: space-between;
     gap: 1rem;
     padding: 1rem 1.25rem;
-    border-bottom: 1px solid var(--brand-color-border-subtle);
+    border-bottom: 1px solid var(--color-border-subtle);
 }
 
 .search-panel__query {
-    color: var(--brand-color-headings);
+    color: var(--color-headings);
     font-size: 1.125rem;
     overflow-wrap: anywhere;
 }
@@ -621,7 +626,7 @@ dialog {
     flex-direction: column;
     gap: 1rem;
     padding: 1rem 1.25rem;
-    border-bottom: 1px solid var(--brand-color-border-subtle);
+    border-bottom: 1px solid var(--color-border-subtle);
 }
 
 .search-panel__facet {
@@ -632,7 +637,7 @@ dialog {
 }
 
 .search-panel__facet-title {
-    color: var(--brand-color-headings);
+    color: var(--color-headings);
     font-size: 0.8125rem;
     font-weight: 700;
 }
@@ -650,10 +655,10 @@ dialog {
     max-width: 100%;
     min-height: 2rem;
     padding: 0.25rem 0.75rem;
-    border: 1px solid var(--brand-color-border-subtle);
+    border: 1px solid var(--color-border-subtle);
     border-radius: 999px;
     background: transparent;
-    color: var(--brand-color-body);
+    color: var(--color-body);
     font: inherit;
     font-size: 0.875rem;
     text-decoration: none;
@@ -661,15 +666,15 @@ dialog {
 }
 
 .search-panel__option:hover {
-    border-color: var(--brand-color-primary-500);
-    color: var(--brand-color-headings);
+    border-color: var(--color-primary-500);
+    color: var(--color-headings);
     text-decoration: none;
 }
 
 .search-panel__option[aria-pressed="true"] {
-    border-color: var(--brand-color-primary-500);
-    background: var(--brand-color-primary-50);
-    color: var(--brand-color-headings);
+    border-color: var(--color-primary-500);
+    background: var(--color-primary-subtle);
+    color: var(--color-headings);
     font-weight: 600;
 }
 
@@ -688,7 +693,7 @@ dialog {
     flex-shrink: 0;
     width: 0.875rem;
     height: 0.875rem;
-    border: 1px solid var(--brand-color-border-subtle);
+    border: 1px solid var(--color-border-subtle);
     border-radius: 999px;
 }
 
@@ -717,15 +722,15 @@ dialog {
     padding: 0.5rem;
     border: 1px solid transparent;
     border-radius: 0.75rem;
-    color: var(--brand-color-body);
+    color: var(--color-body);
     text-decoration: none;
 }
 
 .search-panel__item:hover,
 .search-panel__item:focus-visible {
-    border-color: var(--brand-color-primary-500);
-    background: var(--brand-color-surface-hover);
-    color: var(--brand-color-body);
+    border-color: var(--color-primary-500);
+    background: var(--color-surface-hover);
+    color: var(--color-body);
     text-decoration: none;
     outline: none;
 }
@@ -739,7 +744,7 @@ dialog {
     height: 4.5rem;
     overflow: hidden;
     border-radius: 0.5rem;
-    background: var(--brand-color-surface);
+    background: var(--color-surface);
 }
 
 .search-panel__image img {
@@ -758,7 +763,7 @@ dialog {
 .search-panel__name {
     display: -webkit-box;
     overflow: hidden;
-    color: var(--brand-color-headings);
+    color: var(--color-headings);
     font-weight: 600;
     line-height: 1.25;
     -webkit-box-orient: vertical;
@@ -770,7 +775,7 @@ dialog {
 }
 
 .search-panel__price {
-    color: var(--brand-color-headings);
+    color: var(--color-headings);
     font-weight: 700;
 }
 
@@ -786,8 +791,8 @@ dialog {
     padding: 0 1.25rem;
     border: 0;
     border-radius: 0.5rem;
-    background: var(--brand-color-primary-500);
-    color: #fff;
+    background: var(--color-primary-500);
+    color: var(--color-primary-content);
     font: inherit;
     font-weight: 600;
     cursor: pointer;
@@ -795,7 +800,7 @@ dialog {
 
 .search-panel__all:hover,
 .search-panel__all:focus-visible {
-    background: var(--brand-color-primary-600);
+    background: var(--color-primary-600);
 }
 
 @media (min-width: 768px) {
@@ -804,7 +809,7 @@ dialog {
     }
 
     .search-panel__facets {
-        border-right: 1px solid var(--brand-color-border-subtle);
+        border-right: 1px solid var(--color-border-subtle);
         border-bottom: 0;
     }
 }

@@ -69,7 +69,10 @@ including the hidden input, the same way shipping is sent.
 
 Order confirmation for guest checkouts, reachable via a signed URL (bookmarkable without login).
 View data: `$order` (object or null), `$orderId` (string), `$orderItems` (Collection),
-`$orderTotals` (array: `subtotal`, `shipping`, `discount`, `tax`, `grand_total`).
+`$orderTotals` (array: `subtotal`, `shipping`, `discount`, `tax`, `grand_total`, `prices_include_tax`).
+When `prices_include_tax` is true, line display prices are gross. A non-zero `shipping` amount
+(method price plus add-ons) is gross as well, using the VAT already included in `tax`. A zero
+shipping amount stays zero. `tax` and `grand_total` stay the figures stored on the order.
 
 ### 10.4 `pages/customer-selection.blade.php`
 

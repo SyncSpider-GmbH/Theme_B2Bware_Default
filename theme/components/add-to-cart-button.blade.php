@@ -1,8 +1,21 @@
 @props(['product' => null, 'variant' => null, 'quantity' => 1, 'label' => null, 'redirect' => null, 'block' => false, 'icon' => true])
 
 @if($product && !empty($product->id))
-    @if($canAddToCart)
-        @if(data_get($product, 'product_type') === 'configurable')
+    @if(collect($cartRestrictedProductIds)->contains((int) $product->id))
+        {{-- Sold only through a module's own checkout on the product page
+             (e.g. subscription-only), never through the cart. --}}
+        <a
+            href="@routeUrl('store.product', ['identifier' => data_get($product, 'seo.slug') ?: $product->id])"
+            @class([
+                'add-to-cart add-to-cart--view inline-flex items-center justify-center gap-2 rounded bg-primary text-primary-content font-medium px-4 py-2 transition-colors hover:bg-primary-600 hover:no-underline',
+                'w-full' => $block,
+                'min-w-40' => !$block,
+            ])
+        >
+            @t('View details')
+        </a>
+    @elseif($canAddToCart)
+        @if(data_get($product, 'product_type') === 'configurable' || collect($configurationRequiredProductIds ?? [])->contains((int) $product->id))
             {{-- A configurable product is bought from its parent's product page,
                  where the variant picker / bulk-variant table lives. A listing
                  card can't add a specific variant, so it links to that page
@@ -33,6 +46,7 @@
         @else
         @storefrontForm('cart-add', ['class' => $block ? 'add-to-cart flex w-full items-center gap-3' : 'add-to-cart flex items-center gap-3'])
             <input type="hidden" name="product_id" value="{{ $product->id }}">
+            <input type="hidden" name="cart_revision" value="{{ $cart['revision'] ?? 0 }}">
             @if($variant && !empty($variant->id))
                 <input type="hidden" name="variant_id" value="{{ $variant->id }}">
             @endif

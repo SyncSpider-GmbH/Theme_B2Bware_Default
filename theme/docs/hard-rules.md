@@ -80,6 +80,7 @@ Each blade file must either match one of the canonical paths below **or** be a c
 - `nav.blade.php` &mdash; header category navigation. `list` links to the categories index; `mega_menu` opens `$megaMenuCategories`. Branch on `$store['category_ui_type']` (see view-data.md)
 - `mini-cart.blade.php`
 - `locale-switcher.blade.php`
+- `currency-switcher.blade.php`
 - `breadcrumbs.blade.php`
 - `cart-line-items.blade.php` &mdash; cart line rows + empty state (AJAX section, §9.7)
 - `cart-discounts.blade.php` &mdash; coupon + applied rules (AJAX section, §9.7)
@@ -96,6 +97,8 @@ Each blade file must either match one of the canonical paths below **or** be a c
 - `catalog-active-filters.blade.php` &mdash; applied catalog-filter chips (attribute values, price bounds, in stock, search) above the product grid; each chip links to the listing with that one filter removed. Rendered from `$activeFilters` (see catalog.md)
 - `product-details.blade.php` &mdash; the whole product-page body as a single AJAX-refreshable section (`product-details`, §9.7) so the variant picker can re-render it server-side
 - `added-to-cart-modal.blade.php` &mdash; the added-to-cart confirmation `<dialog>`; included from `shop.blade.php`. Override for a drawer/toast, or omit the `@include` to suppress it (§9.7)
+- `content-field-value.blade.php` &mdash; per-picker value for content listing and detail, including nested complex / collection trees. Include with `field` (a presented field from `contentListing` / `contentEntry`) and `compact` on the grid or card. Hidden fields stay on `fields_by_code` for custom themes. See view-data.md § Content types.
+- `content-category-filters.blade.php` &mdash; taxonomy filter bar for content listings (`contentListing.category_filters` → `?category=`).
 
 > The default theme ships these canonical partials. **Uploaded themes may add their own
 > `partials/<slug>.blade.php`** (single lowercase-dash segment, no nested folders) to DRY out
@@ -121,7 +124,7 @@ Each blade file must either match one of the canonical paths below **or** be a c
 - `products.blade.php`, `product.blade.php`
 - `categories.blade.php`, `category.blade.php`
 - `cart.blade.php`, `checkout.blade.php`
-- `guest-order.blade.php` — order confirmation for guest checkouts; access protected by a signed URL so it is bookmarkable without login. Variables: `$order` (Orders model or null), `$orderId` (string), `$orderItems` (Collection), `$orderTotals` (array with keys `subtotal`, `shipping`, `discount`, `tax`, `grand_total`).
+- `guest-order.blade.php` — order confirmation for guest checkouts; access protected by a signed URL so it is bookmarkable without login. Variables: `$order` (Orders model or null), `$orderId` (string), `$orderItems` (Collection), `$orderTotals` (array with keys `subtotal`, `shipping`, `discount`, `tax`, `grand_total`, `prices_include_tax`). When prices include tax, line display prices and a non-zero shipping amount (including add-ons) are gross; tax and the grand total stay the stored order figures.
 - `login.blade.php`, `register.blade.php`, `logout.blade.php`
 - `forgot-password.blade.php`, `reset-password.blade.php`, `verify-email.blade.php`
 - `customer-selection.blade.php`, `favorites.blade.php`
@@ -328,7 +331,7 @@ These are blocked both at upload time and at runtime compile time:
 - No `` `backticks` `` (shell exec)
 - No `$__env` access
 - `@verbatim` blocks are scanned — you cannot hide a forbidden pattern inside one
-- Blade comments `{{-- ... --}}` are stripped before scanning, so they cannot be used to bypass either
+- Blade comments (Blade comment delimiters) are stripped before scanning, so they cannot be used to bypass either
 
 ---
 

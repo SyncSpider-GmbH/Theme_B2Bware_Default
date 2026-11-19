@@ -9,6 +9,7 @@
 @if($product)
     @unless(
         $canSeePrices &&
+        ! data_get($priceView, 'price_missing') &&
         $hideWhenConfigurableParentWithoutPrice &&
         data_get($product, 'product_type') === 'configurable' &&
         (

@@ -477,7 +477,7 @@ The storefront has first-class light/dark mode. It is driven by a single `.dark`
 #### How it's wired (platform-owned)
 
 - **Root class.** When a dark preference is active, the layout renders `<html class="dark">`. The platform `base.css` redeclares the full `--brand-*` surface / text / border / input palette under `.dark`, and CSS custom properties inherit — so every `bg-surface-page`, `text-body`, `bg-surface-card`, `border-border-subtle`, input and status-subtle token flips automatically on `<body>` and all descendants.
-- **No flash (`@storefrontColorScheme`).** Place this directive once in `<head>`, before your stylesheets (the canonical layouts already do). It emits `<meta name="color-scheme">` and a tiny **synchronous** script that sets the `.dark` class *before first paint*, from the saved cookie or — when there is no cookie — the visitor's OS `prefers-color-scheme`. This is the one sanctioned non-module inline script; never replicate it as a deferred module (it would paint the wrong scheme first).
+- **No flash (`@storefrontColorScheme`).** Place this directive once in `<head>`, before your stylesheets (the canonical layouts already do). It emits `<meta name="color-scheme">` and a tiny **synchronous** script that sets the `.dark` class *before first paint* from the saved cookie. With no cookie the storefront stays **light**; the computer's `prefers-color-scheme` is ignored. The header switcher is how a visitor chooses dark. This is the one sanctioned non-module inline script; never replicate it as a deferred module (it would paint the wrong scheme first).
 - **Preference + persistence.** The active scheme is resolved server-side from the `storefront_color_scheme` cookie and exposed to every blade as `$colorScheme` (`'light'`, `'dark'`, or `null` when unset). The toggle persists the choice via `POST` to `store.color-scheme.set` (the `color-scheme` form type, §9.5), so the next navigation already renders the right scheme server-side.
 - **Both schemes are emitted upfront — switching is purely client-side.** The platform injects *both* the light and the dark configuration into every page, so toggling `.dark` recolours and re-images everything instantly without a server round-trip:
   - **Palette, semantic colours, and fonts.** The store owner's Storefront palette and semantic settings (B2BWare admin → Store setup → Appearance) are emitted as `--brand-color-*` declarations under `:root { … }` (light) and `:root.dark { … }` (dark). They load **before** the theme stylesheet, so they override the platform defaults but yield to any token the theme declares unlayered; see §11.8.1. Per-customer category branding is emitted last: the landing category's own Storefront palette / semantic tokens / fonts when configured (both schemes), otherwise its legacy brand/accent ramp.
@@ -485,7 +485,7 @@ The storefront has first-class light/dark mode. It is driven by a single `.dark`
 
 #### Building a light/dark toggle
 
-Render it as a no-JS form with **two** submit buttons (one per scheme) and let CSS reveal the one matching the active root class. This stays correct even with JS off and an OS-driven scheme. Progressive enhancement flips it live without a reload:
+Render it as a no-JS form with **two** submit buttons (one per scheme) and let CSS reveal the one matching the active root class. This stays correct even with JS off. Progressive enhancement flips it live without a reload:
 
 ```blade
 @storefrontForm('color-scheme', ['data-theme-toggle' => true])
@@ -604,7 +604,7 @@ emits a dark-anchored ramp of its own, and `:root.dark` outranks a bare
 #### Testing checklist
 
 - [ ] Toggle works with JavaScript **off** (full-page POST returns to the same page) and **on** (flips live, no reload).
-- [ ] First paint matches the saved cookie on reload (no flash), and a first visit honors the OS `prefers-color-scheme`.
+- [ ] First paint matches the saved cookie on reload (no flash). A first visit with no cookie renders light, including on a computer set to dark mode.
 - [ ] Every page (home, listing, product, cart, checkout, account, login, 404 / 5xx) is legible in both schemes — surfaces, text, inputs, borders, focus rings.
 - [ ] The dark logo (and login background) appear only in dark mode; a store with no dark logo still shows its light one.
 

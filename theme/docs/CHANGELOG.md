@@ -7,6 +7,49 @@
 This file tracks changes to the **theme authoring contract** (directives, form types, `$store`
 keys, canonical surface, tokens). It is not the platform-wide release log. Dates are UTC.
 
+## 2026-11-19 — Product page heading section
+
+- The product name heading in `partials/product-details` is `@section('product-title')`. It is no longer `@section('title')`, because `pages/product` already fills `title` with the browser title and a filled section wins — the `<h1>` never rendered on a full page load. Themes that override the heading must use `product-title`. See `blade-api.md`.
+
+## 2026-11-15 — Incoming stock on catalog pages
+
+- Product and category listings expose `$catalogIncoming` by product ID. Rows follow the same ProductHub visibility and undated receipt policy as the detail page's `$stockInfo['incoming']`. Custom themes can show receipts separately from stock on hand.
+
+## 2026-11-13 — Configurable-parent variant price ranges
+
+- **New price view-model fields:** `is_range` (bool) plus `max_excl` / `max_incl` on a configurable parent's `$priceViews` entry. The cheapest variant fills the usual `current_*`; the dearest fills `max_*`; `is_range` is set when they differ. `components/price.blade.php` then renders **`min – max`** (both bounds in the active net/gross mode, VAT label kept), or a single figure when all variants match.
+- **Configurable parents in listings** now resolve their variant price span instead of the €0 placeholder, so cards read `€10.00 – €20.00` rather than `€0 / Request quote`. "Request quote" still shows only when the cheapest variant is genuinely €0.
+- **New `price_missing` marker:** a product with no resolvable price, including a configurable parent with no priced public variant, yields `{ price_missing: true }` (no `current_*`). `components/price.blade.php` renders **"Request quote"** when `zero_price_as_quote` is on, otherwise a neutral **"Unknown price"** notice — never a misleading `€0.00`.
+- **Product page `$priceView`:** the selected variant's price, or — when none is selected — the same parent range / `price_missing` listings use. The default theme's table mode still leaves purchase to the variant table.
+- **Theme rule:** never load a parent's variants or compute the range in Blade — render the supplied view-model.
+- See `view-data.md` (Net vs gross price display, Configurable products) and `pricing.md` (UC13).
+
+## 2026-11-03 — Catalog names follow the URL locale
+
+- **`$product` / `$displayProduct` / `$category` copy** — `name`, `description` and (products) `short_description` are overlaid from ProductHub Translations for the active storefront locale before the page renders. Themes keep using `$product->name`; do not add a theme-side translation lookup. Listings, cart lines, favorites, SEO, **`$megaMenuCategories`**, **`$rootCategories`**, **`$categoryFacet` names**, and category-page **`$breadcrumbs`** use the same overlay (no theme-side name maps). See `view-data.md`.
+
+## 2026-10-30 — Content listing category filter bar
+
+- **`contentListing.category_filters`** — flat list of `{ slug, label, field_code, parent }` from every category-picker taxonomy on the matched type(s). Empty when the type has no category field, an empty taxonomy, or the category picker is hidden from the storefront. Themes render a filter bar; `?category={slug}` still filters entries (unchanged). Adding a term in the admin taxonomy makes it appear on the next listing render — no theme edit. Default theme: `partials/content-category-filters.blade.php`, which sets `aria-current="page"` on the active link. See `view-data.md` § Content types.
+
+## 2026-10-30 — Nested content fields for custom themes
+
+- **Canonical surface.** `pages/__content-listing.blade.php` and `pages/__content-detail.blade.php` are fixed pages. Canonical partials: `partials/content-field-value.blade.php` (any depth) and `partials/content-listing-cell.blade.php`. Do not use `@php` or `request(` on these files. See `hard-rules.md`.
+- **Presented field** now includes `show_on_storefront` plus picker extras: `code`, `label`, `picker_id`, `value`, `empty`, `display`, `html` (rich text, detail), `excerpt` (rich text, 140 characters), `href` (text-link), `hex` (color), `media` (`{ url, name, is_image }`), `items` (options / tags / category names), nested `fields` (complex, recursive) and `rows` (`[{ fields: […] }]`, collection, recursive).
+- **Default theme** listing columns and the detail loop only fields with `show_on_storefront`. New complex / collection fields default to hidden.
+- **Custom themes** still receive every shop-safe field except password and JSON on `entry.fields` and `entry.fields_by_code.{code}`. Look a hidden tree up with `data_get($entry, 'fields_by_code.specs')` or `data_get($contentEntry, 'entry.fields_by_code.specs')`. Include `partials/content-field-value` at any depth (`compact` on the listing).
+- **Password and JSON** values are omitted from shop view data. Media `url` is the public file — wrap images in `@storefrontImage` and set width and height. Use these keys only; not raw item documents. See `view-data.md` § Content types.
+
+## 2026-10-29 — Content listing grid and cards
+
+- **`contentListing.listing_view`** is `grid` or `cards` from `?view=`. `contentListing.category` echoes the optional category filter on the listing URL.
+- **Default theme:** `__content-listing` is a horizontally scrollable data grid on desktop and a card list on phones. Desktop has a grid/cards toggle (catalog toolbar pattern). Link and email fields are native `<a>` buttons (right-click copies the URL). Media opens in a new tab; images use `@storefrontImage` at 80×80 with width and height. Compact rich text is truncated at 140 characters. See `view-data.md`.
+
+## 2026-10-29 — Content types in the shop header
+
+- **`$storefrontContentNav`** — content types marked “show in storefront navigation” appear next to Categories. Each item is `{ label, path, href }`. Empty when none are marked. Default theme: `partials/content-nav-links.blade.php` from `partials/nav.blade.php`.
+- **Listing / detail view data.** A matching routable type injects `contentListing` (`type`, `columns`, `entries`, `listing_view`, `category`) or `contentEntry` (`type`, `entry` with `slug`, `fields`, `fields_by_code`). `__content-listing` is a read-only field table; `__content-detail` is label and value. Each picker has a dedicated shop render. Include `partials/content-field-value`. See `view-data.md`.
+
 ## 2026-10-27 — Quieter impersonation banner
 
 - **Default theme:** the impersonation bar uses the page surface, body text, and outline actions. It no longer uses the warning fill. See `partials/impersonation-banner.blade.php`.

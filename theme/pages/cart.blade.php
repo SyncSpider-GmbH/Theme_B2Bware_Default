@@ -53,6 +53,7 @@
                         <a href="@routeUrl('store.products')" class="inline-flex items-center justify-center rounded-lg bg-transparent text-headings border border-border-subtle font-medium px-4 py-2 transition-colors hover:border-primary hover:text-primary hover:no-underline">@t('Continue shopping')</a>
 
                         @storefrontForm('cart-clear', ['class' => 'inline'])
+                            <input type="hidden" name="cart_revision" value="{{ $cart['revision'] ?? 0 }}">
                             <button type="submit" class="inline-flex items-center justify-center rounded-lg bg-transparent text-body border border-border-subtle font-medium px-4 py-2 transition-colors hover:border-primary hover:text-primary cursor-pointer">
                                 @t('Clear cart')
                             </button>

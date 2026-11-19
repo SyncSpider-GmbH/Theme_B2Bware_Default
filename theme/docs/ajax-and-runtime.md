@@ -99,7 +99,7 @@ There is **no** modal component to include &mdash; write a native `<dialog>` dir
 
 > **Centering — required in every theme.** A `showModal()` dialog is centered by the user-agent `dialog { margin: auto }` rule, but the platform `base.css` Preflight ships a universal `* { margin: 0 }` reset that wipes it, leaving the dialog pinned to the top-left. `base.css` does **not** re-assert it, so every theme that uses `<dialog>` modals **must** add `dialog { margin: auto }` to its own `assets/css/storefront.css` (an element selector outranks the `*` reset, and the theme stylesheet loads after `base.css`). The default theme ships exactly this rule.
 
-> **Forms inside a modal.** HTML forbids nested `<form>` elements, so a `<dialog>` that contains `@storefrontForm` blocks must be rendered **outside** every other form. The default `pages/checkout.blade.php` does exactly this: its "Manage addresses" pop-ups (a `<dialog>` per address kind, holding the *set default* and *add new address* forms) are emitted **after** `@endstorefrontForm`, alongside the coupon forms — never inside the checkout form. Each modal form carries a relative `redirect` back to the checkout (`/{{ $locale }}/checkout`) and submits as a normal POST (no JS required); with JS the trigger simply opens the dialog in place.
+> **Forms inside a modal.** HTML forbids nested `<form>` elements, so a `<dialog>` that contains `@storefrontForm` blocks must be rendered **outside** every other form. The default `pages/checkout.blade.php` does exactly this: its "Manage addresses" pop-ups (a `<dialog>` per address kind, holding the *set default* and *add new address* forms) are emitted **after** `@endstorefrontForm`, alongside the coupon forms — never inside the checkout form. Each modal form carries a relative `redirect` back to the checkout (`/{$locale}/checkout` using the `$locale` variable) and submits as a normal POST (no JS required); with JS the trigger simply opens the dialog in place.
 
 ### JavaScript events
 
@@ -114,6 +114,7 @@ The runtime dispatches `CustomEvent`s on `document` so a theme can build a cart 
 | `storefront:variant:selected`  | `{ productId, variantId, cart }`  | after a variant re-renders `product-details` |
 | `storefront:favorite:toggled`  | `{ productId, active, listId }`   | a `favorite-toggle` succeeds — update heart icons / counts |
 | `storefront:color-scheme`      | `{ scheme }`                      | the light/dark scheme changes (`'light'`/`'dark'`) — see §11.10 |
+| `storefront:currency`          | `{ currency, cart_cleared }`      | before the full-page reload after `Storefront.setCurrency` |
 
 `cart` is `{ item_count, subtotal, discount, surcharge, tax, grand_total, coupon, currency }`. On `storefront:cart:added`, `added` is the just-added line(s) — a list of `{ id, name, sku, image, quantity }` (`null` on every other event) — ready for an add-to-cart confirmation (see *Added-to-cart confirmation* below). Bulk add (`cart-bulk-add`) fires the same `storefront:cart:added` event with all added rows.
 
@@ -163,6 +164,7 @@ It degrades gracefully: with JS off the add still works (PRG redirect) and nothi
 | `Storefront.progress`        | Top loading bar: `Storefront.progress.start()` / `.done()` for custom full-page or long-running flows (§9.9). |
 | `Storefront.setColorScheme(scheme)` | Set light/dark scheme (`'light'`/`'dark'`), persist the cookie, update `<html>`, and emit `storefront:color-scheme`. See §11.10. |
 | `Storefront.toggleColorScheme()` | Flip between light and dark (convenience wrapper around `setColorScheme`). Wire it to the `color-scheme` form buttons for a no-reload toggle. |
+| `Storefront.setCurrency(code)` | Persist ISO-4217 preference via `POST /currency`, emit `storefront:currency`, then **reload** so server-rendered prices match. See §9.2. |
 
 ### Section Rendering route
 

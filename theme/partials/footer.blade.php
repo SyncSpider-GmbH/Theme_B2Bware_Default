@@ -17,7 +17,7 @@
                     @endif
                 </a>
 
-                <p class="storefront-footer__tagline m-0 max-w-xs text-sm text-neutral-white/60">@t('Wholesale catalog and procurement portal for trade partners.')</p>
+                <p class="storefront-footer__tagline m-0 max-w-xs text-sm text-neutral-white/60">@if(!empty($store['footer_tagline'])){{ $store['footer_tagline'] }}@else @t('Wholesale catalog and procurement portal for trade partners.') @endif</p>
 
                 @if(!empty($store['contact_phone']) || !empty($store['contact_email']) || !empty($store['contact_address']))
                     <ul class="storefront-footer__contact m-0 flex list-none flex-col gap-2 p-0 text-sm">
@@ -108,7 +108,9 @@
             <nav class="storefront-footer__col flex flex-col gap-3" aria-label="@t('Shop')">
                 <h2 class="m-0 text-sm font-semibold text-neutral-white">@t('Shop')</h2>
                 <ul class="m-0 flex list-none flex-col gap-2 p-0">
-                    <li><a href="@routeUrl('store.products')" class="text-neutral-white/70 transition-colors hover:text-neutral-white hover:no-underline">@t('All products')</a></li>
+                    @if($store['catalog_enabled'] ?? true)
+                        <li><a href="@routeUrl('store.products')" class="text-neutral-white/70 transition-colors hover:text-neutral-white hover:no-underline">@t('All products')</a></li>
+                    @endif
                     @foreach(($rootCategories ?? collect())->take(4) as $category)
                         <li><a href="@routeUrl('store.category', ['slug' => data_get($category, 'seo.slug') ?: data_get($category, 'slug', '')])" class="text-neutral-white/70 transition-colors hover:text-neutral-white hover:no-underline">{{ $category->name }}</a></li>
                     @endforeach

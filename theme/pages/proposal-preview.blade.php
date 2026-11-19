@@ -4,11 +4,9 @@
 
 @section('content')
     @push('head')
-        {{-- Shared proposals default to LIGHT for recipients who never visited
-             the store (no colour-scheme cookie set). The no-FOUC head script
-             otherwise follows the visitor's OS preference; force light here
-             unless the visitor made an explicit choice. The on-page switch
-             below lets them change it, persisting the cookie. --}}
+        {{-- Shared proposals stay LIGHT unless the recipient already chose
+             dark (a colour-scheme cookie). The on-page switch below lets them
+             change it, persisting the cookie. --}}
         <script>
             try {
                 if (!/(?:^|;\s*)storefront_color_scheme=/.test(document.cookie)) {

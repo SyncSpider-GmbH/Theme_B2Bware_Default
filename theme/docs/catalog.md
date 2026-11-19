@@ -17,7 +17,7 @@ The catalog pages — `products.blade.php` (the All Products index) and `categor
 | `$sortOptions`        | array           | **Dynamic** sort entries `['key' => '<attribute_code>'|'-<attribute_code>', 'label' => '<name> ↑/↓']` from attributes flagged `use_for_sorting`. Append them after the native options (newest, oldest, price low to high, price high to low, name A–Z, name Z–A). |
 | `$view`              | string          | `'grid'` or `'list'` — the active listing layout.                                                       |
 | `$facets`             | Collection      | **Contextual** facets. See **Definition facets** and **Attribute facet display** below. Attribute rows include `code`, `display`, `swatches`, and `counts` (`<label>` => product count). `values` lists only labels that match at least one product in the current context (search, category, the other selected attributes, and — when those filters are active — the price range and "In stock only"). A zero count is omitted. Empty when the tenant has no filterable attributes. |
-| `$categoryFacet`      | Collection      | Category facet rows `['id', 'name', 'slug', 'url', 'count', 'active']`. On the index these are the root categories; on a leaf they are the current category + siblings. `count` is descendant-aware; `url` is ready for `@routeUrl('store.category', ['slug' => …])`. |
+| `$categoryFacet`      | Collection      | Category facet rows `['id', 'name', 'slug', 'url', 'count', 'active']`. On the index these are the root categories; on a leaf they are the current category + siblings. `name` is locale-overlaid from ProductHub Translations (same as `$category->name`). `count` is descendant-aware and includes a configurable parent when any of its variations is assigned to that category (the same products the grid lists). `url` is ready for `@routeUrl('store.category', ['slug' => …])`. |
 | `$selectedAttributes` | array           | Map of `attribute_id => [selected value strings]` — use to mark attribute-facet radios or checkboxes `@checked(...)`. Select, radio, and swatch hold one value; multiselect may hold several. |
 | `$selectedDefinitions` | array          | Map of `attribute_id => [definition name => [cell, …]]` — use to mark definition-facet checkboxes. Empty when none are selected. |
 
@@ -43,16 +43,17 @@ Each attribute `$facets` row (`kind=attribute`, or a missing `kind`):
 | `$activeFilters`      | array           | Applied-filter chips (see below). Empty when nothing is applied, and empty on a category page that is not showing products. |
 | `$pagination`         | array           | `['current_page', 'per_page', 'total', 'last_page']` convenience mirror of the paginator.               |
 | `$catalogAttributes`  | array           | **Always present** `[product_id => [{code, name, value, is_url, is_html, is_multiline}, …]]` map of each listed product's visible attributes — for a B2B attribute / spec table. Look up by `(string) $product->id` and pick the columns you want by `code`. Card-grid themes simply ignore it. |
+| `$catalogIncoming`    | array           | Incoming stock rows by product ID on product and category listings. Same visibility rules and `{quantity, date, undated}` shape as `$stockInfo['incoming']` on the [product detail page](view-data.md#stockinfo-product--pdp). No entry means there are no rows to display. Keep incoming separate from physical stock. |
 
 `category.blade.php` additionally receives:
 
 | Variable | Type | Meaning |
 | --- | --- | --- |
-| `$category` | Category | The resolved category model. |
+| `$category` | Category | The resolved category model. **`name` / `description` are locale-overlaid** from ProductHub Translations. |
 | `$categorySlug` | string | Full slug path for this page. |
 | `$parentSlugPath` | string | Parent path segment (empty at root). |
-| `$siblings` | Collection | Navigable siblings (for facets / alternate nav). |
-| `$children` | Collection | Direct navigable children. |
+| `$siblings` | Collection | Navigable siblings (for facets / alternate nav). Names are locale-overlaid. |
+| `$children` | Collection | Direct navigable children. Names are locale-overlaid. |
 | `$isLeaf` | bool | Structural: `true` when `$children` is empty. Do **not** use this alone to decide layout. |
 | `$branchDisplayMode` | string | Resolved mode: `children` \| `products` \| `both`. Leafs are always `products`. |
 | `$showChildren` | bool | Render the subcategory grid when true. |

@@ -156,7 +156,10 @@
                     @section('price')
                         {{-- The ONE price render (docs/pricing.md): struck list +
                              current via the price component; the contract badge
-                             only labels WHY the price is lower — no figures. --}}
+                             only labels WHY the price is lower — no figures.
+                             A product sold only through a module's own checkout
+                             ($cartRestrictedProductIds) has no one-time price. --}}
+                        @unless(collect($cartRestrictedProductIds)->contains((int) $product->id))
                         <div class="product__price-block flex flex-wrap items-center gap-3">
                             @include('components.product-price', [
                                 'product' => $product,
@@ -169,10 +172,11 @@
                                 <span class="product__contract-badge inline-flex items-center self-center rounded-full border border-primary bg-primary-subtle px-3 py-1 text-xs font-semibold text-primary">@t('Your contracted price')</span>
                             @endif
                         </div>
+                        @endunless
                     @show
 
                     @section('tier-prices')
-                        @if($canSeePrices && isset($tierPrices) && count($tierPrices) > 0)
+                        @if($canSeePrices && isset($tierPrices) && count($tierPrices) > 0 && !collect($cartRestrictedProductIds)->contains((int) $product->id))
                             <div class="product__tier-prices flex flex-col gap-2 self-start w-full">
                                 <p class="product__tier-label text-sm font-semibold text-headings m-0">@t('Volume discount')</p>
                                 <div class="product__tier-cards flex flex-wrap gap-2">
@@ -227,8 +231,11 @@
                     @show
 
                     @section('purchase')
-                        @if($canSeePrices && $canAddToCart)
+                        {{-- A cart-restricted product is bought through the module's
+                             slot above; only the favorites toggle stays here. --}}
+                        @if($canSeePrices && ($canAddToCart || collect($cartRestrictedProductIds)->contains((int) $product->id)))
                             <div class="product__purchase flex items-end gap-3">
+                                @unless(collect($cartRestrictedProductIds)->contains((int) $product->id))
                                 @storefrontForm('cart-add', ['class' => 'product__cart-form flex flex-1 min-w-0 flex-col gap-3'])
                                     {{-- For a configurable product the SELECTED VARIANT is the
                                          purchasable product; add it by id (the cart adds by
@@ -236,6 +243,7 @@
                                          product detail (incl. this value) is re-rendered by the
                                          product-details section when a variant is chosen. --}}
                                     <input type="hidden" name="product_id" value="{{ ($selectedVariant ?: $product)->id }}">
+                                    <input type="hidden" name="cart_revision" value="{{ $cart['revision'] ?? 0 }}">
                                     <div class="flex flex-col gap-1 items-start">
                                         <span class="text-xs font-medium text-body">@t('Quantity')</span>
                                         @include('components.quantity-selector', [
@@ -248,6 +256,14 @@
                                             <span class="text-xs text-body">@t('This item must be ordered in multiples of %d.', $stockInfo['step'])</span>
                                         @endif
                                     </div>
+                                    {{-- Purchase-time fields contributed by modules (for example
+                                         Individual Options). Rendered inside the form so their
+                                         hidden `configuration` input posts with the add. --}}
+                                    @storefrontSlot('product.purchase.fields', [
+                                        'context' => [
+                                            'product' => 'product',
+                                        ],
+                                    ])
                                     <button
                                         type="submit"
                                         class="product__add inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 font-medium text-primary-content transition-colors hover:bg-primary-600 cursor-pointer"
@@ -260,6 +276,7 @@
                                         @t('Add to cart')
                                     </button>
                                 @endstorefrontForm
+                                @endunless
 
                                 @if($isAuthenticated && ($store['favorites_enabled'] ?? true))
                                     @storefrontForm('favorite-toggle', ['class' => 'product__favorite-form shrink-0'])
@@ -313,7 +330,7 @@
             </div>
 
             @section('variant-table')
-                @if(empty($isVariantView) && $variants->isNotEmpty() && ($store['variation_display_mode'] ?? 'table') === 'table')
+                @if(empty($isVariantView) && $variants->isNotEmpty() && ($store['variation_display_mode'] ?? 'table') === 'table' && !collect($cartRestrictedProductIds)->contains((int) $product->id))
                     @push('head')
                         <style>[data-variant-submit]:disabled{opacity:.5;cursor:not-allowed}</style>
                     @endpush
@@ -353,6 +370,7 @@
 
                             @storefrontForm('cart-bulk-add', ['class' => 'product__variant-form flex flex-col gap-4'])
                                 <input type="hidden" name="redirect" value="/{{ $locale }}/products/{{ $productSlug }}">
+                                <input type="hidden" name="cart_revision" value="{{ $cart['revision'] ?? 0 }}">
 
                                 <div class="bg-surface-card border border-border-subtle rounded-lg overflow-hidden max-md:border-0 max-md:rounded-none max-md:bg-transparent max-md:overflow-visible">
                                     <div class="overflow-x-auto">
@@ -427,6 +445,13 @@
                                         </table>
                                     </div>
                                 </div>
+
+                                {{-- One set of purchase-time fields applies to every variant row. --}}
+                                @storefrontSlot('product.purchase.fields', [
+                                    'context' => [
+                                        'product' => 'product',
+                                    ],
+                                ])
 
                                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                     <div class="flex gap-6">

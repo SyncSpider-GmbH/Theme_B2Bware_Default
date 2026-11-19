@@ -122,7 +122,11 @@
                                     <td class="px-5 py-3 text-body whitespace-nowrap">{{ $item->sku ?? optional($item->product)->sku ?? $item->product_id }}</td>
                                     <td class="px-3 py-3 text-headings">
                                         <div class="flex items-center gap-3">
-                                            @if(data_get($item, 'product.resolved_main_media.media_url') ?? data_get($item, 'product.main_media.media_url'))
+                                            @if($item->isCharge())
+                                                <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded bg-primary-subtle text-primary" aria-hidden="true">
+                                                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.9 4.9l2.8 2.8"/><path d="M16.3 16.3l2.8 2.8"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.9 19.1l2.8-2.8"/><path d="M16.3 7.7l2.8-2.8"/><circle cx="12" cy="12" r="3"/></svg>
+                                                </span>
+                                            @elseif(data_get($item, 'product.resolved_main_media.media_url') ?? data_get($item, 'product.main_media.media_url'))
                                                 <span class="block h-10 w-10 shrink-0 overflow-hidden rounded bg-surface">
                                                     <img src="@storefrontImage(data_get($item, 'product.resolved_main_media.media_url') ?? data_get($item, 'product.main_media.media_url'), 80, 80, 85)" alt="{{ $item->name ?? optional($item->product)->name ?? '' }}" class="h-full w-full object-contain" loading="lazy">
                                                 </span>
@@ -135,8 +139,8 @@
                                         </div>
                                     </td>
                                     <td class="px-3 py-3 text-body text-center">{{ (int) ($item->quantity ?? 0) }}</td>
-                                    <td class="px-3 py-3 text-body text-right whitespace-nowrap">{{ formatCurrency($item->price ?? 0) }}</td>
-                                    <td class="px-5 py-3 text-headings font-medium text-right whitespace-nowrap">{{ formatCurrency($item->total_price ?? (($item->price ?? 0) * ($item->quantity ?? 0))) }}</td>
+                                    <td class="px-3 py-3 text-body text-right whitespace-nowrap">{{ formatCurrency($item->display_unit_price ?? $item->price ?? 0) }}</td>
+                                    <td class="px-5 py-3 text-headings font-medium text-right whitespace-nowrap">{{ formatCurrency($item->display_line_total ?? $item->total_price ?? (($item->price ?? 0) * ($item->quantity ?? 0))) }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -157,6 +161,9 @@
                         <dd class="text-sm text-headings m-0 text-right">{{ formatCurrency($orderTotals['tax'] ?? 0) }}</dd>
                         <dt class="text-base font-semibold text-headings pt-2 mt-1 border-t border-border-subtle">@t('Total')</dt>
                         <dd class="text-base font-semibold text-headings m-0 text-right pt-2 mt-1 border-t border-border-subtle">{{ formatCurrency($orderTotals['grand_total'] ?? 0) }}</dd>
+                        @if(!empty($orderTotals['prices_include_tax']))
+                            <dt class="col-span-2 text-xs text-body m-0">@t('Prices include VAT')</dt>
+                        @endif
                     </dl>
                 </div>
             </div>

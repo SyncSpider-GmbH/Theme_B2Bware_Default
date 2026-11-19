@@ -17,9 +17,28 @@
 
     A zero/absent price reads "Request quote" when the tenant opts in
     ($store['zero_price_as_quote']), mirroring the Nexus ProductPriceDisplay.
+
+    A configurable parent whose variants have no resolvable price gets a
+    `price_missing` marker: it reads "Request quote" when the tenant opts in
+    ($store['zero_price_as_quote']), otherwise "Unknown price" — never the
+    parent's own €0 placeholder as a real figure.
+
+    A configurable parent gets a platform-computed variant price **range**: its
+    `is_range` flag plus `max_excl` / `max_incl` alongside the usual cheapest
+    `current_*`. When `is_range` the component renders "min – max"; when every
+    variant shares one price it renders that single figure. The parent's own €0
+    placeholder is ignored. Quote only ever shows when the cheapest figure is
+    itself <= 0 (a genuinely €0 variant). The theme never fetches variants or
+    computes the range.
 --}}
 @if($canSeePrices)
-    @if(((float) (data_get($priceView, 'current_excl') ?? $amount)) <= 0 && data_get($store, 'zero_price_as_quote'))
+    @if(data_get($priceView, 'price_missing'))
+        @if(data_get($store, 'zero_price_as_quote'))
+            <span class="price price--quote inline-flex items-center text-sm font-medium text-primary">@t('Request quote')</span>
+        @else
+            <span class="price price--unavailable inline-flex items-center text-sm font-medium text-body">@t('Unknown price')</span>
+        @endif
+    @elseif(((float) (data_get($priceView, 'current_excl') ?? $amount)) <= 0 && data_get($store, 'zero_price_as_quote'))
         <span class="price price--quote inline-flex items-center text-sm font-medium text-primary">@t('Request quote')</span>
     @elseif(data_get($priceView, 'has_tax') && data_get($store, 'display_prices_with_tax') === 'including_tax')
         {{-- B2C: gross only --}}
@@ -27,7 +46,7 @@
             @if((data_get($priceView, 'compare_incl') ?? $compareAt) && (data_get($priceView, 'compare_incl') ?? $compareAt) > data_get($priceView, 'current_incl'))
                 <span class="price__compare text-sm text-body font-normal line-through">{{ formatCurrency(data_get($priceView, 'compare_incl') ?? $compareAt) }}</span>
             @endif
-            <span class="price__current {{ $size === 'lg' ? 'text-3xl' : 'text-lg' }} text-headings">{{ formatCurrency(data_get($priceView, 'current_incl')) }}</span>
+            <span class="price__current {{ $size === 'lg' ? 'text-3xl' : 'text-lg' }} text-headings">{{ formatCurrency(data_get($priceView, 'current_incl')) }}@if(data_get($priceView, 'is_range')) – {{ formatCurrency(data_get($priceView, 'max_incl')) }}@endif</span>
             <span class="price__tax-note text-xs font-normal text-body">@t('incl. VAT')</span>
         </span>
     @elseif(data_get($priceView, 'has_tax') && data_get($store, 'display_prices_with_tax') === 'both')
@@ -37,10 +56,10 @@
                 @if((data_get($priceView, 'compare_excl') ?? $compareAt) && (data_get($priceView, 'compare_excl') ?? $compareAt) > data_get($priceView, 'current_excl'))
                     <span class="price__compare text-sm text-body font-normal line-through">{{ formatCurrency(data_get($priceView, 'compare_excl') ?? $compareAt) }}</span>
                 @endif
-                <span class="price__current {{ $size === 'lg' ? 'text-3xl' : 'text-lg' }} text-headings">{{ formatCurrency(data_get($priceView, 'current_excl')) }}</span>
+                <span class="price__current {{ $size === 'lg' ? 'text-3xl' : 'text-lg' }} text-headings">{{ formatCurrency(data_get($priceView, 'current_excl')) }}@if(data_get($priceView, 'is_range')) – {{ formatCurrency(data_get($priceView, 'max_excl')) }}@endif</span>
                 <span class="price__tax-note text-xs font-normal text-body">@t('excl. VAT')</span>
             </span>
-            <span class="price__secondary text-xs text-body">{{ formatCurrency(data_get($priceView, 'current_incl')) }} @t('incl. VAT')</span>
+            <span class="price__secondary text-xs text-body">{{ formatCurrency(data_get($priceView, 'current_incl')) }}@if(data_get($priceView, 'is_range')) – {{ formatCurrency(data_get($priceView, 'max_incl')) }}@endif @t('incl. VAT')</span>
         </span>
     @else
         {{-- B2B net, or no tax: single figure. Label shown only when taxed. --}}
@@ -48,7 +67,7 @@
             @if((data_get($priceView, 'compare_excl') ?? $compareAt) && (data_get($priceView, 'compare_excl') ?? $compareAt) > (data_get($priceView, 'current_excl') ?? $amount))
                 <span class="price__compare text-sm text-body font-normal line-through">{{ formatCurrency(data_get($priceView, 'compare_excl') ?? $compareAt) }}</span>
             @endif
-            <span class="price__current {{ $size === 'lg' ? 'text-3xl' : 'text-lg' }} text-headings">{{ formatCurrency(data_get($priceView, 'current_excl') ?? $amount) }}</span>
+            <span class="price__current {{ $size === 'lg' ? 'text-3xl' : 'text-lg' }} text-headings">{{ formatCurrency(data_get($priceView, 'current_excl') ?? $amount) }}@if(data_get($priceView, 'is_range')) – {{ formatCurrency(data_get($priceView, 'max_excl')) }}@endif</span>
             @if(data_get($priceView, 'has_tax'))
                 <span class="price__tax-note text-xs font-normal text-body">@t('excl. VAT')</span>
             @endif

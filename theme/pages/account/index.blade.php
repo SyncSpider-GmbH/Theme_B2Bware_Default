@@ -37,6 +37,7 @@
                         <span class="text-xs text-body/70 mt-0.5">@t('Across all orders')</span>
                     </div>
 
+                    @if($store['cart_enabled'] ?? true)
                     <div class="account__stat flex flex-col p-4 bg-surface-card border border-border-subtle rounded-lg">
                         <span class="flex items-center justify-center size-9 rounded-md bg-primary-subtle text-primary mb-3">
                             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -47,7 +48,9 @@
                         <span class="text-xs font-medium text-body mt-1">@t('Items in cart')</span>
                         <span class="text-xs text-body/70 mt-0.5">{{ (int) ($cartCount ?? 0) > 0 ? t('In your cart') : t('Cart is empty') }}</span>
                     </div>
+                    @endif
 
+                    @if($store['favorites_enabled'] ?? true)
                     <div class="account__stat flex flex-col p-4 bg-surface-card border border-border-subtle rounded-lg">
                         <span class="flex items-center justify-center size-9 rounded-md bg-primary-subtle text-primary mb-3">
                             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -58,6 +61,7 @@
                         <span class="text-xs font-medium text-body mt-1">@t('Saved products')</span>
                         <span class="text-xs text-body/70 mt-0.5">@t('Across all lists')</span>
                     </div>
+                    @endif
                 </section>
 
                 {{-- Recent orders + quick actions --}}

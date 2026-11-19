@@ -64,9 +64,9 @@ Section names you can override:
 | `layouts/shop` | `breadcrumbs` |
 
 ### Output
-- `{{ $value }}` — escaped
+- Blade escaped echo of `$value`
 - `{!! $value !!}` — unescaped (use sparingly, for trusted HTML only)
-- `{{-- comment --}}`
+- Blade comment (Blade comment delimiters)
 
 ### Allowed Blade directives (theme-specific)
 
@@ -87,6 +87,7 @@ In addition to standard Blade control flow above, the platform registers these t
 | `@storefrontSlot('product.detail.meta', ['context' => …])` | — | Render a named slot: optional-module contributions **and** owner-authored CMS content. Optional config object declares slot context for the Theme Editor (see §9.16). Renders nothing when empty. |
 | `@startStorefrontSlot('footer')` / `@endStorefrontSlot` | — | Wrap theme-default Blade that renders until owner-authored content replaces the whole region. Keys are string literals and pairs must be balanced (see §9.16). |
 | `@storefrontScripts`                     | —                             | Emit the storefront JS runtime once near `</body>` — enables cart AJAX (see §9.7)     |
+| `@storefrontAssistant`                   | —                             | Emit the shop assistant widget once near `</body>`. Renders nothing when `$store['assistant_enabled']` is false. See `assistant.md`. |
 | `@storefrontCaptcha`                     | —                             | Place the tenant's CAPTCHA widget at this exact spot inside a `@storefrontForm`. Optional — a protected form that omits it gets the widget injected just before `</form>` (see `forms.md`) |
 | `@storefrontAuthToken`                   | —                             | Short-lived (1h) `x-auth-token` for the logged-in customer (empty for guests) — inits a first-party widget's `api_key` (see §9.14). ⚠️ The only sanctioned credential exposure. |
 | `@storefrontSeo`                         | —                             | Emit the SEO head — robots, canonical, hreflang, Open Graph, Twitter Card & JSON-LD (see §9.10) |

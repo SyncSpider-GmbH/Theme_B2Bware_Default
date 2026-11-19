@@ -29,7 +29,7 @@
                              colour-scheme endpoint and returns to this page; with
                              JS the inline module below flips the scheme live. The
                              visible button (sun/dark) follows the active scheme via
-                             CSS, so it is correct even with JS off + OS preference. --}}
+                             CSS, so it is correct even with JS off. --}}
                         @storefrontForm('color-scheme', ['class' => 'theme-toggle inline-flex items-center', 'data-theme-toggle' => true])
                             <input type="hidden" name="redirect" value="{{ $currentPath ?? '/' }}">
                             <button type="submit" name="scheme" value="dark"
@@ -56,6 +56,7 @@
                             </button>
                         @endstorefrontForm
                         @include('partials.locale-switcher')
+                        @include('partials.currency-switcher')
                     </div>
                 </div>
             </div>
@@ -77,9 +78,10 @@
         @show
 
         @section('header.search')
+            @if($store['catalog_enabled'] ?? true)
             <form class="storefront-header__search hidden min-w-0 flex-1 md:flex" method="get" action="@routeUrl('store.products')" role="search" data-live-search-form
-            data-label-suggestions="@t('Search suggestions')" data-label-filters="@t('Filters')"
-            data-label-empty="@t('No products found')" data-label-all="@t('Show all results')">
+                data-label-suggestions="@t('Search suggestions')" data-label-filters="@t('Filters')"
+                data-label-empty="@t('No products found')" data-label-all="@t('Show all results')">
                 <div class="relative w-full">
                     <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-placeholder">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" aria-hidden="true">
@@ -101,6 +103,7 @@
                     </button>
                 </div>
             </form>
+            @endif
             @storefrontSlot('storefront.header.search')
         @show
 
@@ -115,7 +118,9 @@
                     </a>
                 @endif
 
-                @storefrontSection('mini-cart')
+                @if($store['cart_enabled'] ?? true)
+                    @storefrontSection('mini-cart')
+                @endif
 
                 @if($isAuthenticated)
                     <a href="@routeUrl('store.account.index')" class="storefront-header__action inline-flex items-center gap-2 rounded px-2 py-2 text-headings hover:text-primary hover:no-underline">
@@ -155,6 +160,7 @@
 
     {{-- Row 1b — mobile search: full-width search on its own row on small screens --}}
     @section('header.search-mobile')
+        @if($store['catalog_enabled'] ?? true)
         <form class="storefront-header__search-mobile mx-auto w-full max-w-desktop px-4 pb-3 md:hidden" method="get" action="@routeUrl('store.products')" role="search" data-live-search-form
             data-label-suggestions="@t('Search suggestions')" data-label-filters="@t('Filters')"
             data-label-empty="@t('No products found')" data-label-all="@t('Show all results')">
@@ -179,6 +185,7 @@
                 </button>
             </div>
         </form>
+        @endif
     @show
 
     {{-- Row 2 — category nav: list link or mega menu, from category_ui_type --}}
@@ -228,7 +235,7 @@
 
             const panel = document.createElement('div');
             searchPanelCount += 1;
-            panel.id = `search-panel-${searchPanelCount}`;
+            panel.id = 'search-panel-' + searchPanelCount;
             panel.className = 'search-panel';
             panel.hidden = true;
             panel.setAttribute('role', 'dialog');
@@ -252,7 +259,7 @@
 
             const place = () => {
                 const top = input.getBoundingClientRect().bottom - header.getBoundingClientRect().top + 8;
-                panel.style.top = `${Math.round(top)}px`;
+                panel.style.top = Math.round(top) + 'px';
             };
             const open = () => {
                 place();
@@ -344,7 +351,7 @@
                 panel.replaceChildren();
 
                 const head = element('div', 'search-panel__head');
-                head.append(element('strong', 'search-panel__query', `„${query}“`), element('span', 'search-panel__count', listing.count));
+                head.append(element('strong', 'search-panel__query', query), element('span', 'search-panel__count', listing.count));
                 panel.append(head);
 
                 const body = element('div', 'search-panel__body');

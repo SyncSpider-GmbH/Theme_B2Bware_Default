@@ -142,14 +142,38 @@ Inline the switcher's JS in the same blade as the markup (see [`partials/locale-
 @endforeach
 ```
 
+### Active currency & currency switcher
+
+The active currency for a storefront request is negotiated in this order:
+
+1. `Accept-Currency` request header (API / AJAX clients)
+2. `storefront_currency` cookie (set by the switcher via `POST /currency`)
+3. Tenant base currency from SettingsHub (`global_config.i18n.currency`)
+
+There is **no** `?currency=` query parameter in v1. Themes call `Storefront.setCurrency(code)`; the runtime posts JSON, updates the cookie, emits `storefront:currency`, and **reloads** the page so server-rendered prices match.
+
+When the visitor switches away from a non-empty cart's snapshotted `currency_code`, the platform **clears cart line items** and returns `{ currency, cart_cleared: true }` so the next add-to-cart adopts the new currency.
+
+A currency switcher MUST:
+
+1. Render only platform-provided codes via **`$currencyOptions`** (each row is `['code', 'label', 'active']`). Prefer this over raw `$availableCurrencies`. Only show the UI when `count($currencyOptions) > 1`.
+2. On change, call `Storefront.setCurrency(code)` (or `POST /currency` with `{ "currency": "<ISO>" }` yourself). Route name: `store.currency.set`.
+3. Expect a full-page reload after a successful switch — do not recompute money in the browser.
+
+Reference: [`partials/currency-switcher.blade.php`](partials/currency-switcher.blade.php).
+
+**Known limitation:** shipping method amounts remain in the tenant base currency until a later conversion task. Catalog / cart line prices honour the negotiated currency.
+
+`$store['default_currency']` is the **tenant base** currency; `$currency` is the visitor's **active** choice for this request.
+
 ---
 
 ## 9.3 Date formatting
 
-Use `@formatDate(...)` (or the `formatDate(...)` helper inside expressions) for **every** date or datetime rendered in a theme. Never echo `{{ $order->created_at }}` directly — you'll leak a server-locale Carbon string.
+Use `@formatDate(...)` (or the `formatDate(...)` helper inside expressions) for **every** date or datetime rendered in a theme. Never Blade-echo `$order->created_at` directly — you'll leak a server-locale Carbon string.
 
 ```blade
-{{ formatDate($order->created_at) }}            {{-- locale-default short date --}}
+{{ formatDate($order->created_at) }}            {{-- shop locale: en-EN 04/06/2026, de-DE 04.06.2026, en-US 06/04/2026 --}}
 {{ formatDate($order->created_at, 'LL') }}      {{-- locale long date --}}
 {{ formatDate($order->created_at, 'YYYY-MM-DD') }}  {{-- explicit ISO date --}}
 ```
@@ -161,7 +185,7 @@ formatDate(mixed $value, ?string $format = null): string
 ```
 
 - `$value` accepts a Carbon instance, a `DateTimeInterface`, or any string Carbon can parse (`'2026-06-04T10:00:00Z'`, `'2026-06-04'`).
-- `$format` is an **`isoFormat` token string** (the moment.js / day.js syntax), not PHP `date()` syntax. When omitted, the platform uses `'L'` — the locale-default short date.
+- `$format` is an **`isoFormat` token string** (the moment.js / day.js syntax), not PHP `date()` syntax. When omitted, the date follows the shop locale (`en-EN` and other English shops except `en-US` use day/month, `de-DE` uses dots, `en-US` uses month/day). Passing `'L'` still uses the ICU short date.
 
 This matches what Shopify Liquid, Shopware 6, and Magento 2 do: a small set of locale-aware presets (`L`, `LL`, `LLL`, `LLLL`, `LT`, `LTS`) plus the option to override with an explicit token string when you need a fixed format like an ISO date.
 
@@ -210,7 +234,7 @@ Full token list: see [day.js / moment.js `format`](https://day.js.org/docs/en/di
 
 ## 9.4 Number & currency formatting
 
-Use `@formatCurrency(...)` for **every** monetary value (prices, totals, discounts, refunds) and `@formatNumber(...)` for plain numeric values (counts, weights, ratings, stock levels). Never write `{{ number_format($price, 2) }}` or `{{ $price . ' ' . $currency }}` — both ignore the active locale.
+Use `@formatCurrency(...)` for **every** monetary value (prices, totals, discounts, refunds) and `@formatNumber(...)` for plain numeric values (counts, weights, ratings, stock levels). Never write `number_format($price, 2)` via Blade echo, or concatenate `$price` with `$currency` — both ignore the active locale.
 
 ```blade
 {{ formatCurrency($product->price) }}           {{-- $19.99 / 19,99 € / 19,99 kn  --}}
@@ -241,7 +265,7 @@ formatNumber  (float|int|string $value, int $maxFractionDigits = 2): string
 | `fr-fr`       | `1 234,50 $US`                 | `1 234,5`              |
 | `ja-jp`       | `US$1,234.50`                  | `1,234.5`              |
 
-This follows the same approach as Shopify (`{{ price | money }}`), Shopware (`{{ price|currency }}`), and Magento (`<?= $block->formatCurrency(...) ?>`) — one helper that picks symbol and formatting from the storefront locale + a configured currency.
+This follows the same approach as Shopify (Liquid `price | money`), Shopware (Twig `price|currency`), and Magento (`$block->formatCurrency(...)`) — one helper that picks symbol and formatting from the storefront locale + a configured currency.
 
 ### When to pass an explicit currency
 

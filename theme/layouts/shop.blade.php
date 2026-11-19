@@ -3,8 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    {{-- No-flash light/dark bootstrap: applies the saved cookie / OS preference
-         to <html> before first paint. Must come before the stylesheets. --}}
+    {{-- No-flash light/dark bootstrap: applies the saved cookie, or light
+         when none is set, to <html> before first paint. Must come before the stylesheets. --}}
     @storefrontColorScheme
     {{-- Consent-gated analytics loader (GTM / GA4 / Clarity). Emits nothing when
          the tenant has configured no tracking. --}}
@@ -73,6 +73,7 @@
     {{-- Storefront JS runtime: progressive-enhancement AJAX for cart forms +
          section swapping. Themes that omit it still work (forms POST normally). --}}
     @storefrontScripts
+    @storefrontAssistant
     @stack('scripts')
 </body>
 </html>

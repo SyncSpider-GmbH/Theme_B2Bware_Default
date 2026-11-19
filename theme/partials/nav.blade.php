@@ -48,7 +48,8 @@
                         <p hidden data-mega-menu-no-matches class="m-0 text-sm text-body">@t('No categories')</p>
                     @endif
                 </div>
-            </details>
+                </details>
+            @include('partials.content-nav-links')
         </div>
     </nav>
 
@@ -101,6 +102,7 @@
                 </svg>
                 <span>@t('Categories')</span>
             </a>
+            @include('partials.content-nav-links')
         </div>
     </nav>
 @endif

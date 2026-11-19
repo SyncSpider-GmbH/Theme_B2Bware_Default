@@ -115,11 +115,14 @@ The bundled default theme already places every slot, so a fresh theme (or one th
 | --- | --- | --- |
 | `product.card.meta` | Product card, under the SKU (catalog / category listing) | `$product`, `$store`, `$locale`, … |
 | `product.detail.meta` | Product detail page, under the SKU | `$product`, `$store`, `$locale`, … |
+| `product.purchase.fields` | Inside the product page's `cart-add` form (after the quantity) and the variant table's `cart-bulk-add` form (above the submit) | `$product`, `$selectedVariant`, `$store`, `$locale`, … |
 | `cart.line.meta` | Cart line item, under the SKU | `$line` (the cart line array), `$store`, … |
 | `order.line.meta` | Account order detail, in the SKU cell | `$item` (the order line model), `$store`, … |
 | `account.nav` | Account sidebar, above the sign-out separator | `$active` (the current section key), `$store`, … |
 
 A module receives the surrounding surface's variables plus whatever it computes itself, so its override blade can read e.g. `$product` or `$line` directly.
+
+`product.purchase.fields` is where a module collects purchase-time input (for example Individual Options: engraving text, print position). Keep the slot **inside** both cart forms: the module renders its fields and one hidden `configuration` input, never a `<form>` of its own, and the theme's normal add-to-cart submit posts them. A theme without this slot cannot sell products that require options: adding one returns the server message "Please choose the options for this product before adding it to the cart." Product cards must not quick-add such products — the default theme shows **Choose options** for every id in `$configurationRequiredProductIds` and links to the product page.
 
 `account.nav` is the one slot a module uses to add a **page** rather than a detail: it contributes the sidebar link, and registers the page itself through `StorefrontRoutes::extendAccount()` so the route inherits the tenant host, the locale prefix and the signed-in-customer guard. A module entry is expected to match the theme's own nav links, and reads `$active` to know whether it is the current section — see McpHub's `storefront/account-nav.blade.php` for the shape.
 

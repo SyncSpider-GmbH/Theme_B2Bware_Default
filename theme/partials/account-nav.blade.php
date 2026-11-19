@@ -94,6 +94,7 @@
             @t('Addresses')
         </a>
 
+        @if($store['api_keys_enabled'] ?? true)
         <a href="@routeUrl('store.account.api-keys')" @class([
             'account__nav-link flex items-center gap-3 px-3 py-2.5 rounded-md text-sm no-underline transition-colors',
             'bg-primary-subtle text-primary font-semibold' =>
@@ -109,6 +110,7 @@
             </svg>
             @t('API Keys')
         </a>
+        @endif
 
         @if ($store['favorites_enabled'] ?? true)
             <a href="@routeUrl('store.favorites')" @class([

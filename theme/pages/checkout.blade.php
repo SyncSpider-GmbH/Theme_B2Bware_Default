@@ -45,6 +45,10 @@
         @else
             @storefrontForm('checkout', ['class' => 'checkout__grid flex flex-col gap-5 desktop:flex-row desktop:items-start'])
                 <input type="hidden" name="is_guest" value="{{ $isAuthenticated ? '0' : '1' }}">
+                <input type="hidden" name="checkout_idempotency_key" value="{{ old('checkout_idempotency_key', $checkoutIdempotencyKey ?? '') }}">
+                @if($errors->has('cart'))
+                    <p class="checkout__retry m-0 rounded-lg border border-border-subtle bg-surface-card px-4 py-3 text-sm text-headings" data-checkout-retry role="alert">@t('Checkout did not finish. Retry places the same order.')</p>
+                @endif
 
                 @section('checkout.main')
                 <div class="checkout__main flex flex-col gap-5 min-w-0 desktop:flex-1">
@@ -389,7 +393,7 @@
 
                     <button type="submit" class="checkout__place-order inline-flex items-center justify-center gap-2 w-full rounded-lg bg-primary text-primary-content font-medium px-4 py-2.5 transition-colors hover:bg-primary-600 cursor-pointer">
                         <svg class="w-4 h-4 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 0 0-4.5 4.5V9H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-.5V5.5A4.5 4.5 0 0 0 10 1Zm3 8V5.5a3 3 0 1 0-6 0V9h6Z" clip-rule="evenodd" /></svg>
-                        @t('Place order') · <span data-checkout-total>{{ formatCurrency($cartPricing['grand_total'] ?? 0) }}</span>
+                        {{ $errors->has('cart') ? t('Retry checkout') : t('Place order') }} · <span data-checkout-total>{{ formatCurrency($cartPricing['grand_total'] ?? 0) }}</span>
                     </button>
 
                     <p class="checkout__secure flex items-center justify-center gap-1.5 text-xs text-body m-0">

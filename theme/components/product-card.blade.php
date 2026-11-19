@@ -70,14 +70,14 @@
                 ])
 
                 <div class="mt-1">
-                    @if($canSeePrices)
+                    @if($canSeePrices && !collect($cartRestrictedProductIds)->contains((int) $product->id))
                         @include('components.product-price', [
                             'product' => $product,
                             'source'  => $product,
                             'priceView' => $priceView ?? data_get($priceViews ?? [], (string) ($product->id ?? '')),
                             'hideWhenConfigurableParentWithoutPrice' => true,
                         ])
-                    @else
+                    @elseif(!$canSeePrices)
                         <span class="product-card__price-hint inline-flex items-center gap-1.5 text-sm text-body">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5" aria-hidden="true">
                                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
@@ -114,8 +114,15 @@
                     @endstorefrontForm
                 @endif
 
-                @if($canSeePrices && $canAddToCart)
-                    @if(data_get($product, 'product_type') === 'configurable')
+                @if(collect($cartRestrictedProductIds)->contains((int) $product->id))
+                    {{-- Sold only through a module's own checkout on the
+                         product page (e.g. subscription-only). --}}
+                    <a
+                        href="@routeUrl('store.product', ['identifier' => data_get($product, 'seo.slug') ?: $product->id])"
+                        class="product-card__view inline-flex h-9 items-center justify-center gap-2 self-center rounded-lg bg-primary px-4 font-medium text-primary-content transition-colors hover:bg-primary-600 hover:no-underline"
+                    >@t('View details')</a>
+                @elseif($canSeePrices && $canAddToCart)
+                    @if(data_get($product, 'product_type') === 'configurable' || collect($configurationRequiredProductIds ?? [])->contains((int) $product->id))
                         {{-- A configurable product is bought from its parent's
                              product page (variant picker / bulk-variant table).
                              The listing row can't add a specific variant, so it
@@ -140,6 +147,7 @@
                     @else
                     @storefrontForm('cart-add', ['class' => 'flex flex-wrap items-end gap-4 desktop:gap-6'])
                         <input type="hidden" name="product_id" value="{{ $product->id }}">
+                        <input type="hidden" name="cart_revision" value="{{ $cart['revision'] ?? 0 }}">
                         @if($redirect)
                             <input type="hidden" name="redirect" value="{{ $redirect }}">
                         @endif
@@ -311,13 +319,15 @@
                 </div>
 
                 <div class="mt-auto flex flex-col gap-3 border-t border-border-subtle pt-3">
+                    @unless(collect($cartRestrictedProductIds)->contains((int) $product->id))
                     @include('components.product-price', [
                         'product' => $product,
                         'source'  => $product,
                         'priceView' => $priceView ?? data_get($priceViews ?? [], (string) ($product->id ?? '')),
                         'hideWhenConfigurableParentWithoutPrice' => true,
                     ])
-                    @if($canSeePrices)
+                    @endunless
+                    @if($canSeePrices || collect($cartRestrictedProductIds)->contains((int) $product->id))
                         @include('components.add-to-cart-button', [
                             'product'  => $product,
                             'redirect' => $redirect,

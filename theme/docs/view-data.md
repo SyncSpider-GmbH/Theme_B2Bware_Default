@@ -31,14 +31,16 @@ Most of these flags also carry a **server-side safety net** (a 404, a rejected f
 | `$freeDelivery`   | array/null | Nearest free-shipping threshold for the "X away from free delivery" banner (`remaining`, `target`, `current`, `met`, `is_currency`), or `null` when no such rule applies. Consumed by `cart-summary`. |
 | `$store`          | array   | Store identity **and** capability flags (name, logo, support contacts, guest / registration / coupon / price rules) — read with `$store['key']`. Mirrors Shopify's `shop` object; see the keys table below. The **single** source for store info & flags. |
 | `$passwordRequirements` | array | Human-readable, config-driven password requirement strings (e.g. `"At least 8 characters"`, `"One uppercase letter"`) that mirror the server-enforced rules. Render as a checklist on the register / reset-password forms (wrap each in `@t(...)`). May be empty; guard with `@if(count($passwordRequirements))` (lazy proxies are objects — do not use `empty()`). |
-| `$passwordRules` | array | Structured variant of the same requirements for **live** client-side validation: each entry is `['rule' => 'min'|'uppercase'|'lowercase'|'number'|'special', 'label' => string, 'length' => int (min rule only)]`. Render each `<li>` with `data-password-rule="{{ $rule['rule'] }}"` (+ `data-min` for `min`) inside a `<ul data-password-checklist="<password-input-id>">`, then a small inline `<script type="module">` toggles `data-met` as the visitor types (see register / reset-password). Mirrors the server-enforced rules exactly. |
+| `$passwordRules` | array | Structured variant of the same requirements for **live** client-side validation. Each entry has keys `rule` (`min`, `uppercase`, `lowercase`, `number`, or `special`), `label` (string), and `length` (int, `min` rule only). Render each list item with a `data-password-rule` attribute set to the entry's `rule` value (plus `data-min` for `min`) inside a `ul` whose `data-password-checklist` matches the password input id; a small inline module script toggles `data-met` as the visitor types (see register / reset-password). Mirrors the server-enforced rules exactly. |
 | `$isImpersonating` | bool | `true` when an admin agent is browsing on behalf of a customer (impersonation mode). Gate the `partials/impersonation-banner` partial on this variable — never use `request()` or `@php` to read a cookie. |
 | `$companyRequiredFields` | array&lt;string,bool&gt; | Map of company field keys to required state, driven by the CustomerHub `company_required_fields` setting. Keys: `name`, `phone`, `vat_number`, `registration_number`, `website`, `address`. The `address` key covers the whole address block — `address_line_1`, `zip`, `city`, `country` are all required together when it is `true`. Falls back to `['name' => true, …rest false]` on read failure. Always injected, even on B2C tenants. Use `$companyRequiredFields['name'] ?? false` to add a required marker or `required` attribute. |
-| `$messages` | array | **Post-form feedback** injected by the platform from the session bag after a redirect. Also called *flash messages*, *notices*, or *alerts* in other ecosystems — they're the same concept. Theme blades must never call `session()` directly (forbidden helper). Always four keys: `success`, `info`, `warning`, `error`. Each value is `string\|null`. **Always echo with `{{ }}`** — values may contain user-supplied input. Example: `@if($messages['success'] ?? null) <p>{{ $messages['success'] }}</p> @endif` |
+| `$messages` | array | **Post-form feedback** injected by the platform from the session bag after a redirect. Also called *flash messages*, *notices*, or *alerts* in other ecosystems — they're the same concept. Theme blades must never call `session()` directly (forbidden helper). Always four keys: `success`, `info`, `warning`, `error`. Each value is a string or `null`. **Always echo with Blade's escaped echo** — values may contain user-supplied input. Example: if `$messages['success']` is set, render it inside a paragraph with the escaped echo syntax. |
 | `$localeOptions` | array | Rich rows for the locale switcher — each `['code', 'label', 'short', 'flag', 'url', 'active']`. **Use this**, not raw `$availableLocales`, to render `partials/locale-switcher`. See §9.2. |
 | `$availableLocales` | array | Low-level list of active locale tags (`string[]`). Prefer `$localeOptions` for UI. |
 | `$defaultLocale` | string | Active locale tag (also mirrored as `$store['default_locale']`). |
-| `$currency` | string | Active ISO-4217 currency (also `$store['default_currency']`). |
+| `$currency` | string | Active ISO-4217 currency for this request (Accept-Currency / `storefront_currency` cookie / tenant base). See §9.2. |
+| `$currencyOptions` | array | Rich rows for the currency switcher — each `['code', 'label', 'active']`. **Use this**, not raw `$availableCurrencies`, to render `partials/currency-switcher`. |
+| `$availableCurrencies` | array | Low-level list of supported ISO-4217 codes (`string[]`). Prefer `$currencyOptions` for UI. |
 | `$searchQuery` | string | Current catalog search term (`q` query param), or empty string. |
 | `$colorScheme` | string\|null | Active color scheme: `'light'`, `'dark'`, or `null` when unset. Emitted into `<html>` via `@storefrontColorScheme`. See §11.10. |
 | `$currentPath` | string | Relative request URI — used as the redirect target for the color-scheme toggle. |
@@ -94,6 +96,8 @@ Like Shopify's `shop` object, `$store` carries both store **identity** and store
 | `catalog_export_enabled`   | bool   | `false`     | Opt-in module (`catalog_export.enabled`): renders the account "Catalog export" page/nav item and enables the tokenized public share link for a customer's stored export. |
 | `quick_order_enabled`      | bool   | `false`     | Opt-in Quick Order (SKU autocomplete + CSV bulk add) account feature. |
 | `mcp_enabled`              | bool   | `false`     | Opt-in AI assistant access (MCP): customers may connect an assistant that acts with their own storefront permissions. |
+| `assistant_enabled`        | bool   | `false`     | The in-shop assistant is on (AI Hub enabled and configured, and "Enable Storefront Assistant" is on). Every assistant route 404s when this is false. |
+| `assistant`                | array  | see contract | `{endpoint, guest_allowed, greeting, name, max_input_chars}` for the chat widget. Full SSE contract: `packages/Apps/AiHub/docs/storefront-assistant.md`. |
 | `variation_display_mode`   | string | `table`     | How a configurable product's variants are presented: `table` or `dropdown`. |
 | `branch_display_mode`      | string | `children`  | Default layout for parent categories with children: `children` (subcategory grid), `products` (descendant-aware listing), or `both`. Per-category override may change the resolved `$branchDisplayMode` on a category page. |
 | `category_ui_type`         | string | `list`      | Header category navigation: `list` (a link to the categories index) or `mega_menu` (a panel of the depth window). Anything else, including a missing value, is `list`. |
@@ -120,6 +124,7 @@ One row per tenant-toggleable feature from the Features admin page (plus `quick_
 | Enable coupon code input                 | `coupons_enabled`                                       | `true`    | Full — a coupon-apply POST is rejected server-side when disabled.                                         | Only render the coupon form when true — mirror `partials/cart-discounts.blade.php` and `partials/checkout-summary.blade.php`. |
 | Allow custom delivery date               | `delivery_date_enabled`                                 | `true`    | Full — the delivery-date POST is rejected server-side when disabled.                                      | Only render the delivery-date picker when true — mirror `partials/cart-line-items.blade.php`. |
 | Enable favorites                         | `favorites_enabled`                                     | `true`    | Full — every favorites route 404s when disabled.                                                          | Hide every favorites entry point when false — mirror `components/product-card.blade.php`, `partials/header.blade.php`, `partials/footer.blade.php` and `partials/account-nav.blade.php`. |
+| Enable Storefront Assistant             | `assistant_enabled` (+ `$store['assistant']`)           | `false`   | Full — every `/{locale}/assistant` route 404s when AI Hub or the setting is off.                          | Call `@storefrontAssistant` once near `</body>` (see `assistant.md` and `layouts/shop.blade.php`). It renders nothing when the flag is off. |
 | Enable reorder                           | `reorder_enabled`                                       | `true`    | Full — the reorder route 404s when disabled.                                                              | Only render Re-order on a completed order when true — mirror `pages/account/order.blade.php` and `pages/account/orders.blade.php` (see *Reorder entry-point pattern* below). |
 | Enable catalog export                    | `catalog_export_enabled`                                | `false`   | Full — the export page and public feed both 404 when disabled.                                            | Only render the account nav item, export page and preview/fields partials when true — mirror `partials/account-nav.blade.php` and `pages/account/catalog-export.blade.php`. |
 | Allow search engines to index            | `indexable`                                              | `true`    | Automatic — platform-rendered.                                                                             | Nothing to do — keep `@storefrontSeo` in every layout; never hardcode your own robots meta tag. |
@@ -165,9 +170,12 @@ Never fetch customer orders or account PII through `@fetch` — use these keys.
 | `$accountOverview` | array | `orders_count`, `open_orders`, `lifetime_spend`, `favorites_count`, `addresses_count`. |
 | `$favoritesCount` | int | Badge-friendly count (use `count(...)`). |
 | `$isAgent` | bool | Agent role or impersonation; use `count($isAgent)`. |
-| `$rootCategories` | Collection | Navigable root categories with children. Footer and catalog export. Not the mega menu. |
-| `$megaMenuCategories` | Collection | Header mega-menu rows for `category_ui_type === 'mega_menu'`: parents at `mega_menu_depth_start`, each with `children` at the next depth, and `menu_path` (full slug path). Empty in list mode. |
+| `$rootCategories` | Collection | Navigable root categories with children. Footer and catalog export. Not the mega menu. **`name` / `description` are locale-overlaid** from ProductHub Translations (same as `$category->name`). |
+| `$megaMenuCategories` | Collection | Header mega-menu rows for `category_ui_type === 'mega_menu'`: parents at `mega_menu_depth_start`, each with `children` at the next depth, and `menu_path` (full slug path). Empty in list mode. Parent and child **`name`s are locale-overlaid** — render `$category->name` with a Blade escaped echo; do not keep a theme-side English→locale map. |
+| `$storefrontContentNav` | Collection | Content types the merchant asked to show next to Categories. Each item is `{ label, path, href }`. Empty when none are marked for shop navigation. |
 | `$favoriteIds` | array | Active list product ids; `[]` for guests. Prefer `collect($favoriteIds)->contains(...)`. |
+| `$cartRestrictedProductIds` | array | Product ids (parents and their variations) sold only through a module's own checkout, such as a subscription-only product. The cart refuses them server-side; hide their one-time price, quantity and add-to-cart, and link listing cards to the product page, where the module's slot offers the purchase. Check with `collect($cartRestrictedProductIds)->contains((int) $product->id)`. `[]` when no module restricts anything. |
+| `$configurationRequiredProductIds` | array | Product ids that cannot be added without choosing options (for example a required engraving text from Individual Options). Listing cards and quick add must link to the product page with **Choose options** instead of adding directly; the product page's `product.purchase.fields` slot collects the options. Check with `collect($configurationRequiredProductIds)->contains((int) $product->id)`. `[]` when no module requires options. |
 | `$canAccessAdmin` / `$adminUrl` | bool / string\|null | Admin hand-off; use `count(...)`. |
 | `$favoritesLists` | array | Lists + `active_list_id`; eager on the favorites page. |
 | `$cartLines` | array | Theme-ready cart line rows (see cart-line-items). |
@@ -177,7 +185,7 @@ Never fetch customer orders or account PII through `@fetch` — use these keys.
 | `$companyRequiredFields` | array&lt;string,bool&gt; | Company field required map; eager on register. |
 | `$catalogExportSummary` | array\|null | Safe export readiness fields (no raw token). |
 | `$apiKeysCount` | int | API key count for badges. |
-| `$priceViews` | array | Catalog/favorites listings: `[product_id => tax-split view-model]`. **Lazy** — resolved only when Blade touches it (the listing controller offers products; it does not hit a price provider up front). Empty when the page has no products or prices are hidden. Product detail still passes `$priceView` / `$crossSellPriceViews` eagerly because variant rows embed them. |
+| `$priceViews` | array | Catalog/favorites listings: `[product_id => tax-split view-model]`. **Lazy** — resolved only when Blade touches it (the listing controller offers products; it does not hit a price provider up front). Empty when the page has no products or prices are hidden. A **configurable parent** gets a platform-computed **variant price range** view-model (`is_range` + `max_excl` / `max_incl` alongside the cheapest `current_*`; see Configurable products), so the card shows a real `min – max` span instead of its €0 placeholder. Product detail still passes `$priceView` / `$crossSellPriceViews` eagerly because variant rows embed them. |
 | `$pricingRows` | array | Vendor-neutral per-customer extras `[product_id => row]` from an OrderHub row provider (ERP addons). Keys: `unit_price`, `list_price`, `discount_label`, `price_unit`, `sales_lot_size`, `is_stock_item`, `package_metrics`, `quantity_unit`, `skipped`. **Always `[]` when no addon is installed.** Lazy. Themes must not name a vendor; guard extra columns with `count($pricingRows)` / `data_get`. Full row contract + example: see § Per-customer pricing below. |
 
 **Home page:** an uploaded theme may add `pages/home.blade.php` (`/{locale}/home`).
@@ -215,15 +223,19 @@ Pass the component a `priceView` view-model:
 ])
 ```
 
-The view-model carries `current_excl`, `current_incl`, `compare_excl`, `compare_incl` and `has_tax`. Where it comes from:
+The view-model carries `current_excl`, `current_incl`, `compare_excl`, `compare_incl`, `has_tax`, and — for a configurable parent — either `is_range` + `max_excl` / `max_incl` (a priced variant range) or `price_missing` (no priced variant). Where it comes from:
 
 | Context | Source |
 | ------- | ------ |
 | Catalog (products / category / favorites) | `$priceViews` — a `[product_id => view-model]` map; look up by id. |
-| Product page | `$priceView` (the active variant) + `$crossSellPriceViews` (one per cross-sell card). |
+| Product page | `$priceView` (the selected variant, or the parent's variant range / `price_missing` when none is selected) + `$crossSellPriceViews` (one per cross-sell card). |
 | Cart lines | each `$cartLines` row already carries `unit_price_excl/incl`, `original_price_excl/incl`, `line_total_excl/incl`, `tax_rate`, `has_tax`. |
 
 **Availability rule (important):** an "excl. VAT" / "incl. VAT" label is shown **only** when the item actually carries tax (`has_tax` — TaxHub resolved a non-zero rate). With no tax, net === gross and the price renders once, unqualified — never invent a VAT figure you don't have. A theme passing only `amount` (no `priceView`) gets exactly this single-figure behaviour, so existing price calls keep working unchanged.
+
+**Variant price ranges (`is_range`).** A configurable parent's view-model carries `is_range` plus `max_excl` / `max_incl` next to the cheapest `current_*`. When `is_range` is true `components/price.blade.php` renders the span as **`min – max`** (e.g. `€10.00 – €20.00`, both bounds in the active net/gross mode, VAT label kept); when every variant shares one price it renders that single figure. The platform computes both bounds from the variants — the theme must never load a parent's variants or calculate the range itself. "Request quote" ($store['zero_price_as_quote']) still shows only when the cheapest figure is itself ≤ 0, i.e. the cheapest variant is genuinely €0 — a parent's €0 placeholder alone never triggers it.
+
+**Missing variant price (`price_missing`).** When a configurable parent has **no** priced public variant, its view-model is just `{ price_missing: true }` (no `current_*`). `components/price.blade.php` renders **"Request quote"** when the tenant opts in (`zero_price_as_quote`), otherwise a neutral **"Unknown price"** notice — so the parent's €0 placeholder is never displayed as a real figure. Such a parent is never purchasable directly (add-to-cart is refused and routes to variant selection), so this is a display-only state. A simple product with no price set at all uses the same marker.
 
 ### Per-customer pricing — prices are server-authoritative
 
@@ -309,6 +321,7 @@ A **configurable** product has child **variants** (e.g. per Size / Colour). The 
 - **Listings hide variants.** The products and category pages list root products only (the catalog applies `exclude_child_products`), so a configurable product appears once and its counts stay truthful.
 - **A variant's own URL redirects to its parent with `?variant=<id>`.** Opening `/{locale}/products/<variant-slug-or-id>` 302-redirects to the parent product page **and keeps `?variant=<child id>`**, so table mode lands on the dedicated variant view (see below). Links stay canonical — variants are never standalone catalog pages.
 - **Listing cards link to the product page, never add directly.** A listing card can't choose a specific variant, so a configurable product renders a **"Choose options"** link to its parent product page (where the variant picker / bulk-variant table lives) instead of an add-to-cart control. This applies to every catalog surface — grid and list cards, favorites and cross-sells — via `components/add-to-cart-button.blade.php` and the `product-card` list row, keyed off `data_get($product, 'product_type') === 'configurable'`. Simple products keep their normal add-to-cart (the list row keeps its quantity stepper). This is the canonical pattern uploaded themes should follow.
+- **Listings show a variant price range, computed by the platform.** A configurable parent stores a €0 placeholder price, but its `$priceViews` entry — and the product page's `$priceView` when no variant is selected — is built from its **purchasable variants** (per-customer price, tax split): the cheapest fills `current_*`, the dearest fills `max_excl` / `max_incl`, and `is_range` is set when they differ. The card then reads `€min – €max` (or a single figure when all variants match) — never `€0 / Request quote`. When no variant is priced the entry is `{ price_missing: true }` and the card reads **"Request quote"** (if that tenant option is on) or **"Unknown price"** instead. The theme renders that view-model as-is; it must **not** load variants or compute the range itself. "Request quote" appears only when the cheapest variant is genuinely €0.
 
 How the parent product page presents its variants follows the tenant flag **`$store['variation_display_mode']`** (`'table'` default | `'dropdown'`). The default theme implements both; a custom theme can read the data below and build anything (a swatch grid, a matrix, …).
 
@@ -320,10 +333,10 @@ How the parent product page presents its variants follows the tenant flag **`$st
 | `$selectedVariant` | **Dropdown:** the variant from `?variant=<id>`, else the first public child (drives price + add-to-cart). **Table:** only set when `?variant=<id>` is present (opens the variant view); otherwise `null` so the parent gallery / bulk table stay on the parent. |
 | `$galleryImages` | `list<{ url, alt }>` for `components/product-gallery`. Own images only: `is_primary` image first, then remaining images by `sort_order`, de-duped by URL. **Table (no `?variant=`):** parent gallery. **Table variant view:** variant images (parent only if the variant has none). **Dropdown:** variant images first, then parent images appended (URL-de-duped). Render the thumbnail rail whenever `count($galleryImages) > 1`. |
 | `$isVariantView` | `true` in **table** mode when `?variant=<id>` resolved to a child — single-buy UI for that variant, bulk table hidden, back-to-parent control shown. |
-| `$displayProduct` | The model whose name / SKU / short description the theme should show: the selected variant when `$isVariantView`, otherwise the parent `$product`. |
+| `$displayProduct` | The model whose name / SKU / short description the theme should show: the selected variant when `$isVariantView`, otherwise the parent `$product`. **`name` / `description` / `short_description` are already locale-overlaid** from ProductHub Translations for the URL locale (with tenant-default fallback); keep reading `$displayProduct->name` — do not load translations in the theme. |
 | `$parentUrl` | Absolute path back to the parent product page (no `?variant=`). Non-null only when `$isVariantView`. |
 | `$variantColumns` | Ordered list of parent-defined variation-axis attribute names (`ParentProductAttribute`) — the table columns. |
-| `$variantRows` | One row per variant: `{ id, sku, name, image, attributes: [{ id, code, name, value, type, use_for_storefront_variant_filtering }], priceView, unit_amount, stock: {manage, available, quantity, low, min, max, incoming} }`. `priceView` feeds `components/price`; `image` is a raw URL (wrap in `@storefrontImage`) — the variant's own primary, else the parent's. In table mode, wrap the thumbnail in a link to `/{locale}/products/{{ $productSlug }}?variant={{ $row['id'] }}`. |
+| `$variantRows` | One row per variant with keys: `id`, `sku`, `name`, `image`, `attributes` (list of `id` / `code` / `name` / `value` / `type` / `use_for_storefront_variant_filtering`), `priceView`, `unit_amount`, and `stock` (`manage`, `available`, `quantity`, `low`, `min`, `max`, `incoming`). `priceView` feeds `components/price`; `image` is a raw URL (wrap in `@storefrontImage`) — the variant's own primary, else the parent's. In table mode, wrap the thumbnail in a link to `/{locale}/products/{productSlug}?variant={rowId}` using `$productSlug` and `$row['id']`. |
 | `$variantFilters` | Typed filter controls for the variation table (see below). Empty when no axis is flagged or when display mode is not `table`. |
 
 ### `$stockInfo` (product / PDP)
@@ -521,5 +534,65 @@ The bundled `default` theme ships this as `partials/cart-rewards.blade.php`, inc
 ```
 
 > **Custom themes:** `cart-rewards.blade.php` is now a **canonical partial** (§2), rendered as the `cart-rewards` AJAX section (§9.7). Override it to restyle the reward bars — the `$cartProgress` view data is unchanged. (You may still render `$cartProgress` inline in your own `pages/cart.blade.php` if you prefer not to use the section.)
+
+---
+
+## Content types (`pages.__content-listing`, `pages.__content-detail`)
+
+When a routable **content type** matches the URL, the platform injects:
+
+| Key | When | Shape |
+|-----|------|--------|
+| `contentListing` | Listing route | `{ type: { slug, plural_label, listing_path, … }, columns: [ { code, label, picker_id } ], entries: [ … ], listing_view: 'grid' \| 'cards', category: string \| null, category_filters: [ { slug, label, field_code, parent } ] }` |
+| `contentEntry` | Detail route | `{ type: { … }, entry: { slug, fields: [ presented field ], fields_by_code } }` |
+
+Each **presented field** is:
+
+```
+{
+  code, label, picker_id,
+  show_on_storefront, // bool — default listing/detail honour this
+  value,          // picker-specific public value (never password / json)
+  empty,          // bool
+  display,        // plain text for the listing table
+  html,           // rich text HTML (detail only)
+  excerpt,        // rich text, truncated at 140 characters
+  href,           // normalized URL on text-link
+  hex,            // color, e.g. #ff6600
+  media,          // { url, name, is_image } | null
+  items,          // labels for options / tags / category
+  fields,         // nested presented fields (complex, recursive)
+  rows            // [ { fields: […] } ] (complex-collection, recursive)
+}
+```
+
+Every shop-safe field (except password and JSON) is on the entry, including complex and collection trees that merchants hide from the default shop pages. `contentListing.columns` and the default `__content-detail` loop only fields with `show_on_storefront`. Look a hidden tree up by code:
+
+```
+data_get($entry, 'fields_by_code.specs')
+data_get($contentEntry, 'entry.fields_by_code.specs')
+```
+
+`fields` / `rows` nest the same presented shape, so a custom theme can walk complex → complex → collection without extra APIs. Include `partials/content-field-value` at any depth.
+
+**Category filter bar.** `contentListing.category_filters` lists every term from category-picker taxonomies on the matched types (`slug`, `label`, `field_code`, `parent`); duplicate slugs use the first matched term. Types without a category picker, with an empty taxonomy, or with the category picker hidden from the storefront (`show_on_storefront` off) yield no filters from that field. Link with `?category={slug}` (the same query the platform already filters on). The list grows when the merchant edits the taxonomy — do not hard-code terms in the theme. Default theme: `partials/content-category-filters.blade.php`, which preserves the requested URL locale and `view=cards` and marks the active link with `aria-current="page"`. Published-status and audience checks remain unchanged.
+
+Render with `partials/content-field-value` (pass `compact` on the listing). Per picker:
+
+| `picker_id` | Listing | Detail |
+|-------------|---------|--------|
+| `text` | truncated `display` | `display` |
+| `text-rich` | stripped `display`, truncated at 140 characters | `{!! html !!}` inside `.storefront-richtext` |
+| `text-email` / `text-link` | native `<a>` button (`mailto:` / `href`, `target=_blank` on links) | same |
+| `text-color` | swatch + `hex` | swatch + `hex` |
+| `number` | `formatNumber(value)` | `formatNumber(value)` |
+| `date` | `formatDate(value)` | `formatDate(value)` (`L LT` when a time is present) |
+| `bool` | Yes / No | Yes / No |
+| `media` | 80×80 `@storefrontImage` thumb (width/height set) or file button; both open in a new tab | `@storefrontImage` or file button (`media.url` is `public_url`, `target=_blank`) |
+| `options` / `tags` / `category` | comma-separated `items` | chips of `items` (category slugs resolved to names) |
+| `complex` | joined child `display` | nested label / value |
+| `complex-collection` | item count | one card per row |
+
+Password and JSON field values are omitted from shop view data. Media `url` is the public file URL — wrap images in `@storefrontImage` and set width and height. `listing_view` is `cards` when the URL has `?view=cards`, otherwise `grid`. The default theme uses a horizontally scrollable data grid on desktop, a card list on phones, and a desktop toggle between the two. Use these keys only — not raw Mongo item documents.
 
 ---

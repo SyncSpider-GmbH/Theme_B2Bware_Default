@@ -70,6 +70,7 @@
                                 'class'   => 'cart__item-delivery flex items-center gap-2 mt-1 flex-wrap',
                             ])
                                 <input type="hidden" name="redirect" value="/{{ $locale }}/cart">
+                                <input type="hidden" name="cart_revision" value="{{ $cart['revision'] ?? 0 }}">
                                 <label class="text-xs text-body" for="delivery-{{ $line['id'] }}">@t('Delivery date')</label>
                                 <input
                                     id="delivery-{{ $line['id'] }}"
@@ -93,6 +94,7 @@
                             'class'   => 'flex items-center gap-2',
                         ])
                             <input type="hidden" name="redirect" value="/{{ $locale }}/cart">
+                            <input type="hidden" name="cart_revision" value="{{ $cart['revision'] ?? 0 }}">
                             @include('components.quantity-selector', [
                                 'name'  => 'quantity',
                                 'value' => (int) $line['quantity'],
@@ -167,6 +169,7 @@
                             'class'   => 'inline',
                         ])
                             <input type="hidden" name="redirect" value="/{{ $locale }}/cart">
+                            <input type="hidden" name="cart_revision" value="{{ $cart['revision'] ?? 0 }}">
                             <button
                                 type="submit"
                                 class="cart__item-remove h-9 w-9 flex items-center justify-center rounded-lg text-body transition-colors hover:text-error hover:bg-surface-hover cursor-pointer"
