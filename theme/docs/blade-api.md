@@ -131,3 +131,7 @@ Since `@php` is forbidden, derive values inline in directive arguments:
 ```
 
 ---
+
+## Content taxonomy terms
+
+`ThemeApi::contentTaxonomy('news', 'topics', null, false)` provides safe ordered terms and localized links for a public Content Type field. The optional third argument selects a category subtree. The fourth explicitly includes descendant content in filter links. Returned rows contain only `key`, `label`, `description`, `parent`, `depth`, and `url`; escape their text. See [view data](view-data.md#managed-content-taxonomy-navigation) for the complete contract.

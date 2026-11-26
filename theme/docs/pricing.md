@@ -27,7 +27,7 @@ and handed to Blade as ready view data (`$priceViews` / `$priceView` / `$cartLin
 | Tier price with min qty 0/1 | resolved into `finalPrice` | The customer's **base** price — *not* a volume discount. |
 | Tier prices with min qty > 1 | `$tierPrices` (product page) | Quantity-dependent unit price; also what the cart charges at that qty. Matching uses `$store['tier_quantity_comparison']` / `window.__STOREFRONT__.tier_quantity_comparison` (`gte` = at or above min, `gt` = strictly above). |
 | Catalog price rules | RuleHub | Stacked **on top of** whichever base wins. |
-| ERP / provider price | pricing addon | Supersedes the whole DB cascade; rules still stack. |
+| ERP / provider price | pricing addon | Supersedes the whole DB cascade only when the addon returns a price; rules still stack. API Pricing returns a price only for fields the shop owner marked as overrides, and only on the surfaces they turned on. |
 | Tax display mode | `$store['display_prices_with_tax']` | Net/gross split pre-computed server-side (`has_tax` gates VAT labels). |
 | Price visibility | `$canSeePrices` | Guests may get "Log in to see prices" instead. |
 | Zero-price policy | `$store['zero_price_as_quote']` | Zero/absent price renders "Request quote". |

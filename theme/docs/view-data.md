@@ -266,6 +266,7 @@ Rules for using it:
 - **Always `[]` when no pricing addon is installed** — the theme must render fine without it. Guard everything with `count($pricingRows)` / `data_get`.
 - **Lazy** — resolved only when Blade reads it. Only touch it where you actually show the extras.
 - **Never name a vendor** in theme code (no "Mesonic" strings or conditions) — the contract is vendor-neutral and works with any installed pricing addon.
+- **API Pricing overrides only.** When a shop turns on API Pricing, `$pricingRows` gains a key only for a field the shop owner marked as an override. `discount_label` is plain text (for example `10%`). Put it in a badge on the product image and omit the badge when the key is missing. Do not call a price API from Blade. Listings, the product page, and the cart are settings on that app; a theme does not reimplement them. `list_price` and `vat_rate` follow the same rule.
 
 ```blade
 @php $row = data_get($pricingRows ?? [], (string) $product->id, []); @endphp
@@ -575,7 +576,7 @@ data_get($contentEntry, 'entry.fields_by_code.specs')
 
 `fields` / `rows` nest the same presented shape, so a custom theme can walk complex → complex → collection without extra APIs. Include `partials/content-field-value` at any depth.
 
-**Category filter bar.** `contentListing.category_filters` lists every term from category-picker taxonomies on the matched types (`slug`, `label`, `field_code`, `parent`); duplicate slugs use the first matched term. Types without a category picker, with an empty taxonomy, or with the category picker hidden from the storefront (`show_on_storefront` off) yield no filters from that field. Link with `?category={slug}` (the same query the platform already filters on). The list grows when the merchant edits the taxonomy — do not hard-code terms in the theme. Default theme: `partials/content-category-filters.blade.php`, which preserves the requested URL locale and `view=cards` and marks the active link with `aria-current="page"`. Published-status and audience checks remain unchanged.
+**Category filter bar.** `contentListing.category_filters` lists every term from category-picker taxonomies on the matched types (`slug`, `label`, `field_code`, `parent`); terms retain their identity within their Content Type and field. Multiple fields or types produce scoped links using `taxonomy_type` and `taxonomy_field`; identical names or keys are not merged. Root and sibling ordering follows the maintained taxonomy, with children listed below their parent. Archived terms are omitted. Types without a category picker, with an empty taxonomy, or with the category picker hidden from the storefront (`show_on_storefront` off) yield no filters from that field. Link with `?category={slug}` (the same query the platform already filters on). The list grows when the merchant edits the taxonomy — do not hard-code terms in the theme. Default theme: `partials/content-category-filters.blade.php`, which preserves the requested URL locale and `view=cards` and marks the active link with `aria-current="page"`. Published-status and audience checks remain unchanged.
 
 Render with `partials/content-field-value` (pass `compact` on the listing). Per picker:
 
@@ -596,3 +597,19 @@ Render with `partials/content-field-value` (pass `compact` on the listing). Per 
 Password and JSON field values are omitted from shop view data. Media `url` is the public file URL — wrap images in `@storefrontImage` and set width and height. `listing_view` is `cards` when the URL has `?view=cards`, otherwise `grid`. The default theme uses a horizontally scrollable data grid on desktop, a card list on phones, and a desktop toggle between the two. Use these keys only — not raw Mongo item documents.
 
 ---
+
+## Managed content taxonomy navigation
+
+`contentListing.tag_filters` contains the maintained flat tag terms, with the same `slug`, `label`, `field_code`, `parent` (null) and `type_slug` identity metadata as categories. The default filter partial renders both kinds. `tag={key}` selects a tag; `category={key}` selects a category. Pass `taxonomy_type={typeSlug}` and `taxonomy_field={fieldCode}` to keep same-named fields distinct. Existing unscoped category links remain supported. `include_descendants=1` explicitly includes descendant category content; the default is exact membership. Entry publication, locale, audience and internal-type policies still apply. Hidden fields contribute neither terms nor filter matches.
+
+`ThemeApi::contentTaxonomy(typeSlug, fieldCode, subtree, includeDescendants)` returns ordered public-safe rows: `key`, `label`, `description`, `parent`, `depth`, and a localized filter `url`. The subtree is an optional immutable category key; descendant inclusion controls the generated links. Terms resolve from the same maintained field definition as the Builder. Restricted/internal or non-routable types, hidden fields and archived terms return no public rows. No entry values or usage counts are exposed. Escape labels and descriptions.
+
+```blade
+<nav aria-label="Topics">
+    @foreach(ThemeApi::contentTaxonomy('news', 'topics', null, true) as $term)
+        <a href="{{ $term['url'] }}">{{ $term['label'] }}</a>
+    @endforeach
+</nav>
+```
+
+Nested field sources use qualified definition paths, for example `details.topics` or `references.topics`. Repeatable rows share that definition; row indices are never part of the source key. Hidden ancestor groups exclude the source from public output.

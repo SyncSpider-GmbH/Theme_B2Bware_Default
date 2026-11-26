@@ -31,7 +31,7 @@ It is a **safe no-op** when the store has configured no tracking — it emits no
 
 The platform pushes standard [GA4 e-commerce](https://developers.google.com/analytics/devguides/collection/ga4/ecommerce?client_type=gtm) events to the `dataLayer` for you — a theme assembles **none** of them, so any GTM / GA4 tag or Google Ads conversion works out of the box.
 
-- **Browsing events** fire automatically as the visitor moves through the store: `view_item_list` (catalog + category listings), `view_item` (product page), `view_cart` (cart page) and `begin_checkout` (checkout page). Each carries the relevant products as GA4 `items`.
+- **Browsing events** fire automatically as the visitor moves through the store: `view_item_list` (catalog + category listings), `view_item` (product page), `view_cart` (cart page) and `begin_checkout` (checkout page). Each carries the relevant products as GA4 `items`. Empty carts emit no `view_cart` or `begin_checkout` event and do not reuse products from a previous page.
 - **Interaction events** fire as the visitor acts: `add_to_cart` and `remove_from_cart` ride the cart AJAX runtime, so the default add / remove forms need no extra markup; `select_item` fires when a product in a list is clicked (see the opt-in hook below).
 - **`purchase`** — the conversion Google Ads needs. It is pushed **exactly once** on the order-confirmation page after checkout (works for logged-in customers and guests, and survives the payment-provider round-trip). It **never re-fires** on refresh or when the order is viewed again later, so revenue is never double-counted. It carries the order id, value, tax, shipping, currency and line items.
 - **Item fields.** Every product in an event's `items` array carries `item_id` (SKU, falling back to the id), `item_name`, `price` and `quantity`, plus — when the data exists — `item_category` (the product's primary category), `item_variant` (a configurable product's chosen options, e.g. `Red / XL`) and `item_brand`. **Brand** is read from a product attribute: the store owner names it in the admin (the `item_brand_attribute` setting), and the platform otherwise falls back to an attribute whose code is `brand` or `manufacturer`. You wire none of this — the platform fills the fields from the catalog.
@@ -142,6 +142,10 @@ These promo/banner zones are self-serve: a manager schedules (start/end) and tar
 
 Declare a content slot by simply placing `@storefrontSlot('key')` in the blade — the scanner discovers it, no `theme.json` edit required. A slot in the shared **layout** is a `global` (site-wide) slot; a slot in a **page** blade is scoped to that page, and the same key (e.g. `content-top`) can be reused across pages because each page resolves its own content. It renders nothing until content is assigned.
 
+Owner content resolves in this order: current page + current locale, current page + no locale, `global` + current locale, then `global` + no locale. This global fallback is intentional and also applies to slots declared inside page blades. A published `content-top` record under `global` therefore appears wherever that key is declared, unless the page has a matching override. Use the scanner's exact page key for page-specific content.
+
+Content listing and detail blades use `__content-listing` and `__content-detail`; the CMS shell uses `__custom-page`. The Slots API accepts these leading underscores. A content template can serve several routable types: its slot content is shared across those types. In **Theme Pages**, choose **Preview content type** to open the type's actual listing URL or a public example entry. Choosing a preview type does not change slot scope. Detail preview is unavailable until an entry is public and visible to anonymous visitors. Individual CMS pages remain editable through **Pages**, so the shared `__custom-page` shell is hidden from the Theme Pages list.
+
 ### Declaring a theme-default slot
 
 Use the paired form when the theme must ship working Blade that a manager can replace as one editable region:
@@ -172,9 +176,9 @@ When a slot sits inside a loop or a record surface (a product card, a product de
 ])
 ```
 
-- The outer argument is a PHP assoc array (the Blade equivalent of a JS object). **v1 only recognises `context`**; unknown top-level keys are ignored so future options can land without breaking themes.
+- The outer argument is a PHP assoc array (the Blade equivalent of a JS object). Supported top-level keys are `context` and `menu`; unknown keys are ignored so future options can land without breaking themes.
 - Inside `context`, key = the Blade variable already in scope (`$product`), value = the field-catalog schema key (`product`, `category`, `order`, `store`, `me`, `cart`). Shorthand `'product'` (list form) means schema = variable name.
-- Runtime rendering is unchanged — surrounding view data is still captured via `get_defined_vars()`. The config is metadata for the Theme Editor only.
+- The `context` declaration only describes Theme Editor bindings; it does not change the view data available to the slot. Menu-position metadata has separate rendering behavior, including the `fallback_key` behavior described below.
 - An undeclared slot simply offers no slot context in the picker (page-level context like `me` / `cart` / `store` still applies).
 
 The default theme declares product context on `product.card.meta` and `product.detail.meta`.
@@ -192,3 +196,19 @@ Your file replaces the module's default blade for that slot. It receives the sam
 The same authoring rules apply to these override files as to any other theme blade: the forbidden directives/functions/facades (§4–§8) are enforced, and both path segments must be lowercase and dash-separated (one nested level, `modules/<slug>/<view>.blade.php`).
 
 ---
+
+## Menu-capable theme positions
+
+Storefront Builder → Menus → Menu positions assigns reusable navigation to actual slots. Declare a literal `menu` object in the slot configuration, alongside optional `context`:
+
+```blade
+@startStorefrontSlot('header.navigation', ['menu' => ['label' => 'Main navigation', 'orientation' => 'horizontal', 'depth' => 3]])
+    @include('partials.nav')
+@endStorefrontSlot
+```
+
+Metadata is validated without evaluating PHP. Orientation is horizontal or vertical; depth is 1–6. Optional `parent_slot` identifies a region whose replacement shadows this position. Optional `fallback_key` inherits a different menu position when this slot has no eligible owner document. Both are literal slot keys. The metadata decorates real declarations; `theme.json` remains informational. Uploaded themes are scanned through effective inherited page/layout/includes so partial-only overrides can remove positions.
+
+The default theme declares `header.navigation`, `header.mobile-navigation`, `footer.account`, `footer.shop`, `footer.support`, `footer.legal`, `catalog.sidebar-navigation` and `content.sidebar-navigation`. The mobile position inherits the main assignment; an explicitly empty published mobile document suppresses that inheritance. Footer columns belong to the parent `footer` region. Catalog/content sidebars are page-scoped; header/footer positions are layout-scoped. Header and sidebar navigation remains usable without JavaScript.
+
+Assignments are ordinary Slot builder documents. Resolution follows page+locale, page+neutral, global+locale, global+neutral. The administration screen shows inherited sources, page overrides, custom documents, unavailable positions and shadowed columns. Menu edits update every use immediately; assignment changes require the corresponding slot permissions. The simple position editor cannot silently replace custom content, and stale fingerprints return 409. Reset removes only the chosen scope. Theme changes preserve assignments for currently unavailable positions.
