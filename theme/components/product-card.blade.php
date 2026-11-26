@@ -32,7 +32,7 @@
         >
             <a
                 href="@routeUrl('store.product', ['identifier' => data_get($product, 'seo.slug') ?: $product->id])"
-                class="product-card__image block h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-surface hover:no-underline sm:h-24 sm:w-24"
+                class="product-card__image block h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-surface-card hover:no-underline sm:h-24 sm:w-24"
             >
                 @if(data_get($product, 'resolved_main_media.media_url') ?? data_get($product, 'main_media.media_url'))
                     <img
@@ -255,7 +255,7 @@
         >
             <a
                 href="@routeUrl('store.product', ['identifier' => data_get($product, 'seo.slug') ?: $product->id])"
-                class="product-card__image block aspect-square bg-surface overflow-hidden hover:no-underline"
+                class="product-card__image block aspect-square bg-surface-card overflow-hidden hover:no-underline"
             >
                 @if(data_get($product, 'resolved_main_media.media_url') ?? data_get($product, 'main_media.media_url'))
                     <img

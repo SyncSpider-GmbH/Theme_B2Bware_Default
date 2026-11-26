@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-26
+
+- Product images sit on white everywhere: product cards (grid and list), the product
+  gallery and the variant thumbnails use the card surface instead of the tinted one, so
+  transparent PNGs and images in different aspect ratios look the same.
+
 ## 2026-11-15
 
 - Product page: the gallery no longer stretches to the height of a long description. The main

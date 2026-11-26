@@ -42,7 +42,7 @@
                     @foreach($images as $img)
                         <button
                             type="button"
-                            class="product-gallery__thumb h-20 w-20 shrink-0 cursor-pointer overflow-hidden rounded-lg border-2 {{ $loop->first ? 'border-primary' : 'border-border-subtle' }} bg-surface p-0"
+                            class="product-gallery__thumb h-20 w-20 shrink-0 cursor-pointer overflow-hidden rounded-lg border-2 {{ $loop->first ? 'border-primary' : 'border-border-subtle' }} bg-surface-card p-0"
                             data-gallery-thumb
                             data-gallery-src="@storefrontImage($img['url'], 800, 800, 85)"
                             data-gallery-alt="{{ $img['alt'] ?? '' }}"
@@ -65,7 +65,7 @@
                 </button>
             </div>
         @endif
-        <div class="product-gallery__main aspect-square flex-1 overflow-hidden rounded-lg border border-border-subtle bg-surface">
+        <div class="product-gallery__main aspect-square flex-1 overflow-hidden rounded-lg border border-border-subtle bg-surface-card">
             <img
                 src="@storefrontImage($images[0]['url'], 800, 800, 85)"
                 alt="{{ $images[0]['alt'] ?? ($product->name ?? '') }}"
@@ -74,7 +74,7 @@
             >
         </div>
     @elseif(!empty($store['product_placeholder']))
-        <div class="product-gallery__main aspect-square flex-1 overflow-hidden rounded-lg border border-border-subtle bg-surface">
+        <div class="product-gallery__main aspect-square flex-1 overflow-hidden rounded-lg border border-border-subtle bg-surface-card">
             <img
                 src="{{ $store['product_placeholder'] }}"
                 alt="{{ $product->name ?? '' }}"

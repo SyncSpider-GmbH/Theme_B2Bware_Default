@@ -395,7 +395,7 @@
                                                     >
                                                         <td class="px-4 py-3 max-md:flex max-md:justify-center max-md:py-2">
                                                             <a href="/{{ $locale }}/products/{{ $productSlug }}?variant={{ $row['id'] }}"
-                                                                class="block h-12 w-12 overflow-hidden rounded bg-surface hover:opacity-90"
+                                                                class="block h-12 w-12 overflow-hidden rounded bg-surface-card hover:opacity-90"
                                                                 aria-label="{{ t('View') }} {{ $row['name'] }}">
                                                                 @if($row['image'])
                                                                     <img src="@storefrontImage($row['image'], 96, 96, 80)" alt="{{ $row['name'] }}" class="h-full w-full object-contain" loading="lazy">
