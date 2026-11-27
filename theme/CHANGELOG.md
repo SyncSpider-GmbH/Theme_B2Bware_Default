@@ -2,6 +2,9 @@
 
 ## 2026-11-27
 
+- Products and category toolbar: below `desktop:` the filters button, sort select and grid/list
+  switch span the full width under the title (sort fills the middle) instead of hugging one side
+  and overflowing on tablets.
 - Header on phones: one row of icons (search, favorites, cart, log in, menu). The search field
   opens from the magnifier instead of taking its own full-width row; it stays open on a search
   results page. Log in is an icon below `md:` and the full button from `md:` up.

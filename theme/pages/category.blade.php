@@ -25,7 +25,7 @@
             </div>
 
             @if($showProducts ?? false)
-                <form method="get" action="@routeUrl('store.category', ['slug' => $categorySlug])" class="catalog-toolbar flex flex-wrap items-center gap-3 sm:justify-end">
+                <form method="get" action="@routeUrl('store.category', ['slug' => $categorySlug])" class="catalog-toolbar flex flex-wrap items-center gap-3 desktop:justify-end">
                     @if($filters['q'] ?? '')
                         <input type="hidden" name="q" value="{{ $filters['q'] }}">
                     @endif
@@ -59,9 +59,9 @@
                         @endif
                     </p>
 
-                    <div class="catalog-toolbar__controls flex items-center gap-3">
+                    <div class="catalog-toolbar__controls flex w-full items-center gap-2 desktop:w-auto desktop:gap-3">
                         <button type="button" data-storefront-modal-open="category-filters-dialog"
-                            class="catalog-toolbar__filters-btn relative inline-flex h-9 items-center gap-2 rounded-lg border border-border-subtle px-3 text-sm font-medium text-headings transition-colors cursor-pointer hover:border-primary hover:text-primary desktop:hidden">
+                            class="catalog-toolbar__filters-btn relative inline-flex shrink-0 h-9 items-center gap-2 rounded-lg border border-border-subtle px-3 text-sm font-medium text-headings transition-colors cursor-pointer hover:border-primary hover:text-primary desktop:hidden">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" aria-hidden="true">
                                 <line x1="4" y1="6" x2="20" y2="6"></line>
                                 <circle cx="9" cy="6" r="2" fill="currentColor" stroke="none"></circle>
@@ -76,9 +76,9 @@
                             @endif
                         </button>
 
-                        <label class="flex items-center gap-2 text-sm text-body">
+                        <label class="flex min-w-0 flex-1 items-center gap-2 text-sm text-body desktop:flex-none">
                             <span class="hidden sm:inline">@t('Sort by')</span>
-                            <select name="sort" data-autosubmit class="rounded-lg border border-surface-input-stroke bg-surface-input px-2 py-1.5 text-sm text-body outline-none focus:border-primary">
+                            <select name="sort" data-autosubmit class="h-9 w-full rounded-lg border border-surface-input-stroke bg-surface-input px-2 py-1.5 text-sm text-body outline-none focus:border-primary">
                                 <option value="newest" @selected($sort === 'newest')>@t('Newest')</option>
                                 <option value="oldest" @selected($sort === 'oldest')>@t('Oldest')</option>
                                 <option value="name_asc" @selected($sort === 'name_asc')>@t('Name: A–Z')</option>
@@ -93,7 +93,7 @@
                             </select>
                         </label>
 
-                        <div class="catalog-toolbar__view inline-flex overflow-hidden rounded-lg border border-border-subtle" role="group" aria-label="@t('View')">
+                        <div class="catalog-toolbar__view inline-flex shrink-0 overflow-hidden rounded-lg border border-border-subtle" role="group" aria-label="@t('View')">
                             <button
                                 type="submit"
                                 name="view"
