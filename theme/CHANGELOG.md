@@ -2,6 +2,8 @@
 
 ## 2026-11-27
 
+- Search dropdown: without facet groups the results use the full panel width instead of the
+  narrow facet column; result images fill their frame.
 - Products and category toolbar: below `desktop:` the filters button, sort select and grid/list
   switch span the full width under the title (sort fills the middle) instead of hugging one side
   and overflowing on tablets.
