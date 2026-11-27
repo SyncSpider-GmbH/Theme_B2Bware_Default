@@ -48,7 +48,7 @@
                             data-gallery-alt="{{ $img['alt'] ?? '' }}"
                             aria-label="{{ t('View image') }}"
                         >
-                            <img src="@storefrontImage($img['url'], 150, 150, 85)" alt="{{ $img['alt'] ?? '' }}" class="h-full w-full object-contain" loading="lazy">
+                            <img src="@storefrontImage($img['url'], 150, 150, 85)" alt="{{ $img['alt'] ?? '' }}" class="h-full w-full object-cover" loading="lazy">
                         </button>
                     @endforeach
                 </div>
@@ -69,7 +69,7 @@
             <img
                 src="@storefrontImage($images[0]['url'], 800, 800, 85)"
                 alt="{{ $images[0]['alt'] ?? ($product->name ?? '') }}"
-                class="h-full w-full object-contain"
+                class="h-full w-full object-cover"
                 data-gallery-main
             >
         </div>
@@ -78,7 +78,7 @@
             <img
                 src="{{ $store['product_placeholder'] }}"
                 alt="{{ $product->name ?? '' }}"
-                class="h-full w-full object-contain"
+                class="h-full w-full object-cover"
                 data-gallery-main
             >
         </div>

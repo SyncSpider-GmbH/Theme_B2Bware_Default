@@ -60,6 +60,22 @@
                     </p>
 
                     <div class="catalog-toolbar__controls flex items-center gap-3">
+                        <button type="button" data-storefront-modal-open="category-filters-dialog"
+                            class="catalog-toolbar__filters-btn relative inline-flex h-9 items-center gap-2 rounded-lg border border-border-subtle px-3 text-sm font-medium text-headings transition-colors cursor-pointer hover:border-primary hover:text-primary desktop:hidden">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" aria-hidden="true">
+                                <line x1="4" y1="6" x2="20" y2="6"></line>
+                                <circle cx="9" cy="6" r="2" fill="currentColor" stroke="none"></circle>
+                                <line x1="4" y1="12" x2="20" y2="12"></line>
+                                <circle cx="15" cy="12" r="2" fill="currentColor" stroke="none"></circle>
+                                <line x1="4" y1="18" x2="20" y2="18"></line>
+                                <circle cx="7" cy="18" r="2" fill="currentColor" stroke="none"></circle>
+                            </svg>
+                            <span>@t('Filters')</span>
+                            @if(!empty($selectedAttributes) || !empty($selectedDefinitions) || ($inStockSelected ?? false) || ($priceSelected['min'] ?? null) !== null || ($priceSelected['max'] ?? null) !== null || ($filters['q'] ?? ''))
+                                <span class="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-primary" aria-hidden="true"></span>
+                            @endif
+                        </button>
+
                         <label class="flex items-center gap-2 text-sm text-body">
                             <span class="hidden sm:inline">@t('Sort by')</span>
                             <select name="sort" data-autosubmit class="rounded-lg border border-surface-input-stroke bg-surface-input px-2 py-1.5 text-sm text-body outline-none focus:border-primary">
@@ -195,7 +211,10 @@
             {{-- Product listing (leaf always; branch when mode is products/both). --}}
             @section('category.products')
             <div class="catalog catalog--products flex flex-col gap-6 desktop:flex-row desktop:items-start">
-                <aside class="catalog__filters w-full shrink-0 desktop:w-64">
+                {{-- Sidebar ab `desktop:`; darunter öffnet der Filter-Button in der Toolbar
+                     denselben Inhalt im Dialog (wie auf der Seite „Alle Produkte“). --}}
+                <aside class="catalog__filters hidden w-full shrink-0 desktop:block desktop:w-64">
+                    @section('category.filters-body')
                     <div class="catalog__filters-card flex flex-col gap-6 rounded-xl border border-border-subtle bg-surface-card p-5">
                         @if(!empty($selectedAttributes) || !empty($selectedDefinitions) || ($inStockSelected ?? false) || ($priceSelected['min'] ?? null) !== null || ($priceSelected['max'] ?? null) !== null || ($filters['q'] ?? ''))
                             <a
@@ -275,7 +294,20 @@
                             </form>
                         @endif
                     </div>
+                    @show
                 </aside>
+
+                {{-- Mobiler Filter-Dialog: Geschwister der Sidebar, nie darin (ein `hidden`-Vorfahr
+                     würde showModal() unterdrücken). --}}
+                <dialog id="category-filters-dialog" class="category-filters-dialog w-full max-w-sm bg-surface-card text-body rounded-lg shadow-xl p-0 border-0 backdrop:bg-backdrop/40">
+                    <div class="flex flex-col gap-4 p-4 max-h-[85vh] overflow-y-auto">
+                        <header class="flex items-center justify-between gap-3 pb-3 border-b border-border-subtle">
+                            <h2 class="font-secondary text-lg text-headings m-0">@t('Filters')</h2>
+                            <button type="button" class="inline-flex h-8 w-8 items-center justify-center text-2xl leading-none text-body hover:text-headings cursor-pointer bg-transparent border-0" data-modal-close aria-label="@t('Close')">&times;</button>
+                        </header>
+                        @yield('category.filters-body')
+                    </div>
+                </dialog>
 
                 <div class="catalog__main flex min-w-0 flex-1 flex-col gap-4">
                     @include('partials.catalog-active-filters')

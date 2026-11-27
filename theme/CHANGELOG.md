@@ -2,6 +2,10 @@
 
 ## 2026-11-27
 
+- Category page on phones: filters sit behind a Filters button next to sort and grid/list view
+  and open in a dialog (same as the all-products page) instead of filling the screen above the products.
+- Product page gallery, its thumbnails and list-view product images fill their frame (cropped, centred).
+- Breadcrumbs: labels go through the translations, so "Home" and "Categories" follow the store language.
 - Product grid: images fill the tile (cropped, centred) instead of floating in white space,
   and phones show two products side by side (all products and category pages).
 - Products and category pages: the side margin now matches the breadcrumb. The page wrapper

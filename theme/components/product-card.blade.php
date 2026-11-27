@@ -38,14 +38,14 @@
                     <img
                         src="@storefrontImage(data_get($product, 'resolved_main_media.media_url') ?? data_get($product, 'main_media.media_url'), 200, 200, 85)"
                         alt="{{ $product->name ?? '' }}"
-                        class="h-full w-full object-contain"
+                        class="h-full w-full object-cover"
                         loading="lazy"
                     >
                 @elseif(!empty($store['product_placeholder']))
                     <img
                         src="{{ $store['product_placeholder'] }}"
                         alt="{{ $product->name ?? '' }}"
-                        class="h-full w-full object-contain"
+                        class="h-full w-full object-cover"
                         loading="lazy"
                     >
                 @else

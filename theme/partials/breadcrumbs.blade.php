@@ -9,9 +9,9 @@
                         </svg>
                     @endif
                     @if($i === count($breadcrumbs) - 1)
-                        <span class="breadcrumbs__current font-medium text-headings" aria-current="page">{{ $crumb['label'] }}</span>
+                        <span class="breadcrumbs__current font-medium text-headings" aria-current="page">{{ t($crumb['label']) }}</span>
                     @else
-                        <a href="{{ $crumb['url'] }}" class="breadcrumbs__link font-medium text-body transition-colors hover:text-headings hover:no-underline">{{ $crumb['label'] }}</a>
+                        <a href="{{ $crumb['url'] }}" class="breadcrumbs__link font-medium text-body transition-colors hover:text-headings hover:no-underline">{{ t($crumb['label']) }}</a>
                     @endif
                 </li>
             @endforeach
