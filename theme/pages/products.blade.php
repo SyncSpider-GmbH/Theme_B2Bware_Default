@@ -9,7 +9,7 @@
 @endsection
 
 @section('content')
-    <div class="page page--products mx-auto flex w-full max-w-desktop flex-col gap-6 px-4 py-6">
+    <div class="page page--products mx-auto flex w-full max-w-desktop flex-col gap-6">
         @storefrontSlot('content-top')
         @section('header')
             <header class="page__head flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -166,7 +166,7 @@
                             @endforeach
                         </ul>
                     @else
-                        <ul class="catalog__grid grid grid-cols-1 gap-4 list-none m-0 p-0 sm:grid-cols-2 lg:grid-cols-3 desktop:grid-cols-4">
+                        <ul class="catalog__grid grid grid-cols-2 gap-3 list-none m-0 p-0 sm:gap-4 lg:grid-cols-3 desktop:grid-cols-4">
                             @foreach($products as $product)
                                 <li class="h-full">@include('components.product-card', ['product' => $product, 'view' => 'grid', 'redirect' => '/' . $locale . '/products'])</li>
                             @endforeach

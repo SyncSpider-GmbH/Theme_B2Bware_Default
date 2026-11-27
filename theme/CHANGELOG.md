@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-11-27
+
+- Product grid: images fill the tile (cropped, centred) instead of floating in white space,
+  and phones show two products side by side (all products and category pages).
+- Products and category pages: the side margin now matches the breadcrumb. The page wrapper
+  no longer adds a second `px-4 py-6` on top of the layout padding.
+- Product card: slightly tighter padding on phones (`p-3`, `sm:p-4`).
+
 ## 2026-11-26
 
 - Product images sit on white everywhere: product cards (grid and list), the product

@@ -9,7 +9,7 @@
 @endsection
 
 @section('content')
-    <div class="page page--category mx-auto flex w-full max-w-desktop flex-col gap-6 px-4 py-6" data-category-slug="{{ $categorySlug }}" data-branch-display-mode="{{ $branchDisplayMode ?? ($isLeaf ? 'products' : 'children') }}">
+    <div class="page page--category mx-auto flex w-full max-w-desktop flex-col gap-6" data-category-slug="{{ $categorySlug }}" data-branch-display-mode="{{ $branchDisplayMode ?? ($isLeaf ? 'products' : 'children') }}">
         @storefrontSlot('content-top')
 
         @section('category.header')
@@ -173,7 +173,7 @@
                                                 <img
                                                     src="@storefrontImage(data_get($child, 'resolved_main_media.media_url') ?? data_get($child, 'media.0.media_url') ?? data_get($child, 'seo.image.public_url') ?? data_get($child, 'seo.seo_image.public_url'), 320, 320, 85)"
                                                     alt="{{ data_get($child, 'name', '') }}"
-                                                    class="h-full w-full object-contain"
+                                                    class="h-full w-full object-cover"
                                                     loading="lazy"
                                                 >
                                             @else
@@ -291,7 +291,7 @@
                             @endforeach
                         </ul>
                     @else
-                        <ul class="catalog__grid grid grid-cols-2 gap-4 list-none m-0 p-0 lg:grid-cols-3 desktop:grid-cols-4">
+                        <ul class="catalog__grid grid grid-cols-2 gap-3 list-none m-0 p-0 sm:gap-4 lg:grid-cols-3 desktop:grid-cols-4">
                             @foreach($products as $product)
                                 <li class="h-full">@include('components.product-card', ['product' => $product, 'view' => 'grid', 'redirect' => '/' . $locale . '/category/' . $categorySlug])</li>
                             @endforeach

@@ -261,14 +261,14 @@
                     <img
                         src="@storefrontImage(data_get($product, 'resolved_main_media.media_url') ?? data_get($product, 'main_media.media_url'), 400, 400, 85)"
                         alt="{{ $product->name ?? '' }}"
-                        class="w-full h-full object-contain"
+                        class="w-full h-full object-cover"
                         loading="lazy"
                     >
                 @elseif(!empty($store['product_placeholder']))
                     <img
                         src="{{ $store['product_placeholder'] }}"
                         alt="{{ $product->name ?? '' }}"
-                        class="w-full h-full object-contain"
+                        class="w-full h-full object-cover"
                         loading="lazy"
                     >
                 @else
@@ -300,7 +300,7 @@
                 @endstorefrontForm
             @endif
 
-            <div class="product-card__body flex flex-1 flex-col gap-3 p-4">
+            <div class="product-card__body flex flex-1 flex-col gap-3 p-3 sm:p-4">
                 <div class="flex flex-col gap-1">
                     <h3 class="product-card__title min-h-12 font-primary text-base font-medium m-0 line-clamp-2">
                         <a
