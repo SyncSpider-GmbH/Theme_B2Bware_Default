@@ -108,7 +108,19 @@
         @show
 
         @section('header.actions')
-            <div class="storefront-header__actions ml-auto flex shrink-0 items-center gap-2 lg:gap-3">
+            <div class="storefront-header__actions ml-auto flex shrink-0 items-center gap-1 sm:gap-2 lg:gap-3">
+                @if($store['catalog_enabled'] ?? true)
+                    {{-- Phones: the magnifier opens the search row below the bar (instead of always showing it). --}}
+                    <button type="button" data-search-toggle aria-controls="header-search-mobile"
+                        aria-expanded="{{ ($searchQuery ?? '') !== '' ? 'true' : 'false' }}"
+                        class="storefront-header__action inline-flex items-center rounded px-2 py-2 text-headings hover:text-primary cursor-pointer bg-transparent border-0 md:hidden"
+                        aria-label="@t('Search')">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" aria-hidden="true">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </button>
+                @endif
                 @if($store['favorites_enabled'] ?? true)
                     <a href="@routeUrl('store.favorites')" class="storefront-header__action inline-flex items-center gap-2 rounded px-2 py-2 text-headings hover:text-primary hover:no-underline">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" aria-hidden="true">
@@ -143,7 +155,14 @@
                         </a>
                     @endif
                 @else
-                    <a href="@routeUrl('store.login')" class="storefront-header__signin inline-flex items-center gap-2 rounded bg-primary px-3 py-2 font-medium text-primary-content hover:bg-primary-600 hover:no-underline">
+                    {{-- Phones: icon only, in line with search, favorites and cart; the full button from md: up. --}}
+                    <a href="@routeUrl('store.login')" class="storefront-header__signin-icon inline-flex items-center rounded px-2 py-2 text-headings hover:text-primary hover:no-underline md:hidden" aria-label="@t('Log in')">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" aria-hidden="true">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </a>
+                    <a href="@routeUrl('store.login')" class="storefront-header__signin hidden items-center gap-2 md:inline-flex rounded bg-primary px-3 py-2 font-medium text-primary-content hover:bg-primary-600 hover:no-underline">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" aria-hidden="true">
                             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                             <circle cx="12" cy="7" r="4"></circle>
@@ -154,6 +173,16 @@
                         <a href="@routeUrl('store.register')" class="storefront-header__action hidden items-center rounded px-2 py-2 text-headings hover:text-primary hover:no-underline lg:inline-flex">@t('Register')</a>
                     @endif
                 @endif
+                {{-- Below `md:` the hamburger opens the mobile menu (dialog below); the category bar shows from `md:` up. --}}
+                <button type="button" data-storefront-modal-open="storefront-mobile-menu"
+                    class="storefront-header__menu-btn inline-flex h-10 w-10 items-center justify-center rounded text-headings hover:text-primary cursor-pointer bg-transparent border-0 md:hidden"
+                    aria-label="@t('Menu')">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="h-6 w-6" aria-hidden="true">
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
             </div>
         @show
     </div>
@@ -161,7 +190,7 @@
     {{-- Row 1b — mobile search: full-width search on its own row on small screens --}}
     @section('header.search-mobile')
         @if($store['catalog_enabled'] ?? true)
-        <form class="storefront-header__search-mobile mx-auto w-full max-w-desktop px-4 pb-3 md:hidden" method="get" action="@routeUrl('store.products')" role="search" data-live-search-form
+        <form id="header-search-mobile" @if(($searchQuery ?? '') === '') hidden @endif class="storefront-header__search-mobile mx-auto w-full max-w-desktop px-4 pb-3 md:hidden" method="get" action="@routeUrl('store.products')" role="search" data-live-search-form
             data-label-suggestions="@t('Search suggestions')" data-label-filters="@t('Filters')"
             data-label-empty="@t('No products found')" data-label-all="@t('Show all results')">
             <div class="relative w-full">
@@ -190,13 +219,102 @@
 
     {{-- Row 2 — category nav: list link or mega menu, from category_ui_type --}}
     @section('header.nav')
-        @include('partials.nav')
+        <div class="storefront-header__nav hidden md:block">
+            @include('partials.nav')
+        </div>
     @show
+
+    {{-- Mobile menu (below `md:`), opened by the hamburger in the header bar. Blocks are
+         visually separated: categories (tinted), content pages, account (primary), contact. --}}
+    <dialog id="storefront-mobile-menu" class="mobile-menu p-0 border-0" aria-label="@t('Menu')">
+        <div class="mobile-menu__inner">
+            <div class="mobile-menu__head">
+                <a href="@routeUrl('store.home')" class="mobile-menu__brand hover:no-underline">
+                    @if(!empty($store['logo']))
+                        <img src="{{ $store['logo'] }}" alt="{{ $store['name'] }}" class="max-h-8 w-auto">
+                    @else
+                        <span class="font-primary text-lg font-semibold text-headings">{{ $store['name'] }}</span>
+                    @endif
+                </a>
+                <button type="button" data-modal-close class="mobile-menu__close" aria-label="@t('Close')">&times;</button>
+            </div>
+
+            @if(($store['catalog_enabled'] ?? true) && ($rootCategories ?? collect())->isNotEmpty())
+                <section class="mobile-menu__block mobile-menu__block--catalog">
+                    <p class="mobile-menu__label">@t('Categories')</p>
+                    <ul class="mobile-menu__grid">
+                        @foreach($rootCategories as $category)
+                            <li><a href="@routeUrl('store.category', ['slug' => data_get($category, 'seo.slug') ?: data_get($category, 'slug', '')])">{{ $category->name }}</a></li>
+                        @endforeach
+                    </ul>
+                    <div class="mobile-menu__row">
+                        <a class="mobile-menu__pill" href="@routeUrl('store.products')">@t('All products')</a>
+                        <a class="mobile-menu__pill" href="@routeUrl('store.categories')">@t('Categories')</a>
+                    </div>
+                </section>
+            @endif
+
+            @if($storefrontContentNav->isNotEmpty())
+                <section class="mobile-menu__block">
+                    <ul class="mobile-menu__list">
+                        @foreach($storefrontContentNav as $item)
+                            <li><a href="{{ $item['href'] ?? ('/' . trim(($locale ?? '') . '/' . ($item['path'] ?? ''), '/')) }}">{{ $item['label'] ?? '' }}</a></li>
+                        @endforeach
+                    </ul>
+                </section>
+            @endif
+
+            <section class="mobile-menu__block mobile-menu__block--account">
+                <p class="mobile-menu__label">@t('Account')</p>
+                @if($isAuthenticated)
+                    <ul class="mobile-menu__list">
+                        <li><a href="@routeUrl('store.account.index')">@t('My account')</a></li>
+                        @if($store['favorites_enabled'] ?? true)
+                            <li><a href="@routeUrl('store.favorites')">@t('Favorites')</a></li>
+                        @endif
+                    </ul>
+                @else
+                    <div class="mobile-menu__row">
+                        <a class="mobile-menu__cta" href="@routeUrl('store.login')">@t('Log in')</a>
+                        @if(empty($store['restrict_registration']))
+                            <a class="mobile-menu__cta mobile-menu__cta--ghost" href="@routeUrl('store.register')">@t('Register')</a>
+                        @endif
+                    </div>
+                @endif
+            </section>
+
+            @if(!empty($store['contact_phone']) || !empty($store['contact_email']))
+                <section class="mobile-menu__block mobile-menu__block--contact">
+                    @if(!empty($store['contact_phone']))
+                        <a href="tel:{{ $store['contact_phone'] }}">{{ $store['contact_phone'] }}</a>
+                    @endif
+                    @if(!empty($store['contact_email']))
+                        <a href="mailto:{{ $store['contact_email'] }}">{{ $store['contact_email'] }}</a>
+                    @endif
+                </section>
+            @endif
+        </div>
+    </dialog>
 
     {{-- Progressive enhancement: with the JS runtime present, the theme toggle
          flips the scheme live (no reload) instead of a full-page POST. With JS
          off, the form submits normally and the server re-renders the page. --}}
     <script type="module">
+        // Mobile search: the magnifier shows/hides the search row and focuses the field.
+        for (const toggle of document.querySelectorAll('[data-search-toggle]')) {
+            const target = document.getElementById(toggle.getAttribute('aria-controls') || '');
+            if (!target) {
+                continue;
+            }
+            toggle.addEventListener('click', () => {
+                target.hidden = !target.hidden;
+                toggle.setAttribute('aria-expanded', target.hidden ? 'false' : 'true');
+                if (!target.hidden) {
+                    target.querySelector('input[type="search"]')?.focus();
+                }
+            });
+        }
+
         for (const form of document.querySelectorAll('[data-theme-toggle]')) {
             form.addEventListener('submit', (event) => {
                 const api = window.Storefront;

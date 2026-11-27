@@ -2,6 +2,12 @@
 
 ## 2026-11-27
 
+- Header on phones: one row of icons (search, favorites, cart, log in, menu). The search field
+  opens from the magnifier instead of taking its own full-width row; it stays open on a search
+  results page. Log in is an icon below `md:` and the full button from `md:` up.
+- Mobile menu: the hamburger opens a drawer with categories, content pages, account
+  (log in / register or my account / favorites) and the store contact. The category bar shows
+  from `md:` up.
 - Category page on phones: filters sit behind a Filters button next to sort and grid/list view
   and open in a dialog (same as the all-products page) instead of filling the screen above the products.
 - Product page gallery, its thumbnails and list-view product images fill their frame (cropped, centred).
